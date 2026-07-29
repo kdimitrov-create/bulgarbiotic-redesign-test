@@ -69,3 +69,5 @@ workflow"), така че `.github/workflows/nova-deploy.yml` със storefront 
 - Всичките 10 `FEATURED_HANDLES` + продуктът на фокус се резолвват в копието — 10/10.
 - Всички ключови маршрути 200, стилизирани, нула грешки; 404 е стилизиран.
 - `lib/redirects.ts` е празна карта (no-op) — попълва се чак преди реален cutover.
+
+<!-- preview routing test run-1 -->
