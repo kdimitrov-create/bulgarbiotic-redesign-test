@@ -1,68 +1,71 @@
 # Тестово копие на редизайна — магазин `c2wjn.cloudcart.net`
 
-Този проект е **копие на редизайна на Bulgarbiotic**, откачено от setup-а на Ники.
-Целта: **репетиция на реалната процедура** по въвеждане на редизайна в жив магазин —
-върху копие на `bulgarbiotic.bg`, без риск за оригинала.
+Копие на редизайна на Bulgarbiotic, откачено от setup-а на Ники. Целта е
+**репетиция на реалната процедура** по въвеждане на редизайна в жив магазин —
+върху копие на `bulgarbiotic.bg`, без риск за оригинала. Затова deploy методът е
+същият по същност като на Ники: **push към `main` → GitHub Actions → Nova**.
 
-Затова deploy методът е **същият като на Ники: GitHub Actions**, само че срещу
-собствено repo и собствен storefront.
+## Координати
 
-## Какво е различно спрямо оригинала
+| | |
+|---|---|
+| Магазин | `c2wjn.cloudcart.net` (Store ID 75235) |
+| Storefront | `bulgarbiotic-redesign-test` · **`nova_storefront_id: 111`** |
+| Nova URL | https://bulgarbiotic-redesign-test-ccdd5ce2b4f387ec.cloudcart.dev |
+| Repo (деплойва) | `kdimitrov-create/bulgarbiotic-redesign-test` — **създадено от CloudCart** |
+| Работно копие | `C:\Work AI\bb-copy-c2wjn` · клон `main` |
 
-| | Оригинал (`C:\Work AI\bb-redesign-live`) | Това копие |
+### Remotes
+
+| Remote | Repo | Роля |
 |---|---|---|
-| Repo | `niliev-hub/bulgarbiotic-redesign` (чуждо) | собствено repo под `kdimitrov-create` |
-| Remote | `origin` | `origin` (новото) + `niki-upstream` (само fetch, **push забранен**) |
-| Клон | `redesign-corrections` | **`main`** (за да съвпадне с trigger-а) |
-| Deploy | GitHub Actions → storefront **18** = реалният магазин | GitHub Actions → нов storefront в копието |
-| `nova_storefront_id` | `18` | нов (CloudCart го записва при свързването) |
-| `PUBLIC_STORE_DOMAIN` | `bulgarbiotic.bg` | `c2wjn.cloudcart.net` |
+| `origin` | `kdimitrov-create/bulgarbiotic-redesign-test` | **деплойва** — push към `main` пуска Actions |
+| `backup` | `kdimitrov-create/Test-BulgarBiotic-design` | бекъп на кода преди GitHub връзката |
+| `niki-upstream` | `niliev-hub/bulgarbiotic-redesign` | само fetch — **push URL нарочно счупен** |
 
-**Базова точка:** `fb7dd03` = `niki-upstream/main` към 2026-07-29 — цялата работа
-до момента. Отгоре: `18ba24f` добавя дотогава некомитнатите go-live файлове
-(`Analytics.tsx`, `lib/redirects.ts`, canonical/robots/sitemap, бранд заглавия) и
-маха стария workflow, закован на storefront 18.
+⚠️ CloudCart създава **собствено** repo при създаването на storefront-а. Свързване
+към вече съществуващо repo не се предлага, а `deploymentMethod` е read-only в
+Admin API — изборът GitHub/CLI се прави **веднъж, при създаване**.
+
+## Как е сглобено
+
+Базата е `fb7dd03` = `niki-upstream/main` @ 2026-07-29 (локалният клон
+`redesign-corrections` беше точно равен на него). Отгоре: комит с дотогава
+**некомитнатите** go-live файлове (`Analytics.tsx`, `lib/redirects.ts`, canonical,
+robots, sitemap, бранд заглавия в 19 route-а) — обикновен `git clone` щеше да ги загуби.
+
+Клонът `main` тук стъпва върху комита на CloudCart `aa80ab8` („Add Nova deployment
+workflow"), така че `.github/workflows/nova-deploy.yml` със storefront 111 е
+запазен непокътнат, а push-ът е чист fast-forward без force.
+
+## Workflow-ът е по-нов от този на Ники
+
+| | Ники (storefront 18) | Тук (storefront 111) |
+|---|---|---|
+| Deploy | директно към Cloudflare API | през `NOVA_DEPLOY_URL/deploy` |
+| Secrets | 10 secrets + 3 vars | `NOVA_DEPLOY_TOKEN` + var `NOVA_DEPLOY_URL` |
+| Assets | всеки файл в KV поединично | hash-dedup сесия (качва само новото) |
+
+⚠️ **Preview — непроверено.** Панелът твърди, че комити към клон различен от `main`
+отиват в preview среда, но в самия workflow `environment` е **закован на
+`production`** (`branch` се праща отделно). Значи маршрутизацията става на сървъра.
+**Тествай го, преди да разчиташ на него при реален cutover.**
 
 ## Правила
 
-1. **Никога не push-вай към `niki-upstream`.** Push URL-ът е нарочно счупен.
-2. При свързване на storefront-а в панела — избери **новото** repo, никога
-   `niliev-hub/bulgarbiotic-redesign`.
-3. `.env` тук сочи копието. Ако някога покаже `bulgarbiotic.bg` — спри и провери.
-4. Комит съобщенията са **на един ред** (многоредовите чупят Nova deploy стъпката).
-5. ⚠️ Като на оригинала: **всеки push към `main` И всеки PR** тригерва deploy
-   към единствения worker на този storefront. Няма изолиран preview.
+1. Никога не push-вай към `niki-upstream`.
+2. Комит съобщенията са **на един ред** (многоредовите чупят Nova deploy стъпката).
+3. `.env` (локален dev) сочи `c2wjn.cloudcart.net`. Ако покаже реалния магазин — спри.
+4. **Не слагай реални GA/Meta ID-та** — тестът не бива да подава данни в живите акаунти.
 
-## Setup
+## Проверка след deploy
 
-1. Създай **private** repo под `kdimitrov-create`.
-2. `git remote add origin <url>` → `git push -u origin main`.
-3. Панел на `c2wjn.cloudcart.net` → Nitrogen → Create Storefront → **GitHub** →
-   свържи новото repo.
-4. Ако CloudCart не запише сам `.github/workflows/nova-deploy.yml` — копира се от
-   оригинала, сменя се първият ред `#! nova_storefront_id:` с новия id, и се
-   попълват secrets/vars ръчно (виж таблицата долу).
-5. Push → Actions → проверка.
+- GitHub Actions run = success.
+- `/assets/*.css` = **200** на Nova URL-а (иначе сайтът е без стилове).
+- home / категория / продукт / cart рендират реални данни, без грешки.
 
-### Secrets / vars, които workflow-ът иска
+## Проверено на 2026-07-29
 
-**Secrets:** `NOVA_CF_ACCOUNT_ID`, `NOVA_CF_API_TOKEN`, `PUBLIC_STORE_DOMAIN`,
-`PUBLIC_STOREFRONT_API_TOKEN`, `PRIVATE_STOREFRONT_API_TOKEN`,
-`PUBLIC_STOREFRONT_ID`, `SHOP_ID`, `SESSION_SECRET`, `NOVA_DEPLOY_CALLBACK_URL`,
-`NOVA_DEPLOY_TOKEN`
-**Vars:** `NOVA_CF_NAMESPACE`, `NOVA_CF_KV_NAMESPACE_ID`, `NOVA_WORKER_NAME`
-
-## Проверка след deploy (задължителна)
-
-- `/assets/*.css` връща **200** на Nova URL-а (иначе сайтът е без стилове).
-- Home / категория / продукт рендират реални данни от копирания магазин.
-
-## Известни неща за проверка след първия deploy
-
-- `FEATURED_HANDLES` (10 продукта) и `FOCUS_PRODUCT_HANDLE = 'family-pack'` в
-  `app/routes/_index.tsx` са заковани handle-и — ако копираният магазин има други
-  handle-и, началната ще е празна.
+- Всичките 10 `FEATURED_HANDLES` + продуктът на фокус се резолвват в копието — 10/10.
+- Всички ключови маршрути 200, стилизирани, нула грешки; 404 е стилизиран.
 - `lib/redirects.ts` е празна карта (no-op) — попълва се чак преди реален cutover.
-- Аналитиката (`components/Analytics.tsx`) е инертна без `PUBLIC_GA_ID` /
-  `PUBLIC_META_PIXEL_ID` — **не ги слагай тук**, тестовото копие не бива да
-  подава данни в реалните GA/Meta акаунти.
