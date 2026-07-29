@@ -39,6 +39,16 @@ export async function action({request, context}: Route.ActionArgs) {
         errors = result.userErrors;
         break;
       }
+      /* Прилага промо код без навигация. Route-ът /discount/:code прави същото,
+         но пренасочва към /cart — което не става, когато кодът се прилага от
+         изскачащ прозорец (колелото на късмета). */
+      case 'APPLY_DISCOUNT': {
+        const code = String(fd.get('code') || '').trim();
+        const result = await ctx.cart.updateDiscountCodes(code ? [code] : []);
+        cart = result.cart;
+        errors = result.userErrors;
+        break;
+      }
       default:
         cart = await ctx.cart.get();
     }

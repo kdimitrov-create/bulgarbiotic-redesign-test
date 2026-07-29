@@ -6,6 +6,7 @@ import {PromoBar} from './PromoBar';
 import {ProbioticFinderFAB} from './ProbioticFinderFAB';
 import {CookieBanner} from './overlays/CookieBanner';
 import {Analytics} from './Analytics';
+import {LuckyWheel} from './overlays/LuckyWheel';
 
 interface PageLayoutProps {
   shop: Shop;
@@ -30,6 +31,8 @@ export function PageLayout({shop, headerMenu, footerMenu, cart, children, fullBl
       <ProbioticFinderFAB />
       <CookieBanner />
       <Analytics />
+      {/* Пали се при добавяне в количката — затова стои в layout-а, не в отделна страница. */}
+      <LuckyWheel />
     </div>
   );
 }
