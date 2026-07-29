@@ -1,6 +1,7 @@
 import {Link, useFetcher} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
 import {getEnhancedFeatured} from '~/lib/product-images';
+import {CheckoutButton} from './CheckoutButton';
 import {bestDiscountForHandle} from '~/lib/active-discounts';
 import {
   EUR_TO_BGN,
@@ -125,18 +126,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
               </div>
             </div>
 
-            {cart?.checkoutUrl ? (
-              <a href={cart.checkoutUrl} className="bb-cart-checkout">
-                Към плащане
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </a>
-            ) : (
-              <button type="button" className="bb-cart-checkout" disabled>
-                Към плащане
-              </button>
-            )}
+            <CheckoutButton cart={cart} className="bb-cart-checkout" />
 
             <p className="bb-cart-note">
               Таксите и доставката се изчисляват на следващата стъпка

@@ -27,7 +27,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   ]);
 
   const env = ctx.env as Record<string, string | undefined>;
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null};
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {

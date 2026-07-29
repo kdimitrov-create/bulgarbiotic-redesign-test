@@ -5,6 +5,7 @@ import {useAside} from './Aside';
 import {getEnhancedFeatured} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {bestDiscountFor, bestDiscountForHandle} from '~/lib/active-discounts';
+import {CheckoutButton} from './CheckoutButton';
 
 export const EUR_TO_BGN = 1.95583;
 // Free-shipping target = the merchant's BumpCart `totalCartAmount` setting
@@ -196,18 +197,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
                 <div className="bb-cd-grand-bgn">{fmtBgn(total.bgn)}</div>
               </div>
             </div>
-            {cart?.checkoutUrl ? (
-              <a href={cart.checkoutUrl} className="bb-cd-checkout">
-                Към плащане
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </a>
-            ) : (
-              <button type="button" className="bb-cd-checkout" disabled>
-                Към плащане
-              </button>
-            )}
+            <CheckoutButton cart={cart} className="bb-cd-checkout" />
 
             <CartTrustStrip />
           </div>
