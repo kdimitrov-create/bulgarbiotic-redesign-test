@@ -37,7 +37,9 @@ export default {
         // makes the worker request itself, which returns HTML instead of JSON and
         // 500s every data route. Nova supplies PUBLIC_API_ORIGIN for exactly this;
         // the fallback keeps local dev (plain .env) working.
-        PUBLIC_STORE_DOMAIN: env.PUBLIC_API_ORIGIN ?? env.PUBLIC_STORE_DOMAIN,
+        // `||` not `??` on purpose: a binding that exists but is EMPTY (secret not
+        // set yet) must still fall back, otherwise the API origin becomes "".
+        PUBLIC_STORE_DOMAIN: env.PUBLIC_API_ORIGIN || env.PUBLIC_STORE_DOMAIN,
         PUBLIC_STOREFRONT_API_TOKEN: env.PUBLIC_STOREFRONT_API_TOKEN,
         PRIVATE_STOREFRONT_API_TOKEN: env.PRIVATE_STOREFRONT_API_TOKEN,
       },
