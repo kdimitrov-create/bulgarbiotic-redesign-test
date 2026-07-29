@@ -1,10 +1,10 @@
 import {Link, useLoaderData} from 'react-router';
 import type {Route} from './+types/account.downloads';
 import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
+import {getSeoMeta} from '@cloudcart/nitro';
 import {ArrowDownTrayIcon, DocumentIcon, ChevronRightIcon} from '@heroicons/react/24/outline';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Downloads | Nitrogen'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Downloads | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -77,7 +77,7 @@ export default function Downloads() {
                 </td>
                 <td className="py-3.5 px-4 text-gray-600">
                   {d.productHandle ? (
-                    <Link to={`/products/${d.productHandle}`} className="text-gray-600 hover:text-brand">
+                    <Link to={`/product/${d.productHandle}`} className="text-gray-600 hover:text-brand">
                       {d.productTitle}
                     </Link>
                   ) : d.productTitle}
@@ -125,7 +125,7 @@ export default function Downloads() {
             <div className="px-4 py-3">
               <div className="text-sm">
                 {d.productHandle ? (
-                  <Link to={`/products/${d.productHandle}`} className="font-medium text-dark hover:text-brand hover:no-underline">
+                  <Link to={`/product/${d.productHandle}`} className="font-medium text-dark hover:text-brand hover:no-underline">
                     {d.productTitle}
                   </Link>
                 ) : (

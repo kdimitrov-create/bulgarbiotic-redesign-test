@@ -5,7 +5,7 @@ import {useAside} from './Aside';
 export function AddToCartButton({
   merchandiseId,
   quantity = 1,
-  children = 'Add to Cart',
+  children = 'Добави в количката',
   className,
   disabled,
 }: {
@@ -36,7 +36,24 @@ export function AddToCartButton({
         className={className}
         disabled={disabled || isAdding}
       >
-        {isAdding ? 'Adding...' : children}
+        {isAdding ? (
+          <span className="inline-flex items-center gap-2">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              className="size-4 animate-spin"
+              aria-hidden="true"
+            >
+              <path d="M12 3a9 9 0 11-6.3 2.6" />
+            </svg>
+            Добавям…
+          </span>
+        ) : (
+          children
+        )}
       </button>
     </fetcher.Form>
   );

@@ -1,10 +1,10 @@
 import {useLoaderData, data} from 'react-router';
 import type {Route} from './+types/policies.$handle';
 import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
-import {RichText} from '@cloudcart/nitrogen-react';
+import {getSeoMeta} from '@cloudcart/nitro';
+import {RichText} from '@cloudcart/nitro-react';
 
-export const meta: Route.MetaFunction = ({data: d}) => getSeoMeta({title: d?.policy ? d.policy.title + ' | Nitrogen' : 'Policy | Nitrogen'});
+export const meta: Route.MetaFunction = ({data: d}) => getSeoMeta({title: d?.policy ? d.policy.title + ' | Bactology' : 'Policy | Bactology'});
 
 export async function loader({params, context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);

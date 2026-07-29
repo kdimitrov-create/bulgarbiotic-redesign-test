@@ -2,14 +2,15 @@ import {useLoaderData, useNavigate, useNavigation, useSearchParams} from 'react-
 import {useEffect, useRef, useState, useCallback} from 'react';
 import type {Route} from './+types/search';
 import {getContext} from '~/lib/context';
-import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitrogen';
+import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {ProductCard} from '~/components/ProductCard';
 import {ProductFilters} from '~/components/ProductFilters';
 import {Pagination} from '~/components/Pagination';
 import {MagnifyingGlassIcon, XMarkIcon} from '@heroicons/react/24/outline';
 import {buildFiltersFromParams, buildSortFromParams} from '~/lib/filters';
+import {enhanceProducts} from '~/lib/product-images';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Search | Nitrogen'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Search | Bactology'});
 
 export async function loader({request, context}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -30,7 +31,13 @@ export async function loader({request, context}: Route.LoaderArgs) {
     query: q,
   });
 
-  return {query: q, products};
+  // Apply AI-enhanced lifestyle photos for visual consistency.
+  const productsWithEnhancement = {
+    ...products,
+    nodes: enhanceProducts((products as any).nodes ?? []),
+  };
+
+  return {query: q, products: productsWithEnhancement};
 }
 
 export default function SearchPage() {

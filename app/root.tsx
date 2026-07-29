@@ -1,13 +1,13 @@
-import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
+import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
+import {getSeoMeta} from '@cloudcart/nitro';
 import {AsideProvider, Aside} from '~/components/Aside';
 import {CartDrawer} from '~/components/CartDrawer';
 import {PageLayout} from '~/components/PageLayout';
 import '~/app.css';
 
-export const meta: MetaFunction = () => getSeoMeta({title: 'Nitrogen | Modern Commerce'});
+export const meta: MetaFunction = () => getSeoMeta({title: 'Bulgar Biotic — Български пробиотици Bactology'});
 
 export const shouldRevalidate: Route.ShouldRevalidateFunction = ({formMethod, currentUrl, nextUrl}) => {
   if (formMethod && formMethod !== 'GET') return true;
@@ -26,15 +26,22 @@ export async function loader({context, request}: Route.LoaderArgs) {
       : Promise.resolve([]),
   ]);
 
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds};
+  const env = ctx.env as Record<string, string | undefined>;
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
+  const data = useRouteLoaderData<typeof loader>('root');
+  const {pathname, search} = useLocation();
+  const page = new URLSearchParams(search).get('page');
+  const canonical = data?.origin ? data.origin + pathname + (page ? `?page=${page}` : '') : null;
   return (
-    <html lang="en">
+    <html lang="bg">
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#0a2540" />
+        {canonical ? <link rel="canonical" href={canonical} /> : null}
         <Meta />
         <Links />
       </head>
@@ -49,12 +56,12 @@ export function Layout({children}: {children: React.ReactNode}) {
 
 export default function App() {
   const data = useRouteLoaderData<typeof loader>('root');
-  const shop = data?.shop ?? {name: 'Nitrogen', description: null};
+  const shop = data?.shop ?? {name: 'Bulgar Biotic', description: null};
   const cart = data?.cart ?? Promise.resolve(null);
 
   return (
     <AsideProvider>
-      <Aside type="cart" heading="CART">
+      <Aside type="cart" heading="КОШНИЦА">
         <CartDrawer cart={cart} />
       </Aside>
       <PageLayout

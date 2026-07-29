@@ -1,9 +1,9 @@
 import {Link, useLoaderData, redirect} from 'react-router';
 import type {Route} from './+types/account.orders.$id';
 import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
-import type {MailingAddress} from '@cloudcart/nitrogen';
-import {Money, Image} from '@cloudcart/nitrogen-react';
+import {getSeoMeta} from '@cloudcart/nitro';
+import type {MailingAddress} from '@cloudcart/nitro';
+import {Money, Image} from '@cloudcart/nitro-react';
 import {ArrowLeftIcon, TruckIcon, MapPinIcon, BuildingOfficeIcon, CreditCardIcon, ChatBubbleLeftIcon, TagIcon, DocumentTextIcon, CalendarIcon} from '@heroicons/react/24/outline';
 
 export const meta: Route.MetaFunction = ({data}) =>
@@ -195,7 +195,7 @@ export default function OrderDetail() {
                 )}
                 <div className="flex-1 min-w-0">
                   {item.productHandle ? (
-                    <Link to={`/products/${item.productHandle}`} className="text-sm font-medium text-dark hover:text-brand hover:no-underline line-clamp-2">{item.title}</Link>
+                    <Link to={`/product/${item.productHandle}`} className="text-sm font-medium text-dark hover:text-brand hover:no-underline line-clamp-2">{item.title}</Link>
                   ) : (
                     <p className="text-sm font-medium text-dark line-clamp-2">{item.title}</p>
                   )}
@@ -286,7 +286,7 @@ function LineItemContent({item}: {item: any}) {
     </div>
   );
   return item.productHandle ? (
-    <Link to={`/products/${item.productHandle}`} className="hover:no-underline">{content}</Link>
+    <Link to={`/product/${item.productHandle}`} className="hover:no-underline">{content}</Link>
   ) : content;
 }
 

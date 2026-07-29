@@ -1,6 +1,6 @@
 import {Link, useFetcher} from 'react-router';
-import type {CartLine} from '@cloudcart/nitrogen';
-import {Money, Image} from '@cloudcart/nitrogen-react';
+import type {CartLine} from '@cloudcart/nitro';
+import {Money, Image} from '@cloudcart/nitro-react';
 import {PlusIcon, MinusIcon, TrashIcon} from '@heroicons/react/24/outline';
 
 interface CartLineItemProps {
@@ -26,7 +26,7 @@ export function CartLineItem({line, layout = 'page'}: CartLineItemProps) {
   return (
     <li className={isDrawer ? 'flex gap-3 py-4 border-b border-gray-100' : 'flex gap-4 py-5 border-b border-gray-200 items-start'}>
       {image && (
-        <Link to={`/products/${line.merchandise.product.handle}`} prefetch="intent">
+        <Link to={`/product/${line.merchandise.product.handle}`} prefetch="intent">
           <Image
             data={image}
             alt={line.merchandise.product.title}
@@ -37,7 +37,7 @@ export function CartLineItem({line, layout = 'page'}: CartLineItemProps) {
         </Link>
       )}
       <div className="flex-1 min-w-0">
-        <Link to={`/products/${line.merchandise.product.handle}`} prefetch="intent" className="hover:no-underline">
+        <Link to={`/product/${line.merchandise.product.handle}`} prefetch="intent" className="hover:no-underline">
           <strong className={isDrawer ? 'text-[0.85rem] block' : 'text-[0.95rem]'}>{line.merchandise.product.title}</strong>
         </Link>
         {line.merchandise.selectedOptions.length > 0 && (

@@ -1,4 +1,4 @@
-import type {ProductFilter, Filter} from '@cloudcart/nitrogen';
+import type {ProductFilter, Filter} from '@cloudcart/nitro';
 
 /**
  * Convert URL search params to ProductFilter[] for the Storefront API.

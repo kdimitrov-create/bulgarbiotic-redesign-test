@@ -1,15 +1,17 @@
 import {useState} from 'react';
 import {useSearchParams, useNavigate} from 'react-router';
-import type {Filter, FilterValue} from '@cloudcart/nitrogen';
+import type {Filter} from '@cloudcart/nitro';
 import {filterInputToParam, isFilterActive} from '~/lib/filters';
 import {ChevronDownIcon} from '@heroicons/react/20/solid';
 
 interface ProductFiltersProps {
   filters?: Filter[];
   totalCount?: number | null;
+  /** Hide the sort dropdown — used when sort lives in a toolbar above the grid. */
+  hideSort?: boolean;
 }
 
-export function ProductFilters({filters = [], totalCount}: ProductFiltersProps) {
+export function ProductFilters({filters = [], totalCount, hideSort = false}: ProductFiltersProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
@@ -37,13 +39,11 @@ export function ProductFilters({filters = [], totalCount}: ProductFiltersProps) 
     const existing = params.getAll(param.key);
 
     if (existing.includes(param.value)) {
-      // Remove this specific value while keeping others for the same key
       params.delete(param.key);
       for (const v of existing) {
         if (v !== param.value) params.append(param.key, v);
       }
     } else {
-      // Add this value alongside existing ones
       params.append(param.key, param.value);
     }
     params.delete('cursor');
@@ -56,31 +56,37 @@ export function ProductFilters({filters = [], totalCount}: ProductFiltersProps) 
   }
 
   const hasActiveFilters = Array.from(searchParams.keys()).some(
-    (k) => !['sort', 'cursor', 'direction'].includes(k),
+    (k) => !['sort', 'cursor', 'direction', 'page', 'q'].includes(k),
   );
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Sort */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">Sort by</label>
-        <select
-          className="form-select w-full py-2 px-3 border-gray-200 rounded-md text-[0.85rem] text-dark cursor-pointer focus:border-brand focus:ring-0"
-          value={currentSort}
-          onChange={(e) => updateParam('sort', e.target.value)}
-        >
-          <option value="">Featured</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="title-asc">Alphabetically: A-Z</option>
-          <option value="title-desc">Alphabetically: Z-A</option>
-          <option value="created-desc">Newest</option>
-          <option value="best-selling">Best Selling</option>
-        </select>
-      </div>
+      {/* Sort (hidden when rendered in toolbar separately) */}
+      {!hideSort && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-gray-500 flex items-center gap-1.5">
+            Сортирай по
+          </label>
+          <select
+            className="form-select w-full py-2.5 px-3 border-[1.5px] border-gray-200 rounded-lg text-sm text-[var(--color-ink)] cursor-pointer transition-colors hover:border-gray-400 focus:border-[var(--color-brand-pink)] focus:ring-0"
+            value={currentSort}
+            onChange={(e) => updateParam('sort', e.target.value)}
+          >
+            <option value="">Препоръчани</option>
+            <option value="price-asc">Цена: ниска → висока</option>
+            <option value="price-desc">Цена: висока → ниска</option>
+            <option value="title-asc">Име: А → Я</option>
+            <option value="title-desc">Име: Я → А</option>
+            <option value="created-desc">Най-нови</option>
+            <option value="best-selling">Най-продавани</option>
+          </select>
+        </div>
+      )}
 
       {totalCount != null && (
-        <div className="text-xs text-gray-500 pb-1 border-b border-gray-100">{totalCount} products</div>
+        <div className="text-xs text-gray-500 pb-1 border-b border-gray-100">
+          {totalCount} {totalCount === 1 ? 'продукт' : 'продукта'}
+        </div>
       )}
 
       {/* Dynamic filters from API */}
@@ -97,8 +103,11 @@ export function ProductFilters({filters = [], totalCount}: ProductFiltersProps) 
       ))}
 
       {hasActiveFilters && (
-        <button className="bg-transparent border-none text-brand text-xs font-medium cursor-pointer underline text-left p-0 font-sans" onClick={clearAll}>
-          Clear all filters
+        <button
+          className="bg-transparent border-none text-[var(--color-brand-pink)] text-xs font-semibold cursor-pointer underline text-left p-0 font-sans"
+          onClick={clearAll}
+        >
+          Изчисти всички филтри
         </button>
       )}
     </div>
@@ -152,19 +161,24 @@ function FilterListGroup({filter, searchParams, onToggle}: {filter: Filter; sear
   const visibleValues = expanded ? filter.values : filter.values.slice(0, VISIBLE_COUNT);
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">{filter.label}</label>
+    <div className="flex flex-col gap-2">
+      <label className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-gray-500 flex items-center gap-1.5">
+        {filter.label}
+      </label>
       <div className="flex flex-col gap-1">
         {visibleValues.map((v) => (
-          <label key={v.id} className="flex items-center gap-1.5 text-[0.85rem] cursor-pointer py-0.5 [&_input]:shrink-0">
+          <label
+            key={v.id}
+            className="flex items-center gap-2 text-[13px] cursor-pointer py-1 px-0 rounded transition-colors hover:bg-gray-50 [&_input]:shrink-0"
+          >
             <input
               type="checkbox"
-              className="form-checkbox rounded border-gray-300 text-brand focus:ring-brand"
+              className="form-checkbox size-3.5 rounded border-gray-300 text-[var(--color-brand-pink)] focus:ring-[var(--color-brand-pink)] focus:ring-offset-0"
               checked={isFilterActive(searchParams, v.input)}
               onChange={() => onToggle(v.input)}
             />
-            <span className="flex-1 text-dark truncate">{v.label}</span>
-            <span className="text-xs text-gray-400 shrink-0">({v.count})</span>
+            <span className="flex-1 text-[var(--color-ink)] truncate">{v.label}</span>
+            <span className="text-xs text-gray-400 shrink-0">{v.count}</span>
           </label>
         ))}
       </div>
@@ -172,10 +186,10 @@ function FilterListGroup({filter, searchParams, onToggle}: {filter: Filter; sear
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1 text-xs text-gray-500 hover:text-dark transition-colors duration-150 p-0 bg-transparent border-none cursor-pointer font-sans"
+          className="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-[var(--color-brand-pink)] transition-colors p-0 bg-transparent border-none cursor-pointer font-sans"
         >
           <ChevronDownIcon className={`size-4 transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
-          {expanded ? 'Show less' : `Show all ${filter.values.length}`}
+          {expanded ? 'Покажи по-малко' : `Покажи всички ${filter.values.length}`}
         </button>
       )}
     </div>
@@ -184,13 +198,13 @@ function FilterListGroup({filter, searchParams, onToggle}: {filter: Filter; sear
 
 function FilterSwatchColorGroup({filter, searchParams, onToggle}: {filter: Filter; searchParams: URLSearchParams; onToggle: (input: string) => void}) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">{filter.label}</label>
+    <div className="flex flex-col gap-2">
+      <label className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-gray-500 flex items-center gap-1.5">{filter.label}</label>
       <div className="flex flex-wrap gap-1.5">
         {filter.values.map((v) => (
           <button
             key={v.id}
-            className={`size-7 rounded-full border-2 cursor-pointer p-0 transition-[border-color,box-shadow] duration-150 hover:border-gray-400 ${isFilterActive(searchParams, v.input) ? 'border-dark shadow-[0_0_0_2px_var(--color-light),0_0_0_4px_var(--color-dark)]' : 'border-gray-200'}`}
+            className={`size-7 rounded-full border-2 cursor-pointer p-0 transition-[border-color,box-shadow] duration-150 hover:border-gray-400 ${isFilterActive(searchParams, v.input) ? 'border-[var(--color-ink)] shadow-[0_0_0_2px_var(--color-cream-1),0_0_0_4px_var(--color-ink)]' : 'border-gray-200'}`}
             title={`${v.label} (${v.count})`}
             onClick={() => onToggle(v.input)}
             style={{backgroundColor: v.swatchColor ?? '#ccc'}}
@@ -203,13 +217,13 @@ function FilterSwatchColorGroup({filter, searchParams, onToggle}: {filter: Filte
 
 function FilterSwatchImageGroup({filter, searchParams, onToggle}: {filter: Filter; searchParams: URLSearchParams; onToggle: (input: string) => void}) {
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">{filter.label}</label>
+    <div className="flex flex-col gap-2">
+      <label className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-gray-500 flex items-center gap-1.5">{filter.label}</label>
       <div className="flex flex-wrap gap-1.5">
         {filter.values.map((v) => (
           <button
             key={v.id}
-            className={`size-9 rounded-md border-2 cursor-pointer p-0.5 bg-light transition-[border-color] duration-150 overflow-hidden hover:border-gray-400 ${isFilterActive(searchParams, v.input) ? 'border-dark' : 'border-gray-200'}`}
+            className={`size-9 rounded-md border-2 cursor-pointer p-0.5 bg-white transition-[border-color] duration-150 overflow-hidden hover:border-gray-400 ${isFilterActive(searchParams, v.input) ? 'border-[var(--color-ink)]' : 'border-gray-200'}`}
             title={`${v.label} (${v.count})`}
             onClick={() => onToggle(v.input)}
           >
@@ -232,16 +246,16 @@ function FilterPriceRangeGroup({filter, onUpdateParam, currentMinPrice, currentM
   const currency = filter.minValue?.currencyCode ?? '';
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
-        {filter.label}
-        {currency && <span className="font-normal normal-case"> ({currency})</span>}
+    <div className="flex flex-col gap-2">
+      <label className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-gray-500 flex items-center gap-1.5">
+        Цена
+        {currency && <span className="font-normal normal-case text-gray-400"> ({currency})</span>}
       </label>
       <div className="flex items-center gap-2">
         <input
           key={`min-${currentMinPrice}`}
           type="number"
-          className="form-input w-full py-2 px-2 border-gray-200 rounded-md text-[0.85rem] focus:border-brand focus:ring-0"
+          className="form-input w-full py-2 px-2.5 border-[1.5px] border-gray-200 rounded-md text-[13px] focus:border-[var(--color-brand-pink)] focus:ring-0"
           placeholder={String(min)}
           defaultValue={currentMinPrice}
           onBlur={(e) => onUpdateParam('minPrice', e.target.value)}
@@ -249,11 +263,11 @@ function FilterPriceRangeGroup({filter, onUpdateParam, currentMinPrice, currentM
           min={min}
           max={max}
         />
-        <span className="text-gray-300 shrink-0">&mdash;</span>
+        <span className="text-gray-300 shrink-0">—</span>
         <input
           key={`max-${currentMaxPrice}`}
           type="number"
-          className="form-input w-full py-2 px-2 border-gray-200 rounded-md text-[0.85rem] focus:border-brand focus:ring-0"
+          className="form-input w-full py-2 px-2.5 border-[1.5px] border-gray-200 rounded-md text-[13px] focus:border-[var(--color-brand-pink)] focus:ring-0"
           placeholder={String(max)}
           defaultValue={currentMaxPrice}
           onBlur={(e) => onUpdateParam('maxPrice', e.target.value)}
@@ -272,13 +286,13 @@ function FilterRangeGroup({filter, onUpdateParam}: {filter: Filter; onUpdatePara
   const step = filter.rangeStep ?? 1;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">{filter.label}</label>
+    <div className="flex flex-col gap-2">
+      <label className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-gray-500 flex items-center gap-1.5">{filter.label}</label>
       <div className="flex items-center gap-2">
         <span className="text-xs text-gray-500 shrink-0 min-w-8 text-center">{min}</span>
         <input
           type="range"
-          className="form-range flex-1 accent-brand"
+          className="form-range flex-1 accent-[var(--color-brand-pink)]"
           min={min}
           max={max}
           step={step}
@@ -302,17 +316,26 @@ function FilterBooleanGroup({filter, searchParams, onToggle}: {filter: Filter; s
 
   if (!trueValue) return null;
 
+  // Translate built-in boolean filter labels to BG
+  const labelMap: Record<string, string> = {
+    'On Sale': 'Промоция',
+    'New': 'Ново',
+    'Featured': 'Препоръчано',
+    'Available': 'В наличност',
+  };
+  const label = labelMap[filter.label] || filter.label;
+
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="flex items-center gap-1.5 text-[0.85rem] cursor-pointer py-0.5">
+      <label className="flex items-center gap-2 text-[13px] cursor-pointer py-1">
         <input
           type="checkbox"
-          className="form-checkbox rounded border-gray-300 text-brand focus:ring-brand shrink-0"
+          className="form-checkbox size-3.5 rounded border-gray-300 text-[var(--color-brand-pink)] focus:ring-[var(--color-brand-pink)] focus:ring-offset-0 shrink-0"
           checked={isFilterActive(searchParams, trueValue.input)}
           onChange={() => onToggle(trueValue.input)}
         />
-        <span className="flex-1 text-dark">{filter.label}</span>
-        <span className="text-xs text-gray-400 shrink-0">({trueValue.count})</span>
+        <span className="flex-1 text-[var(--color-ink)] font-medium">{label}</span>
+        <span className="text-xs text-gray-400 shrink-0">{trueValue.count}</span>
       </label>
     </div>
   );

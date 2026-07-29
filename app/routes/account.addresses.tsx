@@ -1,5 +1,5 @@
 import {Outlet, useOutletContext} from 'react-router';
-import type {Customer} from '@cloudcart/nitrogen';
+import type {Customer} from '@cloudcart/nitro';
 
 export default function AddressesLayout() {
   const context = useOutletContext<{customer: Customer}>();

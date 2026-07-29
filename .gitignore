@@ -6,3 +6,19 @@ build
 *.local
 .DS_Store
 .cloudcart/
+
+# Claude tooling — local dev assistant directories, never published
+.claude/
+.superpowers/
+
+# Stray screenshots / pasted artifacts that landed at repo root.
+# Keep real images in public/images/<group>/, not at the project root.
+/*.png
+/*.jpg
+/*.jpeg
+/*.gif
+# (Re-allow logo + favicon at root since those legitimately belong there.)
+!/logo.svg
+!/favicon.ico
+__pycache__/
+*.pyc

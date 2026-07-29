@@ -1,4 +1,4 @@
-import type {CartData} from '@cloudcart/nitrogen';
+import type {CartData} from '@cloudcart/nitro';
 import {CartLineItem} from './CartLineItem';
 import {useAside} from './Aside';
 import {ShoppingBagIcon} from '@heroicons/react/24/outline';
@@ -23,7 +23,7 @@ export function CartMain({cart, layout}: CartMainProps) {
         {layout === 'aside' ? (
           <button onClick={close} className="mt-2 bg-transparent border border-gray-200 py-2 px-6 rounded-lg text-[0.85rem] cursor-pointer font-sans hover:border-dark transition-[border-color] duration-150">Continue Shopping</button>
         ) : (
-          <a href="/products" className="text-brand font-semibold">Continue Shopping</a>
+          <a href="/category/all-products" className="text-brand font-semibold">Continue Shopping</a>
         )}
       </div>
     );

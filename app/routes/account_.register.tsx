@@ -1,9 +1,9 @@
 import {Form, Link, redirect, useActionData, useNavigation} from 'react-router';
 import type {Route} from './+types/account_.register';
 import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
+import {getSeoMeta} from '@cloudcart/nitro';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Create account | Nitrogen'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Create account | Bactology'});
 
 type ActionData = {error: string; values?: Record<string, string>};
 

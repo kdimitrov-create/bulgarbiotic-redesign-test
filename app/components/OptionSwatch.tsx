@@ -1,5 +1,5 @@
 import {Link} from 'react-router';
-import type {VariantOption} from '@cloudcart/nitrogen-react';
+import type {VariantOption} from '@cloudcart/nitro-react';
 
 interface OptionSwatchProps {
   option: VariantOption;

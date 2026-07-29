@@ -1,26 +1,26 @@
-# Nitrogen Starter
+# Nitro Starter
 
-A headless commerce storefront built with [Nitrogen](https://github.com/cloudcart/nitrogen) — CloudCart's headless commerce framework powered by [React Router](https://reactrouter.com/).
+A headless commerce storefront built with [Nitro](https://github.com/cloudcart/nitro) — CloudCart's headless commerce framework powered by [React Router](https://reactrouter.com/).
 
 ## Quick Start
 
 ```bash
 npm install
-cloudcart nitrogen dev
+cloudcart nitro dev
 ```
 
 ## Connecting to a CloudCart Store
 
 ```bash
-cloudcart nitrogen link
-cloudcart nitrogen env pull
-cloudcart nitrogen dev
+cloudcart nitro link
+cloudcart nitro env pull
+cloudcart nitro dev
 ```
 
 ## Deploying to Nova
 
 ```bash
-cloudcart nitrogen deploy
+cloudcart nitro deploy
 ```
 
 ## Routes
@@ -47,8 +47,8 @@ cloudcart nitrogen deploy
 ## Stack
 
 - [React Router v7](https://reactrouter.com/) — Framework
-- [@cloudcart/nitrogen](https://www.npmjs.com/package/@cloudcart/nitrogen) — Commerce toolkit
-- [@cloudcart/nitrogen-react](https://www.npmjs.com/package/@cloudcart/nitrogen-react) — UI components & hooks
+- [@cloudcart/nitro](https://www.npmjs.com/package/@cloudcart/nitro) — Commerce toolkit
+- [@cloudcart/nitro-react](https://www.npmjs.com/package/@cloudcart/nitro-react) — UI components & hooks
 - [Vite](https://vitejs.dev/) — Build tool
 - [TypeScript](https://www.typescriptlang.org/) — Language
 

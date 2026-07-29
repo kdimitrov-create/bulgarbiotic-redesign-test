@@ -1,11 +1,11 @@
 import {useLoaderData, redirect, useFetchers, data as routeData} from 'react-router';
 import type {Route} from './+types/cart';
 import {getContext} from '~/lib/context';
-import type {CartData} from '@cloudcart/nitrogen';
+import type {CartData} from '@cloudcart/nitro';
 import {CartMain} from '~/components/CartMain';
 import {CartSummary} from '~/components/CartSummary';
 
-export const meta: Route.MetaFunction = () => [{title: 'Nitrogen | Cart'}];
+export const meta: Route.MetaFunction = () => [{title: 'Cart | Bactology'}];
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);

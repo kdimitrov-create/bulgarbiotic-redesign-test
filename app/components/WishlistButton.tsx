@@ -58,12 +58,12 @@ export function WishlistButton({
       onClick={handleClick}
       disabled={fetcher.state === 'submitting'}
       aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
-      className={`flex items-center justify-center ${sizeClasses} bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:bg-white transition-all disabled:opacity-60 ${className}`}
+      className={`flex items-center justify-center ${sizeClasses} bg-white rounded-full shadow-md ring-1 ring-black/5 hover:bg-white hover:scale-105 transition-all disabled:opacity-60 ${className}`}
     >
       {inWishlist ? (
-        <HeartSolid className={`${iconSize} text-red-500`} />
+        <HeartSolid className={`${iconSize} text-[var(--color-brand-pink)]`} />
       ) : (
-        <HeartIcon className={`${iconSize} text-gray-600`} />
+        <HeartIcon className={`${iconSize} text-[var(--color-brand-pink)]`} strokeWidth={2} />
       )}
     </button>
   );

@@ -62,15 +62,20 @@ export function Aside({
       className={`fixed inset-0 bg-black/30 z-[100] transition-[opacity,visibility] duration-300 ${expanded ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
       role="dialog"
     >
-      <button className="absolute inset-0 bg-transparent border-none w-[calc(100%-400px)] cursor-default" onClick={close} />
-      <aside className={`fixed top-0 right-0 w-[min(400px,100vw)] h-screen bg-light shadow-[-4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${expanded ? 'translate-x-0' : 'translate-x-full'}`}>
+      <button
+        className="absolute inset-0 bg-transparent border-none cursor-default hidden md:block md:w-[calc(100%-440px)]"
+        onClick={close}
+        aria-label="Затвори"
+      />
+      {/* Drawer: full-width on mobile (< 720px), 440px sidebar on desktop */}
+      <aside className={`fixed top-0 right-0 w-full md:w-[440px] h-screen bg-light shadow-[-4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${expanded ? 'translate-x-0' : 'translate-x-full'}`}>
         <header className="flex items-center justify-between px-5 h-16 border-b border-gray-200 shrink-0">
           <h3 className="text-[0.85rem] font-bold tracking-widest">{heading}</h3>
           <button
             type="button"
             onClick={close}
-            className="rounded-md p-1 text-gray-400 hover:text-dark transition-colors duration-150"
-            aria-label="Close"
+            className="rounded-md p-2 -mr-2 text-gray-400 hover:text-dark transition-colors duration-150 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Затвори"
           >
             <XMarkIcon className="size-6" />
           </button>

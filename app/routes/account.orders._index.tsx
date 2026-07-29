@@ -1,11 +1,11 @@
 import {Link, useLoaderData} from 'react-router';
 import type {Route} from './+types/account.orders._index';
 import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
-import {Money} from '@cloudcart/nitrogen-react';
+import {getSeoMeta} from '@cloudcart/nitro';
+import {Money} from '@cloudcart/nitro-react';
 import {ShoppingBagIcon, ChevronRightIcon} from '@heroicons/react/24/outline';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Orders | Nitrogen'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Orders | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);

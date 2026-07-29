@@ -1,0 +1,422 @@
+import {useLoaderData, data, Link} from 'react-router';
+import type {Route} from './+types/product.$handle';
+import {getContext} from '~/lib/context';
+import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
+import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
+import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
+import {ProductForm} from '~/components/ProductForm';
+import {ProductImageGallery} from '~/components/ProductImageGallery';
+import {Breadcrumbs} from '~/components/Breadcrumbs';
+import {StarRating} from '~/components/StarRating';
+import {WishlistButton} from '~/components/WishlistButton';
+import {ReviewList} from '~/components/ReviewList';
+import {CertificationsStrip} from '~/components/CertificationsStrip';
+import {ProductTrustRow} from '~/components/ProductTrustRow';
+import {ProductSubscription} from '~/components/ProductSubscription';
+import {ProductTabs} from '~/components/ProductTabs';
+import {MobileStickyCart} from '~/components/MobileStickyCart';
+import {PdpAwardBadge} from '~/components/pdp/PdpAwardBadge';
+import {ProductStats} from '~/components/pdp/ProductStats';
+import {UsageSteps} from '~/components/pdp/UsageSteps';
+import {SocialProofBlock} from '~/components/pdp/SocialProofBlock';
+import {MythBuster} from '~/components/pdp/MythBuster';
+import {ComparisonTable} from '~/components/pdp/ComparisonTable';
+import {ProductVideo} from '~/components/pdp/ProductVideo';
+import {SectionAnchorNav} from '~/components/pdp/SectionAnchorNav';
+import {ProductFormSwitcher} from '~/components/pdp/ProductFormSwitcher';
+import {ProductBenefits} from '~/components/pdp/ProductBenefits';
+import {parseProductDescription} from '~/lib/parse-product-description';
+import {getProductComparison} from '~/lib/pdp-comparison';
+import {ProductFaq} from '~/components/pdp/ProductFaq';
+import {ProductDescription} from '~/components/pdp/ProductDescription';
+
+const EUR_TO_BGN = 1.95583;
+
+export const meta: Route.MetaFunction = ({data: d}) => {
+  const product = d?.product;
+  if (!product) return getSeoMeta({title: 'Продукт | Bactology'});
+
+  const url = `/product/${product.handle}`;
+  return [
+    ...getSeoMeta({
+      title: product.seo?.title || `${product.title} | Bactology`,
+      description: product.seo?.description || product.description,
+      type: 'product',
+      ...(product.featuredImage
+        ? {image: {url: product.featuredImage.url, width: product.featuredImage.width, height: product.featuredImage.height}}
+        : {}),
+    }),
+    {'script:ld+json': generateProductJsonLd(product, url)},
+  ];
+};
+
+export async function loader({params, context, request}: Route.LoaderArgs) {
+  const ctx = await getContext(context, request);
+  const productRaw = await ctx.storefront.getProduct(params.handle);
+  if (!productRaw) throw data('Продуктът не е намерен', {status: 404});
+
+  // Swap in AI-enhanced images for known SKUs (real CloudCart catalog data
+  // is never mutated — only URLs are remapped). See app/lib/product-images.ts.
+  const product = enhanceProductImages(productRaw)!;
+  const linkedRaw = (productRaw as any).linkedProducts?.nodes ?? [];
+
+  return {
+    product,
+    linkedProducts: enhanceProducts(linkedRaw),
+    collections: (productRaw as any).collections?.nodes ?? [],
+  };
+}
+
+export default function ProductPage() {
+  const {product, linkedProducts, collections} = useLoaderData<typeof loader>();
+  const firstVariant = product.variants.nodes[0];
+  const {selectedVariant} = useOptimisticVariant(product, firstVariant);
+  const variant = selectedVariant ?? firstVariant;
+
+  // Compute basePriceEur for subscription widget
+  const priceAmount = parseFloat(variant?.price?.amount ?? '0');
+  const priceCurrency = (variant?.price?.currencyCode ?? 'EUR') as 'EUR' | 'BGN';
+  const basePriceEur = priceCurrency === 'EUR' ? priceAmount : priceAmount / EUR_TO_BGN;
+
+  // Key benefits extracted from the CMS description — rendered high on the page
+  // (client: "Ключови ползи" raised up as focus, before scrolling past the hero).
+  const keyBenefits = product.descriptionHtml
+    ? parseProductDescription(product.descriptionHtml).benefits
+    : [];
+
+  return (
+    <div className="max-w-[1380px] mx-auto px-5 md:px-9 py-6 md:py-10">
+      <ProductBreadcrumbs product={product} collections={collections} />
+
+      {/* Above-the-fold buy box.
+       *
+       * Both columns stick to the top on desktop — the gallery stays in view
+       * for visual orientation, AND the buy-box (with Add to Cart) stays
+       * tappable so the user never has to scroll back up to purchase.
+       * `items-start` is critical: without it the columns stretch to match
+       * heights and `position: sticky` becomes a no-op. */}
+      <div className="grid items-start gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16 mt-2">
+        <ProductMedia product={product} variant={variant} />
+        <div className="md:sticky md:top-[calc(4rem+1.5rem)] self-start">
+          <ProductDetails product={product} variant={variant} basePriceEur={basePriceEur} />
+        </div>
+      </div>
+
+      {/* Key benefits raised up (client) — focus band right under the hero. */}
+      {keyBenefits.length >= 3 && <ProductBenefits benefits={keyBenefits} />}
+
+      {/* Quality certification stickers — moved UP here (client: "стикерите за
+          качество над описанието"). Was previously rendered low on the page. */}
+      <CertificationsStrip />
+
+      {/* Sticky jump-to-section nav (Slice 3) */}
+      <SectionAnchorNav />
+
+      {/* Product description at the top (client reorder: "описанието най-горе") —
+          extracted from the old tabs; still collapses with "прочети повече". */}
+      <ProductDescription
+        handle={product.handle}
+        descriptionHtml={product.descriptionHtml}
+        heroImageUrl={product.featuredImage?.url}
+        heroTitle={product.title}
+      />
+
+      {/* Long-form storytelling sections (NL Beauty-style scroll) */}
+      <section id="video">
+        <ProductVideo />
+      </section>
+
+      <section id="stats">
+        <ProductStats />
+      </section>
+
+      <section id="usage">
+        <UsageSteps />
+      </section>
+
+      <MythBuster />
+
+      <section id="compare">
+        {/* Client (5a): "Защо хората избират Bactology" unique per product. */}
+        <ComparisonTable {...getProductComparison(product.handle, product.title)} />
+      </section>
+
+      {/* Tabbed deep details — Описание / Употреба / Спец. / Доставка / ЧЗВ */}
+      <section id="tabs" className="bb-pdp-tabs-wrap">
+        <ProductTabs
+          descriptionHtml={product.descriptionHtml}
+          properties={(product as any).properties ?? []}
+          files={(product as any).files?.nodes ?? []}
+          /* Editorial hero at top of Описание — reuses the product's
+             AI-enhanced lifestyle photo (mapped in product-images.ts).
+             Falls back to no hero if the product has no featuredImage. */
+          heroImageUrl={product.featuredImage?.url}
+          heroTitle={product.title}
+        />
+      </section>
+
+      {/* "В какви форми се предлагат" cross-form switcher — contextualized
+          to the current product (highlights its form, links to the others) */}
+      <ProductFormSwitcher
+        productHandle={product.handle}
+        productTitle={product.title}
+      />
+
+      {/* (Certifications strip moved up — now renders right after Key benefits.) */}
+
+      {/* Big social-proof block (Slice 1) — late in scroll, final push */}
+      <SocialProofBlock />
+
+      {/* FAQ accordion near the bottom (client 5c reorder) — extracted from the
+          old tabs so it behaves the same on desktop & mobile. */}
+      <ProductFaq />
+
+      {/* Real customer reviews with verified badges (Slice 2 upgrade) */}
+      <section id="reviews">
+        {(product as any).reviewSummary && (
+          <ReviewList
+            reviews={(product as any).reviews?.nodes ?? []}
+            summary={(product as any).reviewSummary}
+            totalCount={(product as any).reviews?.totalCount ?? (product as any).reviewSummary?.totalCount ?? 0}
+          />
+        )}
+      </section>
+
+      {linkedProducts.length > 0 && (
+        <LinkedProducts products={linkedProducts} />
+      )}
+
+      {/* Mobile sticky add-to-cart appears once main CTA scrolls out of view */}
+      {variant && variant.id && (
+        <MobileStickyCart product={product} variant={variant} />
+      )}
+    </div>
+  );
+}
+
+/* --- Product Media (Left Column) --- */
+
+function ProductMedia({product, variant}: {product: any; variant: any}) {
+  const isOnSale = variant?.compareAtPrice &&
+    parseFloat(variant.compareAtPrice.amount) > parseFloat(variant.price.amount);
+  const labels: Array<{name: string; color?: string; textColor?: string}> = product.labels ?? [];
+  const discountPct =
+    isOnSale && variant?.compareAtPrice
+      ? Math.round((1 - parseFloat(variant.price.amount) / parseFloat(variant.compareAtPrice.amount)) * 100)
+      : 0;
+
+  return (
+    <div className="relative">
+      <div className="relative md:sticky md:top-[calc(4rem+1.5rem)]">
+        <div className="absolute top-3 right-3 z-[2]">
+          <WishlistButton productId={product.id} size="lg" />
+        </div>
+        <div className="absolute top-3 left-3 z-[2] flex flex-wrap gap-1.5">
+          {product.isNew && (
+            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white">
+              Ново
+            </span>
+          )}
+          {product.isFeatured && (
+            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-amber-500 text-white">
+              Бестселър
+            </span>
+          )}
+          {isOnSale && (
+            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white">
+              {discountPct > 0 ? `−${discountPct}%` : 'Промо'}
+            </span>
+          )}
+          {product.availableForSale === false && (
+            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
+              Изчерпан
+            </span>
+          )}
+          {labels
+            .filter((l) => !['New', 'Featured'].includes(l.name))
+            .map((label) => (
+              <span
+                key={label.name}
+                className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-gray-700 text-white"
+                style={label.color ? {backgroundColor: label.color, color: label.textColor || '#fff'} : undefined}
+              >
+                {label.name}
+              </span>
+            ))}
+        </div>
+        <ProductImageGallery
+          images={product.images?.nodes ?? []}
+          featuredImage={product.featuredImage}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* --- Product Details (Right Column) --- */
+
+function ProductDetails({product, variant, basePriceEur}: {product: any; variant: any; basePriceEur: number}) {
+  const properties: Array<{name: string; values: string[]}> = product.properties ?? [];
+  const files: Array<{id: string; name: string; filename: string; url: string; fileSize: number}> =
+    product.files?.nodes ?? [];
+
+  return (
+    <div className="self-start">
+      {/* Vendor */}
+      {product.vendor && (
+        <Link to={`/products?vendor=${product.vendor}`} className="inline-block text-xs font-semibold uppercase tracking-widest text-gray-400 mb-2 hover:text-[var(--color-brand-pink)] hover:no-underline">
+          {product.vendor}
+        </Link>
+      )}
+
+      {/* Title — large, confident, and balanced. Mobile sits at ~26px
+       * so even long names read as a strong headline (not a label),
+       * desktop scales up to 32px. */}
+      <h1 className="text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
+        {product.title}
+      </h1>
+
+      {/* Rating above-fold */}
+      {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
+        <div className="mt-3 flex items-center gap-2.5">
+          <StarRating
+            rating={product.reviewSummary.averageRating}
+            count={product.reviewSummary.totalCount}
+            size="md"
+          />
+          <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
+            Виж отзивите →
+          </a>
+        </div>
+      )}
+
+      {/* BGolden Awards 2025 — small inline badge for instant authority */}
+      <PdpAwardBadge />
+
+      {/* Price + variants + qty + add-to-cart */}
+      <ProductForm product={product} selectedVariant={variant} />
+
+      {/* Trust pills under CTA — free shipping / 24-48h / 30-day guarantee */}
+      <ProductTrustRow />
+
+      {/* Subscription savings widget — recurring orders -10% */}
+      {basePriceEur > 0 && <ProductSubscription basePriceEur={basePriceEur} />}
+
+      {/* SKU + EAN — meta line, small + muted */}
+      {(variant?.sku || variant?.barcode) && (
+        <div className="mt-5 flex items-center gap-4 text-xs text-gray-400 tracking-wide">
+          {variant?.sku && <span>Код: <span className="text-gray-600 font-medium">{variant.sku}</span></span>}
+          {variant?.barcode && <span>EAN: <span className="text-gray-600 font-medium">{variant.barcode}</span></span>}
+        </div>
+      )}
+
+      {/* Tags */}
+      {product.tags?.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-5">
+          {product.tags.map((tag: string) => (
+            <Link key={tag} to={`/search?q=${encodeURIComponent(tag)}`} className="py-1 px-2.5 bg-gray-100 rounded-full text-xs text-gray-600 transition-all duration-150 hover:bg-gray-200 hover:text-[var(--color-ink)] hover:no-underline">
+              {tag}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* ProductTabs and CertificationsStrip now live in the full-width
+          sections below the buy-box (not inside this right column). */}
+    </div>
+  );
+}
+
+/* --- Related Products (Premium re-design) --- */
+
+function LinkedProducts({products}: {products: any[]}) {
+  return (
+    <section className="mt-20 pt-10 border-t border-gray-200">
+      <div className="flex items-end justify-between gap-4 mb-6">
+        <div>
+          <div className="text-[10.5px] font-bold uppercase tracking-[1.4px] text-[var(--color-brand-pink)] mb-2">
+            Подобни продукти
+          </div>
+          <h2 className="text-2xl md:text-[1.75rem] font-bold tracking-tight">
+            Може също да харесаш
+          </h2>
+        </div>
+        <Link
+          to="/category/all-products"
+          prefetch="intent"
+          className="hidden md:inline-flex items-center gap-1.5 text-xs font-bold tracking-wide text-[var(--color-ink)] hover:text-[var(--color-brand-pink)] hover:no-underline"
+        >
+          Виж всички продукти
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" className="size-3.5">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 bb-mobile-slider">
+        {products.map((p: any) => (
+          <Link
+            key={p.id}
+            to={`/product/${p.handle}`}
+            prefetch="intent"
+            className="group block text-inherit transition-transform duration-200 hover:no-underline hover:-translate-y-1"
+          >
+            <div className="relative overflow-hidden rounded-2xl bg-gray-50">
+              {p.featuredImage?.url ? (
+                <Image
+                  data={p.featuredImage}
+                  alt={p.title}
+                  className="aspect-square object-cover w-full transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <img
+                  src="/noimage.svg"
+                  alt={p.title}
+                  className="aspect-square object-cover w-full"
+                />
+              )}
+              {p.availableForSale === false && (
+                <span className="absolute top-2 right-2 py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
+                  Изчерпан
+                </span>
+              )}
+              {p.labels?.length > 0 && (
+                <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                  {p.labels.slice(0, 1).map((label: any) => (
+                    <span
+                      key={label.name}
+                      className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white"
+                      style={label.color ? {backgroundColor: label.color, color: label.textColor || '#fff'} : undefined}
+                    >
+                      {label.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <h4 className="text-sm font-bold mt-3 leading-tight text-[var(--color-ink)] line-clamp-2">
+              {p.title}
+            </h4>
+            <div className="mt-1.5 flex items-baseline gap-2">
+              <span className="text-[15px] font-bold text-[var(--color-ink)]" style={{fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 500}}>
+                <Money data={p.priceRange.minVariantPrice} />
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* --- Breadcrumbs --- */
+
+function ProductBreadcrumbs({product, collections}: {product: any; collections: any[]}) {
+  const items: Array<{title: string; to?: string}> = [];
+  if (collections?.[0]) {
+    items.push({title: collections[0].title, to: `/category/${collections[0].handle}`});
+  }
+  items.push({title: product.title});
+  return <Breadcrumbs items={items} />;
+}

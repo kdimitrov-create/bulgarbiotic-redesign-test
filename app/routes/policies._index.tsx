@@ -1,17 +1,13 @@
-import {useLoaderData, Link} from 'react-router';
+import {redirect} from 'react-router';
 import type {Route} from './+types/policies._index';
-import {getContext} from '~/lib/context';
-import {getSeoMeta} from '@cloudcart/nitrogen';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Nitrogen | Policies'});
-
-export async function loader({context, request}: Route.LoaderArgs) {
-  const ctx = await getContext(context, request);
-  const policies = await ctx.storefront.getPolicies();
-  return {policies};
-}
-
-export default function PoliciesIndex() {
-  const {policies} = useLoaderData<typeof loader>();
-  return <div><h1>Policies</h1><ul>{policies.map((p) => <li key={p.id}><Link to={`/policies/${p.handle}`}>{p.title}</Link></li>)}</ul></div>;
+/**
+ * The CloudCart Shop type doesn't expose `privacyPolicy` / `termsOfService`
+ * the way the Nitro template assumes — `ctx.storefront.getPolicies()` throws
+ * a GraphQL 500 against bulgarbiotic.bg. All our policy content lives at
+ * `/page/<handle>` (privacy-policy, terms-policy, cookie-policy etc.), so
+ * route `/policies` to the closest equivalent index page instead.
+ */
+export async function loader(_: Route.LoaderArgs) {
+  return redirect('/page/terms-policy', 302);
 }
