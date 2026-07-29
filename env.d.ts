@@ -6,6 +6,7 @@ declare module "react-router" {
     env: {
       SESSION_SECRET: string;
       PUBLIC_STORE_DOMAIN?: string;
+      PUBLIC_API_ORIGIN?: string;
       PUBLIC_STOREFRONT_API_TOKEN?: string;
       PRIVATE_STOREFRONT_API_TOKEN?: string;
     };

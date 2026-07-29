@@ -31,7 +31,13 @@ export default {
       request,
       env: {
         SESSION_SECRET: env.SESSION_SECRET ?? 'nitro-dev-secret',
-        PUBLIC_STORE_DOMAIN: env.PUBLIC_STORE_DOMAIN,
+        // Storefront API calls MUST go to the platform's service origin, never to
+        // PUBLIC_STORE_DOMAIN. Once a custom domain is routed to this storefront,
+        // PUBLIC_STORE_DOMAIN becomes the domain THIS worker serves — calling it
+        // makes the worker request itself, which returns HTML instead of JSON and
+        // 500s every data route. Nova supplies PUBLIC_API_ORIGIN for exactly this;
+        // the fallback keeps local dev (plain .env) working.
+        PUBLIC_STORE_DOMAIN: env.PUBLIC_API_ORIGIN ?? env.PUBLIC_STORE_DOMAIN,
         PUBLIC_STOREFRONT_API_TOKEN: env.PUBLIC_STOREFRONT_API_TOKEN,
         PRIVATE_STOREFRONT_API_TOKEN: env.PRIVATE_STOREFRONT_API_TOKEN,
       },
