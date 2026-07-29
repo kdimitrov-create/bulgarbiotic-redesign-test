@@ -1,0 +1,137 @@
+#! nova_storefront_id: 111
+# Don't change the line above!
+
+name: Deploy to Nova
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check if Nitrogen project
+        id: check
+        run: |
+          if [ ! -f "package.json" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          fi
+
+      - uses: actions/setup-node@v5
+        if: steps.check.outputs.skip != 'true'
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: steps.check.outputs.skip != 'true'
+        run: npm ci
+
+      - name: Build
+        if: steps.check.outputs.skip != 'true'
+        run: npx react-router build
+
+      - name: Deploy to Nova
+        if: steps.check.outputs.skip != 'true'
+        env:
+          NOVA_DEPLOY_URL: ${{ vars.NOVA_DEPLOY_URL }}
+          NOVA_DEPLOY_TOKEN: ${{ secrets.NOVA_DEPLOY_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # 1. Manifest of build/client: path -> { sha256 (first 32 hex), size }
+          node -e '
+            const fs = require("fs"), path = require("path"), crypto = require("crypto");
+            const root = "build/client", manifest = {};
+            (function walk(dir) {
+              for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+                const p = path.join(dir, e.name);
+                if (e.isDirectory()) { walk(p); continue; }
+                const buf = fs.readFileSync(p);
+                const hash = crypto.createHash("sha256").update(buf).digest("hex").slice(0, 32);
+                manifest["/" + path.relative(root, p).split(path.sep).join("/")] = { hash, size: buf.length };
+              }
+            })(root);
+            fs.writeFileSync("manifest.json", JSON.stringify({ manifest, environment: "production" }));
+          '
+
+          # 2. Open an upload session — cc-builder talks to Cloudflare and returns
+          #    only the asset paths that still need uploading (hash dedup).
+          echo "POST $NOVA_DEPLOY_URL/deploy/assets-session"
+          SESSION_HTTP=$(curl -s -o session.json -w "%{http_code}" -X POST "$NOVA_DEPLOY_URL/deploy/assets-session" \
+            -H "X-Nova-Deploy-Token: $NOVA_DEPLOY_TOKEN" \
+            -H "User-Agent: CloudCart-Nova-Deploy/1.0" \
+            -H "Content-Type: application/json" \
+            --data @manifest.json)
+          if [ "$SESSION_HTTP" -ge 400 ] || [ "$SESSION_HTTP" = "000" ]; then
+            echo "::error::assets-session failed (HTTP $SESSION_HTTP)"
+            cat session.json 2>/dev/null; echo
+            exit 1
+          fi
+          # 3. Upload the missing files DIRECTLY to Cloudflare (bytes never pass
+          #    through cc-builder, so any build size scales), one bucket per
+          #    request, with the short-lived upload JWT. Writes the completion
+          #    token to assets_jwt.txt.
+          node -e '
+            const fs = require("fs");
+            (async () => {
+              const {manifest} = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+              const s = JSON.parse(fs.readFileSync("session.json", "utf8")).data;
+              const byHash = {};
+              for (const [p, m] of Object.entries(manifest)) byHash[m.hash] = p;
+              const types = {js:"application/javascript",mjs:"application/javascript",css:"text/css",svg:"image/svg+xml",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",webp:"image/webp",gif:"image/gif",ico:"image/x-icon",woff2:"font/woff2",woff:"font/woff",ttf:"font/ttf",otf:"font/otf",json:"application/json",map:"application/json",html:"text/html",txt:"text/plain",xml:"application/xml"};
+              const ct = (p) => types[p.split(".").pop().toLowerCase()] || "application/octet-stream";
+              let jwt = s.upload_jwt;
+              for (const bucket of (s.buckets || [])) {
+                const form = new FormData();
+                for (const hash of bucket) {
+                  const p = byHash[hash];
+                  if (!p) continue;
+                  const b64 = fs.readFileSync("build/client" + p).toString("base64");
+                  form.append(hash, new Blob([b64], {type: ct(p)}), hash);
+                }
+                const r = await fetch("https://api.cloudflare.com/client/v4/accounts/" + s.account_id + "/workers/assets/upload?base64=true", {
+                  method: "POST", headers: {Authorization: "Bearer " + s.upload_jwt}, body: form,
+                });
+                const j = await r.json();
+                if (!r.ok) { console.error("asset upload failed: " + JSON.stringify(j.errors || j)); process.exit(1); }
+                if (j.result && j.result.jwt) jwt = j.result.jwt;
+              }
+              fs.writeFileSync("assets_jwt.txt", jwt);
+              console.log("Uploaded missing assets to Cloudflare.");
+            })().catch((e) => { console.error(e); process.exit(1); });
+          '
+
+          # 4. Deploy: worker bundle + the assets completion JWT.
+          HTTP=$(curl -s -o resp.json -w "%{http_code}" -X POST "$NOVA_DEPLOY_URL/deploy" \
+            -H "X-Nova-Deploy-Token: $NOVA_DEPLOY_TOKEN" \
+            -H "User-Agent: CloudCart-Nova-Deploy/1.0" \
+            -F "worker=@build/server/index.js;type=application/javascript+module" \
+            -F "environment=production" \
+            -F "commit_sha=${{ github.sha }}" \
+            -F "commit_message=${{ github.event.head_commit.message }}" \
+            -F "branch=${{ github.ref_name }}" \
+            -F "assets_jwt=<assets_jwt.txt")
+          cat resp.json; echo
+          if [ "$HTTP" -ge 400 ]; then
+            echo "::error::Nova deploy failed with HTTP $HTTP"
+            exit 1
+          fi
+          echo "Deployed to Nova"
+
+      - name: Report failure
+        if: failure() && steps.check.outputs.skip != 'true'
+        run: |
+          curl -s -X POST "${{ vars.NOVA_DEPLOY_URL }}/deploy/report" \
+            -H "X-Nova-Deploy-Token: ${{ secrets.NOVA_DEPLOY_TOKEN }}" \
+            -H "User-Agent: CloudCart-Nova-Deploy/1.0" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"failed\",\"commit_sha\":\"${{ github.sha }}\",\"branch\":\"${{ github.ref_name }}\",\"environment\":\"production\"}" || true
