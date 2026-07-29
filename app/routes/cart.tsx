@@ -2,10 +2,9 @@ import {useLoaderData, redirect, useFetchers, data as routeData} from 'react-rou
 import type {Route} from './+types/cart';
 import {getContext} from '~/lib/context';
 import type {CartData} from '@cloudcart/nitro';
-import {CartMain} from '~/components/CartMain';
-import {CartSummary} from '~/components/CartSummary';
+import {CartPage as CartPageView} from '~/components/CartPage';
 
-export const meta: Route.MetaFunction = () => [{title: 'Cart | Bactology'}];
+export const meta: Route.MetaFunction = () => [{title: 'Кошница | Bactology'}];
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -70,20 +69,16 @@ export default function CartPage() {
     .flatMap((f) => f.data.errors as Array<{message: string}>);
 
   return (
-    <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold tracking-tight mb-5">Cart</h1>
+    <>
       {cartErrors.length > 0 && <CartErrors errors={cartErrors} />}
-      <CartMain cart={cart} layout="page" />
-      {cart && cart.totalQuantity > 0 && (
-        <CartSummary cart={cart} layout="page" />
-      )}
-    </div>
+      <CartPageView cart={cart} />
+    </>
   );
 }
 
 function CartErrors({errors}: {errors: Array<{message: string}>}) {
   return (
-    <div className="bg-red-50 border border-red-200 rounded-lg py-3 px-4 mb-4 text-red-600 text-[0.85rem]">
+    <div className="bb-cart-errors">
       {errors.map((error, i) => (
         <p key={i}>{error.message}</p>
       ))}

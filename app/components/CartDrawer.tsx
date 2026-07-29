@@ -6,7 +6,7 @@ import {getEnhancedFeatured} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {bestDiscountFor, bestDiscountForHandle} from '~/lib/active-discounts';
 
-const EUR_TO_BGN = 1.95583;
+export const EUR_TO_BGN = 1.95583;
 // Free-shipping target = the merchant's BumpCart `totalCartAmount` setting
 // (51 € on bulgarbiotic.bg as of 2026-05-21). This sits between the
 // shipping providers' real thresholds — Спиди v2 starts free at ≥50 €,
@@ -15,15 +15,15 @@ const EUR_TO_BGN = 1.95583;
 // (CartDrawer progress + CartUpsell logic) keeps the message consistent.
 // To change: edit `app/lib/bump-cart-config.ts` (see file header for the
 // CloudCart Admin API source query).
-const FREE_SHIPPING_THRESHOLD_EUR = BUMP_CART_CONFIG.totalCartAmount;
+export const FREE_SHIPPING_THRESHOLD_EUR = BUMP_CART_CONFIG.totalCartAmount;
 
-const fmtEur = (amount: number) =>
+export const fmtEur = (amount: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount) + ' €';
-const fmtBgn = (amount: number) =>
+export const fmtBgn = (amount: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount) + ' лв';
 
 /** Convert any money object {amount, currencyCode} into both EUR + BGN. */
-function bothCurrencies(money: {amount: string; currencyCode?: string} | null | undefined) {
+export function bothCurrencies(money: {amount: string; currencyCode?: string} | null | undefined) {
   if (!money) return {eur: 0, bgn: 0};
   const amount = parseFloat(money.amount);
   if (!isFinite(amount)) return {eur: 0, bgn: 0};
@@ -232,7 +232,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
  *   Payment (active): cod (Наложен платеж) · fibank (Visa / MC via bank)
  *   Shipping (active): econt · speedy (dpdbulgaria) · boxnow · sameday
  */
-function CartTrustStrip() {
+export function CartTrustStrip() {
   return (
     <div className="bb-cd-trust" aria-label="Начини на плащане и доставка">
       {/* Single compact row — pay icons + courier badges + SSL lock.
