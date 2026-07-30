@@ -206,6 +206,7 @@ export default function Homepage() {
       <Marquee />
       <FeaturedProducts products={featuredProducts} />
       <Doverie />
+      <DoctorsSection />
       <BundleFeature product={familyPack} />
       <ProductForms />
       <CapsuleScience />
@@ -213,7 +214,6 @@ export default function Homepage() {
       <ProbioticFinder />
       <Founder />
       <Reviews reviews={homeReviews} />
-      <DoctorsSection />
       <Award />
       <PressStrip />
       <BrandStory />
