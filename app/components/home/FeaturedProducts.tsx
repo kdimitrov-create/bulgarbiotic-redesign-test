@@ -471,8 +471,12 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
         .bb-pcard-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
         .bb-pcard-pricewrap { display: flex; flex-direction: column; gap: 3px; }
         .bb-pcard-price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        /* Match the category listing / PDP price: elegant serif, weight 600
+           (client request — same font as the product page & product listing). */
         .bb-pcard-price {
-          font-size: 22px; font-weight: 800; letter-spacing: -0.5px; color: var(--color-ink);
+          font-family: var(--font-serif); font-style: normal;
+          font-size: 20px; font-weight: 600; letter-spacing: -0.4px;
+          color: var(--color-ink);
           line-height: 1;
         }
         /* Sale state — turn the live price pink so the savings register fast */
