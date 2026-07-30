@@ -2,6 +2,7 @@ import {Link, useFetcher} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
 import {getEnhancedFeatured} from '~/lib/product-images';
 import {CheckoutButton} from './CheckoutButton';
+import {fallbackToPlaceholder} from './CartDrawer';
 import {bestDiscountForHandle} from '~/lib/active-discounts';
 import {
   EUR_TO_BGN,
@@ -198,7 +199,7 @@ function CartPageRow({line}: {line: any}) {
   return (
     <li className="bb-cart-item">
       <Link to={to} className="bb-cart-item-img" prefetch="intent">
-        <img src={img} alt={m.image?.altText || title} loading="lazy" />
+        <img src={img} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
         {hasDiscount && <span className="bb-cart-item-badge">−{discount.percent}%</span>}
       </Link>
 

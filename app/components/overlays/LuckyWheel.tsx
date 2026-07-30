@@ -321,7 +321,9 @@ export function LuckyWheel() {
                 })}
               </div>
               <div className="lw-hub">
-                <img src="/favicon.ico" alt="" />
+                {/* favicon.svg — the repo ships no .ico, so the old path 404'd
+                    and the hub rendered as a broken image. */}
+                <img src="/favicon.svg" alt="" />
               </div>
             </div>
 

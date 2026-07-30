@@ -23,6 +23,20 @@ export const fmtEur = (amount: number) =>
 export const fmtBgn = (amount: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount) + ' лв';
 
+/**
+ * A product whose image file is missing on the store CDN returns 404, and the
+ * browser then paints the broken-image icon plus the alt text — which is what a
+ * customer saw for the lucky-wheel prize product. The three-tier `img` pick
+ * only guards against a MISSING url, not a dead one, so swap in the placeholder
+ * on the error event too. Guarded so a missing placeholder can't loop.
+ */
+export function fallbackToPlaceholder(e: React.SyntheticEvent<HTMLImageElement>) {
+  const el = e.currentTarget;
+  if (el.dataset.fallbackApplied) return;
+  el.dataset.fallbackApplied = '1';
+  el.src = '/noimage.svg';
+}
+
 /** Convert any money object {amount, currencyCode} into both EUR + BGN. */
 export function bothCurrencies(money: {amount: string; currencyCode?: string} | null | undefined) {
   if (!money) return {eur: 0, bgn: 0};
@@ -317,7 +331,7 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
         className="bb-cd-item-imglink"
         prefetch="intent"
       >
-        <img src={img} alt={m.image?.altText || title} loading="lazy" />
+        <img src={img} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
       </Link>
       <div className="bb-cd-item-info">
         <Link
@@ -621,7 +635,7 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
   return (
     <div className="bb-cd-upsell-card">
       <Link to={`/product/${suggestion.handle}`} className="bb-cd-upsell-img" prefetch="intent">
-        <img src={img} alt={suggestion.title} loading="lazy" />
+        <img src={img} alt={suggestion.title} loading="lazy" onError={fallbackToPlaceholder} />
         {hasDiscount && <span className="bb-cd-upsell-badge">−{discount.percent}%</span>}
       </Link>
       <div className="bb-cd-upsell-info">
