@@ -742,7 +742,8 @@ body::after {
 }
 .bb-cd-item {
   display: grid;
-  grid-template-columns: 72px 1fr auto;
+  /* Client (2026-07): added-product thumbnail enlarged ~30% (72 → 94px). */
+  grid-template-columns: 94px 1fr auto;
   gap: 14px;
   padding: 14px;
   background: white;
@@ -1052,10 +1053,14 @@ body::after {
 .bb-cd-upsell-img {
   display: block;
   position: relative; /* badge anchor */
-  width: 100%;
+  /* Client (2026-07): shrink the BumpCart carousel product image ~30% — a
+     centered rounded thumbnail instead of a full-bleed square. */
+  width: 70%;
+  margin: 12px auto 4px;
   aspect-ratio: 1 / 1;
   background: var(--color-cream-2);
   overflow: hidden;
+  border-radius: 12px;
 }
 .bb-cd-upsell-img img {
   width: 100%; height: 100%;
@@ -2722,7 +2727,9 @@ body {
   min-height: 54px;
 }
 .bb-pdp-add:hover:not(:disabled) {
-  background: #c20d59;
+  /* Client (2026-07): buy button turns green on hover — the same green as the
+     "В наличност" stock text (#15803d). */
+  background: #15803d;
   color: white;
 }
 .bb-pdp-add:active:not(:disabled) { transform: scale(0.985); }
