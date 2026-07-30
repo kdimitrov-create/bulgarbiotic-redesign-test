@@ -25,7 +25,7 @@ export function Footer({shop}: FooterProps) {
               </div>
               <form className="bb-ft-news-input" onSubmit={(e) => e.preventDefault()}>
                 <input type="email" placeholder="имейл адрес" />
-                <button type="submit">Абонирай</button>
+                <button type="submit">Абонирай се</button>
               </form>
             </div>
           </div>
