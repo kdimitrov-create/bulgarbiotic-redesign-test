@@ -8,6 +8,7 @@ import {buildFiltersFromParams, buildSortFromParams} from '~/lib/filters';
 import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
+import {CATEGORY_EXTRA_PRODUCTS} from '~/lib/category-extra-products';
 
 export const meta: Route.MetaFunction = ({data: d}) => {
   const col = d?.collection as any;
@@ -67,11 +68,28 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
 
   if (!result) throw data('Категорията не е намерена', {status: 404});
 
+  // Redesign-only supplement: inject hand-picked extra products into specific
+  // categories without editing the live store's collections. Only on the
+  // unfiltered first page, appended after (and deduped against) the real ones.
+  const extraHandles = CATEGORY_EXTRA_PRODUCTS[params.handle] ?? [];
+  const isFirstPage = !url.searchParams.has('cursor') && !url.searchParams.has('page');
+  let extraNodes: any[] = [];
+  if (extraHandles.length > 0 && isFirstPage && filters.length === 0) {
+    const existing = new Set(((result.products as any).nodes ?? []).map((n: any) => n.handle));
+    const fetched = await Promise.all(
+      extraHandles
+        .filter((h) => !existing.has(h))
+        .map((h) => ctx.storefront.getProduct(h).catch(() => null)),
+    );
+    extraNodes = fetched.filter(Boolean);
+  }
+
   // Apply AI-enhanced lifestyle photos so every product card on listings
   // uses the same brand-consistent imagery as the homepage / sale page.
   const productsWithEnhancement = {
     ...result.products,
-    nodes: enhanceProducts((result.products as any).nodes ?? []),
+    nodes: enhanceProducts([...(((result.products as any).nodes) ?? []), ...extraNodes]),
+    totalCount: ((result.products as any).totalCount ?? 0) + extraNodes.length,
   };
 
   return {

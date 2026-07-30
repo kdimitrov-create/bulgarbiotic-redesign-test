@@ -2652,10 +2652,11 @@ body {
   gap: 12px;
   align-items: stretch;
   margin: 8px 0 4px;
-  /* Client: widen the "Купи" button so its right edge lines up with the middle
-     ("24-48 часа") trust card below. That trust row is 3 cols with an 8px gap,
-     so the 2nd card's right edge sits at calc(66.667% - 2.7px). */
-  width: calc(66.667% - 2.7px);
+  /* Client (2026-07): the "Купи" button's right edge should line up with the
+     full-width elements below (the 3-card trust row and the subscription box),
+     so the whole purchase row spans the full column width. The button (flex:1)
+     then fills everything to the right of the quantity selector. */
+  width: 100%;
   max-width: 100%;
 }
 /* AddToCartButton renders a <form> wrapper that otherwise shrinks to its
