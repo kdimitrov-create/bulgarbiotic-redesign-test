@@ -1,4 +1,4 @@
-import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
+import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useFetchers, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
@@ -56,8 +56,21 @@ export function Layout({children}: {children: React.ReactNode}) {
 
 export default function App() {
   const data = useRouteLoaderData<typeof loader>('root');
+  // Brand name stays ours — the incoming commit reset it to the scaffold
+  // placeholder "Nitro", which the go-live prep had already fixed.
   const shop = data?.shop ?? {name: 'Bulgar Biotic', description: null};
-  const cart = data?.cart ?? Promise.resolve(null);
+
+  // Optimistic cart: after any /cart mutation (add / update / remove) the
+  // fetcher response carries the authoritative updated cart. Prefer it over the
+  // loader cart, which can lag a beat behind (single-fetch cookie timing on the
+  // Worker) — that lag is exactly what flashed the drawer EMPTY right after a
+  // "Купи" click. Falls back to the loader cart on first load / reload.
+  const cartFetchers = useFetchers();
+  const latestCart = cartFetchers
+    .filter((f) => f.formAction === '/cart' && (f.data as any)?.cart)
+    .map((f) => (f.data as any).cart)
+    .pop();
+  const cart = latestCart ? Promise.resolve(latestCart) : (data?.cart ?? Promise.resolve(null));
 
   return (
     <AsideProvider>
