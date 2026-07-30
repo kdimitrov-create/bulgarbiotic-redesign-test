@@ -53,10 +53,6 @@ export function SciencePageContent() {
                 <strong>50 млрд</strong>
                 <span>активни CFU на доза</span>
               </div>
-              <div>
-                <strong>0</strong>
-                <span>аутсорсинг — всичко в БГ</span>
-              </div>
             </div>
           </div>
           <div className="bb-sci-manifesto-vis" aria-hidden="true">
@@ -423,7 +419,7 @@ export function SciencePageContent() {
         .bb-sci-manifesto-p strong { font-weight: 800; color: var(--color-ink); }
         .bb-sci-manifesto-stats {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 14px;
           padding-top: 26px;
           border-top: 1px solid rgba(10, 37, 64, 0.12);
