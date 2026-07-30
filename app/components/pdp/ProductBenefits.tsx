@@ -1,6 +1,8 @@
 interface Props {
   /** Extracted benefit lines from the CMS description (no emoji prefix). */
   benefits: string[];
+  /** Single-column, tighter layout for the narrow buy-box (right) column. */
+  compact?: boolean;
 }
 
 /**
@@ -14,11 +16,11 @@ interface Props {
  * Position: first thing inside the Description tab, before the rest of the
  * RichText description.
  */
-export function ProductBenefits({benefits}: Props) {
+export function ProductBenefits({benefits, compact = false}: Props) {
   if (!benefits || benefits.length < 3) return null;
 
   return (
-    <section className="bb-benefits" aria-label="Ключови ползи">
+    <section className={`bb-benefits${compact ? ' bb-benefits--compact' : ''}`} aria-label="Ключови ползи">
       <header className="bb-benefits-head">
         <span className="bb-benefits-tag">Какво прави продуктът</span>
         <h3>Ключови ползи</h3>
@@ -47,6 +49,11 @@ export function ProductBenefits({benefits}: Props) {
         @media (max-width: 540px) {
           .bb-benefits { padding: 22px 20px; border-radius: 14px; margin-bottom: 28px; }
         }
+        /* Compact variant — single column for the narrow buy-box (right) column. */
+        .bb-benefits--compact { margin: 20px 0 0; padding: 22px 22px 20px; }
+        .bb-benefits--compact .bb-benefits-head { margin-bottom: 14px; padding-bottom: 12px; }
+        .bb-benefits--compact .bb-benefits-head h3 { font-size: 20px; }
+        .bb-benefits--compact .bb-benefits-list { grid-template-columns: 1fr; row-gap: 11px; }
         .bb-benefits-head {
           margin-bottom: 18px;
           padding-bottom: 14px;

@@ -29,6 +29,7 @@ import {parseProductDescription} from '~/lib/parse-product-description';
 import {getProductComparison} from '~/lib/pdp-comparison';
 import {ProductFaq} from '~/components/pdp/ProductFaq';
 import {ProductDescription} from '~/components/pdp/ProductDescription';
+import {Marquee} from '~/components/home/Marquee';
 
 const EUR_TO_BGN = 1.95583;
 
@@ -98,12 +99,14 @@ export default function ProductPage() {
       <div className="grid items-start gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16 mt-2">
         <ProductMedia product={product} variant={variant} />
         <div className="md:sticky md:top-[calc(4rem+1.5rem)] self-start">
-          <ProductDetails product={product} variant={variant} basePriceEur={basePriceEur} />
+          <ProductDetails product={product} variant={variant} basePriceEur={basePriceEur} keyBenefits={keyBenefits} />
         </div>
       </div>
 
-      {/* Key benefits raised up (client) — focus band right under the hero. */}
-      {keyBenefits.length >= 3 && <ProductBenefits benefits={keyBenefits} />}
+      {/* Dynamic USP marquee (client 2026-07): the scrolling USP strip sits
+          between the gallery and the certifications — in the slot the "Ключови
+          ползи" band used to occupy (which moved up into the buy-box column). */}
+      <Marquee />
 
       {/* Quality certification stickers — moved UP here (client: "стикерите за
           качество над описанието"). Was previously rendered low on the page. */}
@@ -120,6 +123,10 @@ export default function ProductPage() {
         heroImageUrl={product.featuredImage?.url}
         heroTitle={product.title}
       />
+
+      {/* FAQ accordion moved up (client 2026-07): now sits directly above the
+          "Как работи пробиотикът" video section. */}
+      <ProductFaq />
 
       {/* Long-form storytelling sections (NL Beauty-style scroll) */}
       <section id="video">
@@ -166,10 +173,6 @@ export default function ProductPage() {
 
       {/* Big social-proof block (Slice 1) — late in scroll, final push */}
       <SocialProofBlock />
-
-      {/* FAQ accordion near the bottom (client 5c reorder) — extracted from the
-          old tabs so it behaves the same on desktop & mobile. */}
-      <ProductFaq />
 
       {/* Real customer reviews with verified badges (Slice 2 upgrade) */}
       <section id="reviews">
@@ -255,7 +258,7 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
 
 /* --- Product Details (Right Column) --- */
 
-function ProductDetails({product, variant, basePriceEur}: {product: any; variant: any; basePriceEur: number}) {
+function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product: any; variant: any; basePriceEur: number; keyBenefits: string[]}) {
   const properties: Array<{name: string; values: string[]}> = product.properties ?? [];
   const files: Array<{id: string; name: string; filename: string; url: string; fileSize: number}> =
     product.files?.nodes ?? [];
@@ -299,7 +302,11 @@ function ProductDetails({product, variant, basePriceEur}: {product: any; variant
       {/* Trust pills under CTA — free shipping / 24-48h / 30-day guarantee */}
       <ProductTrustRow />
 
-      {/* Subscription savings widget — recurring orders -10% */}
+      {/* "Ключови ползи" moved up into the buy-box column (client): fills the
+          slot the (temporarily hidden) subscription widget used to hold. */}
+      {keyBenefits.length >= 3 && <ProductBenefits benefits={keyBenefits} compact />}
+
+      {/* Subscription savings widget — recurring orders -10% (hidden for now) */}
       {basePriceEur > 0 && <ProductSubscription basePriceEur={basePriceEur} />}
 
       {/* SKU + EAN — meta line, small + muted */}
