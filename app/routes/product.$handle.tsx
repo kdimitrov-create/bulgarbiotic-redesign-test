@@ -125,8 +125,8 @@ export default function ProductPage() {
       />
 
       {/* FAQ accordion moved up (client 2026-07): now sits directly above the
-          "Как работи пробиотикът" video section. */}
-      <ProductFaq />
+          "Как работи пробиотикът" video section. Per-product questions. */}
+      <ProductFaq handle={product.handle} />
 
       {/* Long-form storytelling sections (NL Beauty-style scroll) */}
       <section id="video">
