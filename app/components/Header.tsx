@@ -395,6 +395,11 @@ export function Header({shop, menu, cart}: HeaderProps) {
         }
         .bb-nav-link--newsletter::after { display: none; }
         .bb-nav-link--newsletter:hover { background: #c20d59; color: #fff; }
+        /* Keep the CTA pill unchanged (white label on pink) even when its page
+           is active — the generic ".active → pink text" rule would otherwise
+           hide the label on the pink background. Color only, so hover still
+           darkens the background. */
+        .bb-nav-link--newsletter.active { color: #fff; }
 
         .bb-header-actions { display: flex; gap: 14px; align-items: center; justify-content: flex-end; }
         .bb-icon-btn {

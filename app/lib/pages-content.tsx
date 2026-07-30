@@ -154,7 +154,8 @@ export const PAGES_CONTENT: Record<string, () => ReactNode> = {
           </ul>
           <Link
             to="/product/probiotik-za-bremenni-paket"
-            className="!mt-6 inline-flex items-center gap-2 bg-[var(--color-brand-pink)] text-white font-bold px-7 py-3.5 rounded-full no-underline hover:bg-[#c20d59] hover:text-white hover:no-underline transition-all"
+            style={{color: '#fff'}}
+            className="!mt-6 inline-flex items-center gap-2 bg-[var(--color-brand-pink)] font-bold px-7 py-3.5 rounded-full no-underline hover:bg-[#c20d59] hover:no-underline transition-all"
           >
             Купи Пакет Бременност
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="size-3.5">
@@ -251,7 +252,8 @@ export const PAGES_CONTENT: Record<string, () => ReactNode> = {
       <div className="not-prose text-center mt-10">
         <Link
           to="/product/probiotik-za-bremenni-paket"
-          className="inline-flex items-center gap-2 bg-[var(--color-ink)] text-[var(--color-cream-1)] font-bold px-7 py-3.5 rounded-full no-underline hover:bg-[var(--color-brand-pink)] hover:text-white hover:no-underline transition-all"
+          style={{color: 'var(--color-cream-1)'}}
+          className="inline-flex items-center gap-2 bg-[var(--color-ink)] font-bold px-7 py-3.5 rounded-full no-underline hover:bg-[var(--color-brand-pink)] hover:no-underline transition-all"
         >
           Купи Пакет Бременност
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="size-3.5">
