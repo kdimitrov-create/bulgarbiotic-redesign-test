@@ -120,7 +120,6 @@ export function ProductForms() {
               prefetch="intent"
             >
               <div className="bb-form-icon" aria-hidden="true">{f.icon}</div>
-              <div className="bb-form-tag">{f.tagline}</div>
               <h3 className="bb-form-title">{f.title}</h3>
               <p className="bb-form-desc">{f.desc}</p>
               <div className="bb-form-meta">

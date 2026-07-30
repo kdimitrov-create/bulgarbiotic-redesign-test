@@ -230,10 +230,45 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
                     </div>
                   </div>
                   <div className="bb-pcard-body">
-                    {/* Client (т.3): each card shows ONLY the product title +
-                        the "Купи" and "в любими" buttons — category, tagline,
-                        stock, subscription and price/rating were removed. */}
+                    {/* Client (2026-07): home carousel cards carry the SAME info
+                        as the category listing cards — title, rating, price, then
+                        the "Купи" + "в любими" buttons. */}
                     <h3 className="bb-pcard-name">{p.title}</h3>
+
+                    <div className="bb-pcard-bottom">
+                      <div className="bb-pcard-pricewrap">
+                        <div className="bb-pcard-price-row">
+                          <span className={`bb-pcard-price${hasDiscount ? ' bb-pcard-price--sale' : ''}`}>
+                            <Money data={effectivePrice as any} />
+                          </span>
+                          {hasDiscount && effectiveMsrp && (
+                            <span className="bb-pcard-msrp">
+                              <Money data={effectiveMsrp as any} />
+                            </span>
+                          )}
+                        </div>
+                        <div className="bb-pcard-eur">
+                          {hasDiscount && effectiveMsrp && (
+                            <span className="bb-pcard-eur-old">
+                              {eurToBgnLabel(effectiveMsrp as any)}
+                            </span>
+                          )}
+                          {eurToBgnLabel(effectivePrice as any)}
+                        </div>
+                      </div>
+                      {rating && rating.totalCount > 0 ? (
+                        <div className="bb-pcard-rating" title={`${rating.totalCount} ревюта`}>
+                          <span className="bb-stars" aria-hidden>★★★★★</span>
+                          {rating.averageRating.toFixed(1)}
+                        </div>
+                      ) : (
+                        <div className="bb-pcard-rating bb-pcard-rating-soft">
+                          <span className="bb-stars" aria-hidden>★★★★★</span>
+                          <span>нов</span>
+                        </div>
+                      )}
+                    </div>
+
                     {(p as any).variants?.nodes?.[0]?.id && (
                       <CarouselBuyButton merchandiseId={(p as any).variants.nodes[0].id} />
                     )}
