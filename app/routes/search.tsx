@@ -3,45 +3,53 @@ import {useEffect, useRef, useState, useCallback} from 'react';
 import type {Route} from './+types/search';
 import {getContext} from '~/lib/context';
 import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
-import {ProductCard} from '~/components/ProductCard';
-import {ProductFilters} from '~/components/ProductFilters';
-import {Pagination} from '~/components/Pagination';
+import {ListingBody} from './product._index';
 import {MagnifyingGlassIcon, XMarkIcon} from '@heroicons/react/24/outline';
 import {buildFiltersFromParams, buildSortFromParams} from '~/lib/filters';
 import {enhanceProducts} from '~/lib/product-images';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Search | Bactology'});
+// Same banner treatment as the category listings (matches /category/all-products).
+const SEARCH_HERO_BG =
+  'linear-gradient(135deg, rgba(245, 239, 227, 0.92), rgba(253, 238, 243, 0.85)), url(https://bulgarbiotic.bg/cdn/img/logo/4/4.svg?v=1777460513)';
+
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Търсене | Bactology'});
 
 export async function loader({request, context}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const url = new URL(request.url);
   const q = url.searchParams.get('q') ?? '';
 
-  if (!q) return {query: q, products: null};
+  if (!q) {
+    const collections = await ctx.storefront.getCollections(8).catch(() => []);
+    return {query: q, products: null, collections};
+  }
 
   const paginationVariables = getPaginationVariables(request, {pageBy: 12});
   const filters = buildFiltersFromParams(url.searchParams);
   const {sortKey, reverse} = buildSortFromParams(url.searchParams);
 
-  const products = await ctx.storefront.getProductsPaginated({
-    ...paginationVariables,
-    sortKey,
-    reverse,
-    filters,
-    query: q,
-  });
+  const [products, collections] = await Promise.all([
+    ctx.storefront.getProductsPaginated({
+      ...paginationVariables,
+      sortKey,
+      reverse,
+      filters,
+      query: q,
+    }),
+    ctx.storefront.getCollections(8).catch(() => []),
+  ]);
 
-  // Apply AI-enhanced lifestyle photos for visual consistency.
+  // Apply AI-enhanced lifestyle photos for visual consistency with the listings.
   const productsWithEnhancement = {
     ...products,
     nodes: enhanceProducts((products as any).nodes ?? []),
   };
 
-  return {query: q, products: productsWithEnhancement};
+  return {query: q, products: productsWithEnhancement, collections};
 }
 
 export default function SearchPage() {
-  const {query, products} = useLoaderData<typeof loader>();
+  const {query, products, collections} = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const navigation = useNavigation();
@@ -49,33 +57,30 @@ export default function SearchPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const isSearching = navigation.state === 'loading';
 
-  // Input is fully local — never overwritten by URL/loader data
+  // Input is fully local — never overwritten by URL/loader data.
   const [inputValue, setInputValue] = useState(query);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const performSearch = useCallback((value: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.delete('page');
-    params.delete('cursor');
-    params.delete('direction');
-
-    if (value) {
-      params.set('q', value);
-    } else {
-      params.delete('q');
-    }
-    navigate(`/search?${params.toString()}`, {replace: true, preventScrollReset: true});
-  }, [navigate, searchParams]);
+  const performSearch = useCallback(
+    (value: string) => {
+      const params = new URLSearchParams(searchParams);
+      params.delete('page');
+      params.delete('cursor');
+      params.delete('direction');
+      if (value) params.set('q', value);
+      else params.delete('q');
+      navigate(`/search?${params.toString()}`, {replace: true, preventScrollReset: true});
+    },
+    [navigate, searchParams],
+  );
 
   function handleInputChange(value: string) {
     setInputValue(value);
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      performSearch(value);
-    }, 300);
+    debounceRef.current = setTimeout(() => performSearch(value), 300);
   }
 
   function clearSearch() {
@@ -85,97 +90,110 @@ export default function SearchPage() {
   }
 
   const totalCount = (products as any)?.totalCount ?? products?.nodes?.length ?? 0;
-  const hasResults = products?.nodes && products.nodes.length > 0;
+  const hasResults = !!(products?.nodes && products.nodes.length > 0);
 
   return (
-    <div className="w-full">
-      {/* Search Bar */}
-      <div className="mb-8 flex justify-center">
-        <div className="w-full max-w-2xl">
-          <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400 pointer-events-none" />
+    <div className="bb-listing">
+      {/* Hero banner — same look as the category listings */}
+      <header
+        className="bb-listing-hero"
+        style={{backgroundImage: SEARCH_HERO_BG, backgroundSize: 'cover', backgroundPosition: 'center'}}
+      >
+        <div className="bb-listing-hero-text">
+          <span className="bb-listing-hero-tag">Търсене</span>
+          <h1 className="bb-listing-hero-h1">
+            {query ? (
+              <>
+                Резултати за <span className="accent">„{query}"</span>
+              </>
+            ) : (
+              <>
+                Търси в <span className="accent">каталога.</span>
+              </>
+            )}
+          </h1>
+
+          {/* Live search input */}
+          <div className="bb-search-hero-form">
+            <MagnifyingGlassIcon className="bb-search-hero-icon" />
             <input
               ref={inputRef}
               type="text"
               value={inputValue}
               onChange={(e) => handleInputChange(e.target.value)}
-              placeholder="Search products, brands, categories..."
+              placeholder="Търси продукти, категории…"
               autoComplete="off"
-              className="form-input w-full py-3.5 pl-12 pr-10 border-[1.5px] border-gray-200 rounded-xl text-base transition-[border-color,box-shadow] duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20"
+              aria-label="Търсене"
             />
             {inputValue && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-dark transition-colors duration-150 p-1 rounded-full hover:bg-gray-100"
-                aria-label="Clear search"
-              >
+              <button type="button" onClick={clearSearch} aria-label="Изчисти търсенето">
                 <XMarkIcon className="size-5" />
               </button>
             )}
           </div>
-
-          {/* Results count */}
-          {(inputValue || query) && (
-            <div className="flex items-center justify-center gap-2 mt-3 text-sm text-gray-500">
-              {isSearching ? (
-                <span className="flex items-center gap-2">
-                  <span className="size-4 border-2 border-gray-300 border-t-brand rounded-full animate-spin" />
-                  Searching...
-                </span>
-              ) : products ? (
-                <span>
-                  <strong className="text-dark">{totalCount.toLocaleString()}</strong> {totalCount === 1 ? 'result' : 'results'} for <strong className="text-dark">"{query}"</strong>
-                </span>
-              ) : null}
-            </div>
-          )}
         </div>
-      </div>
 
-      {/* Empty state */}
-      {!inputValue && !query && (
-        <div className="text-center py-16 text-gray-400">
-          <MagnifyingGlassIcon className="size-16 mx-auto mb-4 text-gray-200" />
-          <p className="text-lg font-medium text-gray-500">Start typing to search</p>
-          <p className="text-sm mt-1">Search across all products, brands, and categories</p>
+        <div className="bb-listing-hero-count" aria-label={`${totalCount} продукта`}>
+          <span className="bb-listing-hero-count-num">{totalCount}</span>
+          <span className="bb-listing-hero-count-label">
+            {totalCount === 1 ? 'продукт' : 'продукта'}
+          </span>
         </div>
-      )}
+      </header>
 
-      {/* No results */}
-      {query && products && products.nodes.length === 0 && !isSearching && (
-        <div className="text-center py-16 text-gray-400">
-          <MagnifyingGlassIcon className="size-16 mx-auto mb-4 text-gray-200" />
-          <p className="text-lg font-medium text-gray-500">No results found</p>
-          <p className="text-sm mt-1">Try adjusting your search or filters</p>
+      {/* Results (same body as category listings) OR empty states */}
+      {hasResults ? (
+        <ListingBody products={products} collections={collections as any[]} />
+      ) : query && products && !isSearching ? (
+        <div className="bb-listing-empty">
+          <svg className="bb-listing-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+          <h3>Не намерихме продукти за „{query}"</h3>
+          <p>Опитай друга дума или разгледай всички продукти.</p>
         </div>
-      )}
-
-      {/* Results with filters */}
-      {hasResults && (
-        <div className="grid gap-8 md:grid-cols-[220px_1fr] md:gap-10">
-          <aside className="order-2 md:order-1">
-            <ProductFilters filters={(products as any).filters} totalCount={totalCount} />
-          </aside>
-
-          <div className="order-1 md:order-2">
-            <Pagination connection={products}>
-              {({nodes, NextLink, isLoading}) => (
-                <div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-                    {nodes.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                  <NextLink className="flex items-center justify-center w-full py-3 px-6 my-6 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg no-underline transition-[background,color,border-color] duration-150 hover:bg-gray-100 hover:border-gray-400 hover:text-dark hover:no-underline">
-                    {isLoading ? 'Loading...' : 'Load more \u2193'}
-                  </NextLink>
-                </div>
-              )}
-            </Pagination>
-          </div>
+      ) : !query ? (
+        <div className="bb-listing-empty">
+          <svg className="bb-listing-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <h3>Започни да пишеш, за да търсиш</h3>
+          <p>Търси из всички пробиотични продукти на Bactology.</p>
         </div>
-      )}
+      ) : null}
+
+      <style>{`
+        .bb-search-hero-form {
+          display: flex; align-items: center; gap: 8px;
+          margin-top: 18px;
+          max-width: 460px;
+          background: #fff;
+          border: 1.5px solid rgba(10, 37, 64, 0.12);
+          border-radius: 999px;
+          padding: 6px 10px 6px 14px;
+          box-shadow: 0 8px 24px -14px rgba(10, 37, 64, 0.35);
+        }
+        .bb-search-hero-form input {
+          flex: 1;
+          border: 0; outline: 0; background: transparent;
+          font-family: inherit; font-size: 15px;
+          color: var(--color-ink);
+          padding: 8px 2px;
+        }
+        .bb-search-hero-form input::placeholder { color: rgba(10, 37, 64, 0.42); }
+        .bb-search-hero-icon { width: 20px; height: 20px; color: var(--color-brand-pink); flex-shrink: 0; }
+        .bb-search-hero-form button {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 32px; height: 32px; border: 0; cursor: pointer;
+          background: var(--color-cream-2); color: var(--color-ink);
+          border-radius: 999px; flex-shrink: 0;
+          transition: background 0.15s, color 0.15s;
+        }
+        .bb-search-hero-form button:hover { background: var(--color-brand-pink); color: #fff; }
+      `}</style>
     </div>
   );
 }
