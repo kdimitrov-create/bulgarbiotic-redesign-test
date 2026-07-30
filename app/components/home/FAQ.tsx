@@ -104,6 +104,11 @@ const FAQ_ITEMS: QA[] = [
 
 export function FAQ() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
+  const [expanded, setExpanded] = useState(false);
+  // Client: show the first 5 questions (through "…подуване на корема и газове?"),
+  // then a "Виж още" button reveals the rest; "Скрий" collapses them again.
+  const VISIBLE_COUNT = 5;
+  const shown = expanded ? FAQ_ITEMS : FAQ_ITEMS.slice(0, VISIBLE_COUNT);
 
   return (
     <section className="bb-faq">
@@ -127,7 +132,7 @@ export function FAQ() {
         </div>
 
         <div className="bb-faq-list">
-          {FAQ_ITEMS.map((item, i) => {
+          {shown.map((item, i) => {
             const isOpen = openIdx === i;
             return (
               <div key={item.q} className={`bb-faq-item${isOpen ? ' open' : ''}`}>
@@ -151,8 +156,43 @@ export function FAQ() {
               </div>
             );
           })}
+
+          {FAQ_ITEMS.length > VISIBLE_COUNT && (
+            <button
+              type="button"
+              className="bb-faq-toggle"
+              aria-expanded={expanded}
+              onClick={() => {
+                const next = !expanded;
+                setExpanded(next);
+                // When collapsing, close an answer that's about to be hidden.
+                if (!next && openIdx !== null && openIdx >= VISIBLE_COUNT) setOpenIdx(null);
+              }}
+            >
+              {expanded ? 'Скрий' : 'Виж още'}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points={expanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
+
+      <style>{`
+        .bb-faq-toggle {
+          align-self: flex-start;
+          display: inline-flex; align-items: center; gap: 8px;
+          margin-top: 16px;
+          padding: 12px 24px;
+          background: var(--color-brand-pink); color: #fff;
+          border: 0; border-radius: 999px;
+          font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
+          cursor: pointer; transition: background 0.18s, transform 0.12s;
+        }
+        .bb-faq-toggle:hover { background: #c20d59; }
+        .bb-faq-toggle:active { transform: scale(0.98); }
+        .bb-faq-toggle svg { width: 15px; height: 15px; }
+      `}</style>
     </section>
   );
 }
