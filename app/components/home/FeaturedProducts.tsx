@@ -36,7 +36,7 @@ function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
         'Добавям…'
       ) : (
         <>
-          Купи
+          Добави
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M5.5 8h13l-1.2 10.5a1.6 1.6 0 01-1.6 1.5H8.3a1.6 1.6 0 01-1.6-1.5L5.5 8z" />
             <path d="M9 8a3 3 0 016 0" />

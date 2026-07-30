@@ -243,20 +243,8 @@ export function CartTrustStrip() {
        * Replaces the previous 3-row layout (labelled groups + separate
        * note) which ate ~80px of vertical real estate. */}
       <div className="bb-cd-trust-row">
-        <span className="bb-cd-trust-icon" title="Visa" aria-label="Visa">
-          <svg viewBox="0 0 48 16" width="32" height="12" fill="none" aria-hidden="true">
-            <text x="0" y="13" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="900" fill="#1A1F71" letterSpacing="-0.5">VISA</text>
-          </svg>
-        </span>
-        <span className="bb-cd-trust-icon" title="Mastercard" aria-label="Mastercard">
-          <svg viewBox="0 0 32 20" width="24" height="16" aria-hidden="true">
-            <circle cx="12" cy="10" r="8" fill="#EB001B" />
-            <circle cx="20" cy="10" r="8" fill="#F79E1B" />
-            <path d="M16 4.5a8 8 0 010 11" fill="#FF5F00" />
-          </svg>
-        </span>
-        {/* Apple Pay / Google Pay — client request. Clean inline marks matching
-            the existing Visa/Mastercard style (self-contained, no external asset). */}
+        {/* Apple Pay / Google Pay FIRST (client request), then Visa/Mastercard.
+            Clean inline marks (self-contained, no external asset). */}
         <span className="bb-cd-trust-icon" title="Apple Pay" aria-label="Apple Pay">
           <svg viewBox="0 0 40 16" width="30" height="12" aria-hidden="true">
             <path d="M9.5 5.4c-.5-.6-1.3-1-2-1-.9 0-1.3.4-2 .4s-1.2-.4-2-.4c-1.4 0-2.7 1.2-2.7 3.3 0 1.3.5 2.7 1.1 3.6.5.7.9 1.1 1.6 1.1.6 0 .9-.4 1.7-.4s1 .4 1.7.4c.7 0 1.1-.5 1.6-1.2.4-.6.6-1.1.6-1.2-1.5-.6-1.5-2.6-.1-3.4z M8 3.2c.4-.5.6-1.1.5-1.7-.6 0-1.2.3-1.6.8-.3.4-.6 1-.5 1.6.6 0 1.2-.3 1.6-.7z" fill="#000" />
@@ -267,6 +255,18 @@ export function CartTrustStrip() {
           <svg viewBox="0 0 44 16" width="34" height="12" aria-hidden="true">
             <text x="0" y="12.5" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="700" fill="#4285F4">G</text>
             <text x="9" y="12.5" fontFamily="Arial, sans-serif" fontSize="12" fontWeight="500" fill="#5F6368">Pay</text>
+          </svg>
+        </span>
+        <span className="bb-cd-trust-icon" title="Visa" aria-label="Visa">
+          <svg viewBox="0 0 48 16" width="32" height="12" fill="none" aria-hidden="true">
+            <text x="0" y="13" fontFamily="Arial, sans-serif" fontSize="14" fontWeight="900" fill="#1A1F71" letterSpacing="-0.5">VISA</text>
+          </svg>
+        </span>
+        <span className="bb-cd-trust-icon" title="Mastercard" aria-label="Mastercard">
+          <svg viewBox="0 0 32 20" width="24" height="16" aria-hidden="true">
+            <circle cx="12" cy="10" r="8" fill="#EB001B" />
+            <circle cx="20" cy="10" r="8" fill="#F79E1B" />
+            <path d="M16 4.5a8 8 0 010 11" fill="#FF5F00" />
           </svg>
         </span>
         <span className="bb-cd-trust-divider" aria-hidden="true" />
