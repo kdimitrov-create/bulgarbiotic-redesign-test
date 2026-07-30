@@ -337,17 +337,10 @@ export function SciencePageContent() {
           <h2 className="bb-sci-finale-h">
             Открий <em>правилния пробиотик</em><br />за теб.
           </h2>
-          <p className="bb-sci-finale-p">
-            25+ научно проучени формули. Помогни ни да ти препоръчаме идеалната
-            за твоите конкретни нужди.
-          </p>
           <div className="bb-sci-finale-actions">
             <Link to="/category/all-products" className="bb-sci-cta bb-sci-cta--gold" prefetch="intent">
               <strong>Виж всички продукти</strong>
               <span className="bb-sci-cta-arrow">→</span>
-            </Link>
-            <Link to="/" className="bb-sci-cta bb-sci-cta--ghost" prefetch="intent">
-              Намери своя пробиотик
             </Link>
           </div>
         </div>
