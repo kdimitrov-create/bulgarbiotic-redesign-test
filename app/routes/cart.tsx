@@ -22,7 +22,23 @@ export async function action({request, context}: Route.ActionArgs) {
   try {
     switch (act) {
       case 'ADD_TO_CART': {
-        const result = await ctx.cart.addLines([{merchandiseId: String(fd.get('merchandiseId')), quantity: Number(fd.get('quantity') || 1)}]);
+        let merchandiseId = String(fd.get('merchandiseId') || '');
+        // Listing/collection cards ship no variant id (the collection query
+        // strips variants) — resolve the product's first variant from its
+        // handle server-side so the card "Купи" adds straight to the cart.
+        if (!merchandiseId) {
+          const handle = String(fd.get('handle') || '');
+          if (handle) {
+            const product = await ctx.storefront.getProduct(handle).catch(() => null);
+            merchandiseId = (product as any)?.variants?.nodes?.[0]?.id ?? '';
+          }
+        }
+        if (!merchandiseId) {
+          cart = await ctx.cart.get();
+          errors = [{message: 'Продуктовият вариант не е намерен'}];
+          break;
+        }
+        const result = await ctx.cart.addLines([{merchandiseId, quantity: Number(fd.get('quantity') || 1)}]);
         cart = result.cart;
         errors = result.userErrors;
         break;

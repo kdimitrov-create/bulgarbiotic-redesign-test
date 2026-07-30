@@ -1,4 +1,4 @@
-import {useNavigate, useFetcher} from 'react-router';
+import {useFetcher} from 'react-router';
 import {useEffect} from 'react';
 import {useAside} from './Aside';
 
@@ -19,7 +19,6 @@ export function CardBuyButton({
   handle: string;
 }) {
   const fetcher = useFetcher();
-  const navigate = useNavigate();
   const {open} = useAside();
   const isAdding = fetcher.state !== 'idle';
 
@@ -35,14 +34,16 @@ export function CardBuyButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (merchandiseId) {
-          fetcher.submit(
-            {action: 'ADD_TO_CART', merchandiseId, quantity: '1'},
-            {method: 'post', action: '/cart'},
-          );
-        } else {
-          navigate(`/product/${handle}`);
-        }
+        // Always ADD to cart (client: the card image/title is for opening the
+        // product; the button adds it). On listing/collection cards the variants
+        // are stripped from the query, so we send the product `handle` instead —
+        // the /cart action resolves its first variant server-side.
+        fetcher.submit(
+          merchandiseId
+            ? {action: 'ADD_TO_CART', merchandiseId, quantity: '1'}
+            : {action: 'ADD_TO_CART', handle, quantity: '1'},
+          {method: 'post', action: '/cart'},
+        );
       }}
     >
       {isAdding ? (
