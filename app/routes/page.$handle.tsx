@@ -23,6 +23,7 @@ const HANDLE_TITLES: Record<string, string> = {
   'probiotik-za-bremenni': 'Пробиотик за бременни',
   'kosa-koja-i-nokti': 'Блестяща коса, кожа и нокти',
   'probiotik-ot-bactology': 'За Bulgar Biotic и Bactology',
+  'abomanmet-za-byuletin': 'Абонирай се за бюлетин',
   'pateshestvie': 'Семейна екскурзия до Дисниленд в Париж',
   'mediite-za-nas': 'Медиите за нас',
 };
@@ -89,6 +90,7 @@ function bodyIsHtml(body: string): boolean {
 const PAGES_WITH_OWN_HERO = new Set([
   'kosa-koja-i-nokti',
   'naukata-zad-bulgar-biotic',
+  'abomanmet-za-byuletin',
 ]);
 
 function DefaultPage({page}: {page: any}) {

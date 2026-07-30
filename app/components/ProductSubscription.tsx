@@ -15,10 +15,18 @@ const fmtEur = (n: number) =>
  * with a 10% discount. Currently UI-only (purchase still happens via the
  * one-time CTA) — wire the recurring backend at a later phase. Listed as
  * a pending feature in CLAUDE.md.
+ *
+ * Client (2026-07): HIDE this block until the recurring-subscription backend
+ * is live. Flip SUBSCRIPTION_ENABLED back to `true` to restore it — the whole
+ * UI below is kept intact.
  */
+const SUBSCRIPTION_ENABLED = false;
+
 export function ProductSubscription({basePriceEur}: Props) {
   const [mode, setMode] = useState<'once' | 'monthly'>('once');
   const monthlyPrice = basePriceEur * 0.9;
+
+  if (!SUBSCRIPTION_ENABLED) return null;
 
   return (
     <div className="bb-pdp-sub" aria-label="Опции за абонамент">

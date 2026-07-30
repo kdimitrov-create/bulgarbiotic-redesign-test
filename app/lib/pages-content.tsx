@@ -2,6 +2,7 @@ import {Link} from 'react-router';
 import type {ReactNode} from 'react';
 import {SciencePageContent} from '~/components/pages/SciencePageContent';
 import {BeautyPageContent} from '~/components/pages/BeautyPageContent';
+import {NewsletterPageContent} from '~/components/pages/NewsletterPageContent';
 
 /**
  * Content override map for CMS pages whose `body` field is null because they
@@ -21,6 +22,7 @@ import {BeautyPageContent} from '~/components/pages/BeautyPageContent';
 
 export const PAGES_CONTENT: Record<string, () => ReactNode> = {
   'naukata-zad-bulgar-biotic': () => <SciencePageContent />,
+  'abomanmet-za-byuletin': () => <NewsletterPageContent />,
   // ───── legacy long-form entry below kept for reference only ─────
   '_legacy_naukata-zad-bulgar-biotic': () => (
     <>
