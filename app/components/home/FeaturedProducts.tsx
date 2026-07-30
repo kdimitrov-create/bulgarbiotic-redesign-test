@@ -197,12 +197,28 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
             {items.map((p, i) => {
               const badge = badgeFor(p, i);
               const rating = p.reviewSummary;
-              // Resolve effective sale + msrp from real or synthesised discount
-              const realMsrp = (p as any).discount?.msrpPrice;
-              const synth = !realMsrp ? synthDiscount(p, p.priceRange.minVariantPrice) : null;
-              const effectivePrice = synth ? synth.salePrice : p.priceRange.minVariantPrice;
+              // Resolve effective sale + msrp exactly like the category ProductCard
+              // (variant.compareAtPrice → product.discount.msrpPrice → synthesised),
+              // so on-sale products turn the price pink — same as the PDP.
+              const variant0 = (p as any).variants?.nodes?.[0];
+              const basePrice = variant0?.price ?? p.priceRange.minVariantPrice;
+              const variantCompare = variant0?.compareAtPrice;
+              const realMsrp =
+                variantCompare &&
+                parseFloat(variantCompare.amount) > parseFloat(basePrice?.amount ?? '0')
+                  ? variantCompare
+                  : (p as any).discount?.msrpPrice ?? null;
+              const synth = !realMsrp ? synthDiscount(p, basePrice) : null;
+              const effectivePrice = synth ? synth.salePrice : basePrice;
               const effectiveMsrp = realMsrp ?? synth?.msrpPrice ?? null;
-              const effectivePct = (p as any).discount?.percent ?? synth?.percent ?? 0;
+              const effectivePct =
+                (p as any).discount?.percent ??
+                synth?.percent ??
+                (effectiveMsrp
+                  ? Math.round(
+                      (1 - parseFloat(effectivePrice.amount) / parseFloat(effectiveMsrp.amount)) * 100,
+                    )
+                  : 0);
               const hasDiscount = !!effectiveMsrp;
               return (
                 <Link
