@@ -949,9 +949,12 @@ body::after {
   content: '';
   position: absolute;
   top: 0; right: 0;
-  width: 32px;
+  /* Wide fade in the panel's actual right-edge colour (cream-2, from the
+   * 135deg pink→cream panel gradient) so the peeking card melts away cleanly
+   * under the arrow instead of showing a hard-clipped "ДОБАВИ" button. */
+  width: 54px;
   height: 100%;
-  background: linear-gradient(to left, var(--color-pink-1), transparent);
+  background: linear-gradient(to left, var(--color-cream-2) 40%, transparent);
   pointer-events: none;
   z-index: 2;
 }

@@ -658,7 +658,10 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
         </div>
         <add.Form method="post" action="/cart" className="bb-cd-upsell-add-form">
           <input type="hidden" name="action" value="ADD_TO_CART" />
-          <input type="hidden" name="merchandiseId" value={suggestion.merchandiseId} />
+          <input type="hidden" name="merchandiseId" value={suggestion.merchandiseId ?? ''} />
+          {/* Fallback: if the upsell suggestion has no variant id, send the
+              handle so the /cart action resolves the first variant server-side. */}
+          <input type="hidden" name="handle" value={suggestion.handle} />
           <input type="hidden" name="quantity" value="1" />
           <button
             type="submit"
