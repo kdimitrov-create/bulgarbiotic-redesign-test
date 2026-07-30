@@ -9,6 +9,7 @@ import {Link} from 'react-router';
  */
 export function PdpAwardBadge() {
   return (
+    <div className="bb-pdp-award-row">
     <Link
       to="/article/bulgar-biotik-e-nay-dobriyat-balgarski-brand-za-probiotici-za-2025-g"
       className="bb-pdp-award"
@@ -30,8 +31,35 @@ export function PdpAwardBadge() {
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
       </svg>
+    </Link>
+
+      {/* Client (2026-07): extra award/quality graphic next to the badge. */}
+      <img
+        className="bb-pdp-award-extra"
+        src="https://bulgarbiotic.bg/cdn/img/products_banners/7/%21%21%21%D1%81.png?width=150&height=150&v=1777459060"
+        alt="Отличие Bactology"
+        loading="eager"
+        onError={(e) => {
+          (e.currentTarget as HTMLImageElement).style.display = 'none';
+        }}
+      />
 
       <style>{`
+        .bb-pdp-award-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex-wrap: wrap;
+          margin: 10px 0 6px;
+        }
+        .bb-pdp-award-extra {
+          width: 54px; height: 54px;
+          object-fit: contain;
+          flex-shrink: 0;
+          filter: drop-shadow(0 4px 10px rgba(10, 37, 64, 0.22));
+          transition: transform 0.18s;
+        }
+        .bb-pdp-award-extra:hover { transform: translateY(-1px) scale(1.04); }
         .bb-pdp-award {
           display: inline-flex;
           align-items: center;
@@ -42,7 +70,6 @@ export function PdpAwardBadge() {
           border-radius: 999px;
           text-decoration: none;
           transition: all 0.18s;
-          margin: 10px 0 6px;
         }
         .bb-pdp-award:hover {
           text-decoration: none;
@@ -83,6 +110,6 @@ export function PdpAwardBadge() {
         }
         .bb-pdp-award:hover .bb-pdp-award-arrow { color: #f4d585; }
       `}</style>
-    </Link>
+    </div>
   );
 }

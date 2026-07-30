@@ -24,13 +24,27 @@ export function ProductImageGallery({images, featuredImage}: {
     <div onKeyDown={allImages.length > 1 ? handleKeyDown : undefined}>
       <div className="relative [&_img]:w-full [&_img]:rounded-xl [&_img]:aspect-square [&_img]:object-cover [&_img]:bg-gray-100">
         <Image data={selectedImage} alt={selectedImage.altText ?? ''} loading="eager" />
-        {/* Client: "Клин. доказани щамове" trust label on every product photo. */}
-        <span className="absolute top-3 left-3 z-10 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-[11px] font-bold tracking-wide text-[var(--color-ink)] shadow-[0_4px_14px_-4px_rgba(10,37,64,0.3)]">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="var(--color-brand-pink)" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M9 12l2 2 4-4M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          Клин. доказани щамове
-        </span>
+        {/* Client (2026-07): circular trust-badge image replaces the old
+            "Клин. доказани щамове" text pill. Sizing is inline so it overrides
+            the parent's [&_img]:w-full / aspect-square / object-cover rules. */}
+        <img
+          src="https://bulgarbiotic.bg/cdn/img/products_banners/2/A_circular_graphic_transparent_100x100%20%281%29.png?width=150&height=150&v=1777459060"
+          alt="Клинично доказани щамове"
+          loading="eager"
+          className="absolute top-3 left-3 z-10"
+          style={{
+            width: 78,
+            height: 78,
+            objectFit: 'contain',
+            background: 'transparent',
+            aspectRatio: 'auto',
+            borderRadius: 0,
+            filter: 'drop-shadow(0 4px 12px rgba(10,37,64,0.25))',
+          }}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = 'none';
+          }}
+        />
       </div>
       {allImages.length > 1 && (
         <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-none" role="listbox" aria-label="Product images">

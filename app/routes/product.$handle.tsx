@@ -299,11 +299,10 @@ function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product:
       {/* Price + variants + qty + add-to-cart */}
       <ProductForm product={product} selectedVariant={variant} />
 
-      {/* Trust pills under CTA — free shipping / 24-48h / 30-day guarantee */}
-      <ProductTrustRow />
+      {/* Trust pills under the CTA removed per client (2026-07). */}
 
       {/* "Ключови ползи" moved up into the buy-box column (client): fills the
-          slot the (temporarily hidden) subscription widget used to hold. */}
+          slot the trust pills + (hidden) subscription widget used to hold. */}
       {keyBenefits.length >= 3 && <ProductBenefits benefits={keyBenefits} compact />}
 
       {/* Subscription savings widget — recurring orders -10% (hidden for now) */}
