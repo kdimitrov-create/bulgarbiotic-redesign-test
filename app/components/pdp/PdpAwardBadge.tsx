@@ -52,14 +52,20 @@ export function PdpAwardBadge() {
           flex-wrap: wrap;
           margin: 10px 0 6px;
         }
+        /* Match the neighbouring EVA award pill (client request): dark-navy
+           fill, gold hairline border, soft rounding + shadow. */
         .bb-pdp-award-extra {
-          width: 54px; height: 54px;
+          width: 50px; height: 50px;
           object-fit: contain;
           flex-shrink: 0;
-          filter: drop-shadow(0 4px 10px rgba(10, 37, 64, 0.22));
-          transition: transform 0.18s;
+          background: linear-gradient(135deg, #0a2540 0%, #112c4d 100%);
+          border: 1px solid rgba(244, 213, 133, 0.35);
+          border-radius: 14px;
+          padding: 6px;
+          box-shadow: 0 6px 16px -8px rgba(10, 37, 64, 0.45);
+          transition: transform 0.18s, border-color 0.18s;
         }
-        .bb-pdp-award-extra:hover { transform: translateY(-1px) scale(1.04); }
+        .bb-pdp-award-extra:hover { transform: translateY(-1px); border-color: #f4d585; }
         .bb-pdp-award {
           display: inline-flex;
           align-items: center;
