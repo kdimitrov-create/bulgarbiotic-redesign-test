@@ -197,7 +197,7 @@ export function BeautyPageContent() {
           </div>
           <div className="bb-bty-product-stickers">
             <span className="bb-bty-sticker">Колаген</span>
-            <span className="bb-bty-sticker">Хиалуронова</span>
+            <span className="bb-bty-sticker">Хиалуронова киселина</span>
             <span className="bb-bty-sticker">Q10</span>
           </div>
         </div>
