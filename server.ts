@@ -30,6 +30,12 @@ export default {
     const context = await createNitroContext({
       request,
       env: {
+        // Pass the whole worker env through. The previous explicit allow-list of
+        // four keys meant `ctx.env` never saw anything else — so PUBLIC_GA_ID,
+        // PUBLIC_META_PIXEL_ID, PUBLIC_CLASSIC_ORIGIN and CLOUDCART_ADMIN_PAT all
+        // read back undefined and their features stayed silently switched off.
+        // Server-side only; loaders still return named fields, never this object.
+        ...env,
         SESSION_SECRET: env.SESSION_SECRET ?? 'nitro-dev-secret',
         // Storefront API calls MUST go to the platform's service origin, never to
         // PUBLIC_STORE_DOMAIN. Once a custom domain is routed to this storefront,
