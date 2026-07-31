@@ -26,12 +26,14 @@ export function ProductImageGallery({images, featuredImage}: {
         <Image data={selectedImage} alt={selectedImage.altText ?? ''} loading="eager" />
         {/* Client (2026-07): circular trust-badge image replaces the old
             "Клин. доказани щамове" text pill. Sizing is inline so it overrides
-            the parent's [&_img]:w-full / aspect-square / object-cover rules. */}
+            the parent's [&_img]:w-full / aspect-square / object-cover rules.
+            Moved to the BOTTOM-left (2026-07-31) so it no longer covers the
+            badge baked into the product photo's own top-left corner. */}
         <img
           src="https://bulgarbiotic.bg/cdn/img/products_banners/2/A_circular_graphic_transparent_100x100%20%281%29.png?width=150&height=150&v=1777459060"
           alt="Клинично доказани щамове"
           loading="eager"
-          className="absolute top-3 left-3 z-10"
+          className="absolute bottom-3 left-3 z-10"
           style={{
             width: 78,
             height: 78,
