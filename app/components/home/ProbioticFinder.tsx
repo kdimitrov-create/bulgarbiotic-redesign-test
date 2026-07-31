@@ -150,11 +150,14 @@ function recommend(who: Who, goal: Goal): Recommendation {
       };
     case 'weight':
       return {
-        title: 'Femin + Gastro Balance — Плоско Коремче',
+        // Client (2026-07-31): this step must read as "Плоско Коремче", not Femin.
+        // The old image URL was missing the CDN filename hash → 404 (the card fell
+        // back to showing the alt text, which started with "Femin").
+        title: 'Плоско Коремче — Femin + Gastro Balance',
         reason: 'Промоционален пакет: 5 пробиотични щама за метаболизъм + хормонален баланс.',
         handle: 'probiotici-za-plosko-koremche-promociya-femin-gastro-balance',
         badge: 'Спести ~20%',
-        image: 'https://bulgarbiotic.bg/cdn/img/products/37/probiotici-za-plosko-koremce-promocia-femin--gastro-balance.png?width=600&height=600',
+        image: 'https://bulgarbiotic.bg/cdn/img/products/37/probiotici-za-plosko-koremce-promocia-femin--gastro-balance-6523c1e798a57.png?width=600&height=600',
       };
     case 'female':
       return {
