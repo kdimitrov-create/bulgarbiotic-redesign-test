@@ -1,7 +1,7 @@
 import type {Route} from './+types/api.discount-debug';
 import {getContext} from '~/lib/context';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
-import {activeDiscounts, bestDiscountFor, bestDiscountForHandle} from '~/lib/active-discounts';
+import {activeDiscounts, bestDiscountFor, bestDiscountForHandle, setAutoDiscounts} from '~/lib/active-discounts';
 
 /**
  * TEMPORARY diagnostic — reports what the discount lookups actually resolve to on
@@ -13,6 +13,8 @@ export async function loader({context, request}: Route.LoaderArgs) {
   const env = ctx.env as Record<string, string | undefined>;
   const live = await fetchAutoDiscounts(env);
   const handle = new URL(request.url).searchParams.get('handle') ?? '';
+  // Loaders run BEFORE render, so root's setAutoDiscounts has not fired yet here.
+  setAutoDiscounts(live?.discounts, live?.handles);
 
   return Response.json({
     patConfigured: Boolean(env.CLOUDCART_ADMIN_PAT),
