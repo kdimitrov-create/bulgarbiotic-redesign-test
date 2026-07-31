@@ -70,7 +70,10 @@ interface RawDiscount {
 export async function fetchAutoDiscounts(
   env: Record<string, string | undefined>,
 ): Promise<LiveDiscounts | null> {
-  const pat = env.CLOUDCART_ADMIN_PAT;
+  // Accept both spellings: the panel's Custom Variables were saved once as
+  // CLOUDCARTADMINPAT, and a silently-unread token looks exactly like "the
+  // feature is off" — not worth losing an afternoon to again.
+  const pat = env.CLOUDCART_ADMIN_PAT || env.CLOUDCARTADMINPAT;
   const origin = adminOrigin(env);
   if (!pat || !origin) return null;
 
