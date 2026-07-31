@@ -21,11 +21,23 @@ const REQUEST_TIMEOUT_MS = 4000;
 
 let cache: {at: number; data: AutoDiscount[]} | null = null;
 
-const QUERY = `query ActiveDiscounts($first: Int!) {
+/**
+ * Step 1 — list the active rules. Deliberately does NOT ask for `targets`:
+ * verified 2026-07-31 that the LIST query always returns `targets: []`, while
+ * `discount(id:)` returns the real rows for the same discount. Asking here would
+ * quietly yield zero targeted products and the feature would never light up.
+ */
+const LIST_QUERY = `query ActiveDiscounts($first: Int!) {
   discounts(first: $first, active: yes) {
-    edges { node { id name type typeValue orderOver dateStart dateEnd active targets { type itemId } } }
+    edges { node { id name type typeValue orderOver dateStart dateEnd active } }
   }
 }`;
+
+/** Step 2 — one batched request with an alias per discount to pull the targets. */
+function targetsQuery(ids: string[]): string {
+  const fields = ids.map((id) => `d${id}: discount(id: "${id}") { id targets { type itemId } }`);
+  return `query DiscountTargets { ${fields.join(' ')} }`;
+}
 
 interface RawDiscount {
   id: string;
@@ -53,27 +65,22 @@ export async function fetchAutoDiscounts(
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
 
   try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-    const res = await fetch(`${origin}/api/gql`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query: QUERY, variables: {first: 100}}),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (!res.ok) throw new Error(`admin api ${res.status}`);
+    const listed = (await gql<{discounts?: {edges?: Array<{node: RawDiscount}>}}>(
+      origin, pat, LIST_QUERY, {first: 100},
+    ))?.discounts?.edges?.map((e) => e.node).filter(isLiveOnStorefront) ?? [];
 
-    const json = (await res.json()) as {
-      data?: {discounts?: {edges?: Array<{node: RawDiscount}>}};
-      errors?: Array<{message: string}>;
-    };
-    if (json.errors?.length) throw new Error(json.errors[0].message);
+    if (listed.length === 0) {
+      cache = {at: Date.now(), data: []};
+      return [];
+    }
 
-    const mapped = (json.data?.discounts?.edges ?? [])
-      .map((e) => e.node)
-      .filter(isLiveOnStorefront)
-      .map(toAutoDiscount)
+    // Step 2: targets, aliased into a single request (d<id>: discount(id:)).
+    const targets = await gql<Record<string, {targets?: Array<{type: string; itemId: string}>} | null>>(
+      origin, pat, targetsQuery(listed.map((d) => String(d.id))), {},
+    );
+
+    const mapped = listed
+      .map((d) => toAutoDiscount(d, targets?.[`d${d.id}`]?.targets ?? []))
       .filter((d): d is AutoDiscount => d !== null);
 
     cache = {at: Date.now(), data: mapped};
@@ -85,13 +92,31 @@ export async function fetchAutoDiscounts(
   }
 }
 
-/**
- * Only percent rules matter here — flat/shipping/volume discounts are applied by
- * checkout but are not what the "−N%" sticker on a card represents. `active: yes`
- * is already filtered server-side; the date window is not, so check it here.
- * This is the bug the static mirror has: it lists rules that ended in June and
- * shows their badges anyway.
- */
+/** One Admin API call with a timeout; throws on transport or GraphQL errors. */
+async function gql<T>(
+  origin: string,
+  pat: string,
+  query: string,
+  variables: Record<string, unknown>,
+): Promise<T | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${origin}/api/gql`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
+      body: JSON.stringify({query, variables}),
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`admin api ${res.status}`);
+    const json = (await res.json()) as {data?: T; errors?: Array<{message: string}>};
+    if (json.errors?.length) throw new Error(json.errors[0].message);
+    return json.data ?? null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function isLiveOnStorefront(d: RawDiscount): boolean {
   if (d.type !== 'percent' || !d.typeValue) return false;
   const now = Date.now();
@@ -100,23 +125,36 @@ function isLiveOnStorefront(d: RawDiscount): boolean {
   return true;
 }
 
-function toAutoDiscount(d: RawDiscount): AutoDiscount | null {
-  // Only product-scoped targets can be resolved without extra round-trips.
-  // Category-scoped rules would need the category's product list expanded —
-  // if the merchant uses those, this returns fewer products than checkout
-  // applies, so verify against real data before relying on it.
-  const productIds = (d.targets ?? [])
-    .filter((t) => t.type === 'product')
-    .map((t) => String(t.itemId));
+function toAutoDiscount(
+  d: RawDiscount,
+  targets: Array<{type: string; itemId: string}>,
+): AutoDiscount | null {
+  // Only product-scoped targets resolve without extra round-trips. Category-scoped
+  // rules would need the category expanded to its products — if the merchant uses
+  // those, this covers fewer products than checkout applies. Verify against real
+  // data before relying on it.
+  const productIds = targets.filter((t) => t.type === 'product').map((t) => String(t.itemId));
   if (productIds.length === 0) return null;
+  const percent = toPercent(d.typeValue as number);
+  if (percent <= 0) return null;
   return {
     id: String(d.id),
     name: d.name,
-    percent: Math.round(d.typeValue as number),
+    percent,
     dateEnd: d.dateEnd,
     orderOver: d.orderOver,
     productIds,
   };
+}
+
+/**
+ * `typeValue` is not always a plain percentage: the live store returned 10000 for a
+ * percent rule, i.e. hundredths. Anything above 100 is therefore read as hundredths;
+ * the result is clamped so a bad value can never print "−10000%" on a product card.
+ */
+function toPercent(typeValue: number): number {
+  const raw = typeValue > 100 ? typeValue / 100 : typeValue;
+  return Math.max(0, Math.min(100, Math.round(raw)));
 }
 
 /**
