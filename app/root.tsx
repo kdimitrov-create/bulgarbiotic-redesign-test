@@ -29,7 +29,13 @@ export async function loader({context, request}: Route.LoaderArgs) {
   ]);
 
   const env = ctx.env as Record<string, string | undefined>;
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live: await fetchAutoDiscounts(env)};
+  // Apply live discounts here, not only during render: route loaders and the
+  // components that price cart lines can run before root's component body does,
+  // and they read this module synchronously.
+  const live = await fetchAutoDiscounts(env);
+  setAutoDiscounts(live?.discounts, live?.handles);
+
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
