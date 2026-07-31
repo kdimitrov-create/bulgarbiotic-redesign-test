@@ -1,6 +1,8 @@
 import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useFetchers, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
+import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
+import {setAutoDiscounts} from '~/lib/active-discounts';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {AsideProvider, Aside} from '~/components/Aside';
 import {CartDrawer} from '~/components/CartDrawer';
@@ -27,7 +29,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   ]);
 
   const env = ctx.env as Record<string, string | undefined>;
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null};
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, autoDiscounts: await fetchAutoDiscounts(env)};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -58,6 +60,10 @@ export default function App() {
   const data = useRouteLoaderData<typeof loader>('root');
   // Brand name stays ours — the incoming commit reset it to the scaffold
   // placeholder "Nitro", which the go-live prep had already fixed.
+  // Live discounts from the admin panel replace the static mirror, on the server
+  // for SSR and again on the client after hydration.
+  setAutoDiscounts(data?.autoDiscounts);
+
   const shop = data?.shop ?? {name: 'Bulgar Biotic', description: null};
 
   // Optimistic cart: after any /cart mutation (add / update / remove) the

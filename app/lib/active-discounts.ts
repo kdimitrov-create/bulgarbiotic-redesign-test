@@ -22,7 +22,7 @@
  * Last synced: 2026-05-21
  */
 
-interface AutoDiscount {
+export interface AutoDiscount {
   /** Numeric CloudCart discount ID — useful for cross-referencing in admin. */
   id: string;
   /** Human-readable name from CloudCart (merchant-authored). */
@@ -60,6 +60,25 @@ export const AUTO_DISCOUNTS: AutoDiscount[] = [
  * the URL handle (cart lines, links, etc.) resolve back to a discount
  * lookup. Re-pull together with `AUTO_DISCOUNTS` when refreshing.
  */
+/**
+ * The list every lookup below reads. Defaults to the hand-maintained mirror and
+ * is replaced at runtime with LIVE admin data when `CLOUDCART_ADMIN_PAT` is
+ * configured (see `live-discounts.server.ts`). Kept as module state rather than
+ * threaded through props so the eight existing call sites keep their simple
+ * synchronous API.
+ */
+let currentDiscounts: AutoDiscount[] = AUTO_DISCOUNTS;
+
+/** Swap in live discounts. Ignores empty/absent input so a failed fetch keeps the mirror. */
+export function setAutoDiscounts(next: AutoDiscount[] | null | undefined) {
+  if (next && next.length) currentDiscounts = next;
+}
+
+/** What the lookups currently resolve against — live list when available. */
+export function activeDiscounts(): AutoDiscount[] {
+  return currentDiscounts;
+}
+
 export const DISCOUNTED_PRODUCT_HANDLES: Record<string, string> = {
   '10':  'paket-colongic',
   '13':  'paket-otslabvane',
@@ -139,7 +158,7 @@ export function bestDiscountFor(productIdOrGid: string | undefined | null): {
   const pid = productIdFromGid(productIdOrGid);
   if (!pid) return null;
   let best: {percent: number; id: string; name: string} | null = null;
-  for (const d of AUTO_DISCOUNTS) {
+  for (const d of currentDiscounts) {
     if (!d.productIds.includes(pid)) continue;
     if (!best || d.percent > best.percent) {
       best = {percent: d.percent, id: d.id, name: d.name};
@@ -154,7 +173,7 @@ export function bestDiscountFor(productIdOrGid: string | undefined | null): {
  */
 export function discountedProductIds(): Set<string> {
   const out = new Set<string>();
-  for (const d of AUTO_DISCOUNTS) {
+  for (const d of currentDiscounts) {
     for (const pid of d.productIds) out.add(pid);
   }
   return out;
