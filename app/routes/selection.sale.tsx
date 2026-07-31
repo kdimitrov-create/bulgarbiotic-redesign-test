@@ -6,7 +6,8 @@ import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
-import {bestDiscountFor, discountedProductIds} from '~/lib/active-discounts';
+import {bestDiscountFor, discountedProductIds, setAutoDiscounts} from '~/lib/active-discounts';
+import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 
 const EUR_TO_BGN = 1.95583;
 const fmt = (n: number, c: 'EUR' | 'BGN') =>
@@ -31,6 +32,12 @@ export const meta: Route.MetaFunction = () =>
  */
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
+  // This loader reads the discount rules directly, and route loaders run in
+  // parallel with root's — so it cannot assume root has already loaded the live
+  // ones. Without this the page silently lists the expired mirror instead.
+  const live = await fetchAutoDiscounts(ctx.env as Record<string, string | undefined>);
+  setAutoDiscounts(live?.discounts, live?.handles);
+
   const paginationVariables = getPaginationVariables(request, {pageBy: 60});
 
   // CloudCart's `{onSale: true}` Storefront filter doesn't surface

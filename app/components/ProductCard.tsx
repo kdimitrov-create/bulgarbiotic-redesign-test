@@ -103,11 +103,6 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
               Бестселър
             </span>
           )}
-          {isOnSale && discountPct > 0 && (
-            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white">
-              −{discountPct}%
-            </span>
-          )}
           {labels
             .filter((l) => !['New', 'Featured'].includes(l.name))
             .slice(0, 1)
@@ -122,12 +117,23 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
             ))}
         </div>
 
-        {/* Top-right: Sold out + wishlist */}
-        {product.availableForSale === false && (
-          <span className="absolute top-2.5 right-2.5 py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
-            Изчерпан
-          </span>
-        )}
+        {/* Top-right stack: discount % + sold out.
+            The discount badge moved here because the left stack already carries
+            the product labels ("клинично доказани щамове"). Both live in ONE
+            column so a sold-out product on promo stacks them instead of
+            overlapping. */}
+        <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 z-10">
+          {isOnSale && discountPct > 0 && (
+            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white shadow-sm">
+              −{discountPct}%
+            </span>
+          )}
+          {product.availableForSale === false && (
+            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
+              Изчерпан
+            </span>
+          )}
+        </div>
 
         {/* Wishlist heart — always visible + prominent (client request). */}
         <div className="absolute bottom-2.5 right-2.5">
