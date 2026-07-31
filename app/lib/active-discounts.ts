@@ -68,10 +68,25 @@ export const AUTO_DISCOUNTS: AutoDiscount[] = [
  * synchronous API.
  */
 let currentDiscounts: AutoDiscount[] = AUTO_DISCOUNTS;
+/** handle -> product id, replaced together with the rules when live data arrives. */
+let currentHandleToId: Record<string, string>;
 
-/** Swap in live discounts. Ignores empty/absent input so a failed fetch keeps the mirror. */
-export function setAutoDiscounts(next: AutoDiscount[] | null | undefined) {
-  if (next && next.length) currentDiscounts = next;
+/**
+ * Swap in live discounts. Ignores empty/absent input so a failed fetch keeps the
+ * mirror. `handles` matters as much as the rules: cart lines only know a product's
+ * url handle, so without a live handle->id map a discount on a product outside the
+ * old static list resolves on product cards (they carry the id) but silently not in
+ * the cart.
+ */
+export function setAutoDiscounts(
+  next: AutoDiscount[] | null | undefined,
+  handles?: Record<string, string> | null,
+) {
+  if (!next || !next.length) return;
+  currentDiscounts = next;
+  const map: Record<string, string> = {};
+  for (const [id, handle] of Object.entries(handles ?? {})) map[handle] = id;
+  currentHandleToId = Object.keys(map).length ? map : HANDLE_TO_PRODUCT_ID;
 }
 
 /** What the lookups currently resolve against — live list when available. */
@@ -110,6 +125,7 @@ const HANDLE_TO_PRODUCT_ID: Record<string, string> = (() => {
   }
   return out;
 })();
+currentHandleToId = HANDLE_TO_PRODUCT_ID;
 
 /**
  * Extract the numeric ID from a CloudCart product gid.
@@ -133,7 +149,7 @@ export function bestDiscountForHandle(handle: string | undefined | null): {
   name: string;
 } | null {
   if (!handle) return null;
-  const pid = HANDLE_TO_PRODUCT_ID[handle];
+  const pid = currentHandleToId[handle];
   if (!pid) return null;
   return bestDiscountFor(pid);
 }

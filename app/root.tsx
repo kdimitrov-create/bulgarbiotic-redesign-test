@@ -29,7 +29,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   ]);
 
   const env = ctx.env as Record<string, string | undefined>;
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, autoDiscounts: await fetchAutoDiscounts(env)};
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live: await fetchAutoDiscounts(env)};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -62,7 +62,7 @@ export default function App() {
   // placeholder "Nitro", which the go-live prep had already fixed.
   // Live discounts from the admin panel replace the static mirror, on the server
   // for SSR and again on the client after hydration.
-  setAutoDiscounts(data?.autoDiscounts);
+  setAutoDiscounts(data?.live?.discounts, data?.live?.handles);
 
   const shop = data?.shop ?? {name: 'Bulgar Biotic', description: null};
 

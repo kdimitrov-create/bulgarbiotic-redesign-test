@@ -19,7 +19,13 @@ import type {AutoDiscount} from './active-discounts';
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 min — promos change rarely; keep edge calls cheap
 const REQUEST_TIMEOUT_MS = 4000;
 
-let cache: {at: number; data: AutoDiscount[]} | null = null;
+export interface LiveDiscounts {
+  discounts: AutoDiscount[];
+  /** product id → url handle, for the surfaces that only know the handle (cart lines). */
+  handles: Record<string, string>;
+}
+
+let cache: {at: number; data: LiveDiscounts} | null = null;
 
 /**
  * Step 1 — list the active rules. Deliberately does NOT ask for `targets`:
@@ -32,6 +38,12 @@ const LIST_QUERY = `query ActiveDiscounts($first: Int!) {
     edges { node { id name type typeValue orderOver dateStart dateEnd active } }
   }
 }`;
+
+/** Step 3 — url handles for the targeted products, aliased into one request. */
+function handlesQuery(ids: string[]): string {
+  const fields = ids.map((id) => `p${id}: product(id: "${id}") { id urlHandle }`);
+  return `query DiscountedHandles { ${fields.join(' ')} }`;
+}
 
 /** Step 2 — one batched request with an alias per discount to pull the targets. */
 function targetsQuery(ids: string[]): string {
@@ -57,7 +69,7 @@ interface RawDiscount {
  */
 export async function fetchAutoDiscounts(
   env: Record<string, string | undefined>,
-): Promise<AutoDiscount[] | null> {
+): Promise<LiveDiscounts | null> {
   const pat = env.CLOUDCART_ADMIN_PAT;
   const origin = adminOrigin(env);
   if (!pat || !origin) return null;
@@ -70,8 +82,8 @@ export async function fetchAutoDiscounts(
     ))?.discounts?.edges?.map((e) => e.node).filter(isLiveOnStorefront) ?? [];
 
     if (listed.length === 0) {
-      cache = {at: Date.now(), data: []};
-      return [];
+      cache = {at: Date.now(), data: {discounts: [], handles: {}}};
+      return cache.data;
     }
 
     // Step 2: targets, aliased into a single request (d<id>: discount(id:)).
@@ -83,8 +95,23 @@ export async function fetchAutoDiscounts(
       .map((d) => toAutoDiscount(d, targets?.[`d${d.id}`]?.targets ?? []))
       .filter((d): d is AutoDiscount => d !== null);
 
-    cache = {at: Date.now(), data: mapped};
-    return mapped;
+    // Step 3: the cart only knows a line's handle, so ship a handle→id map too.
+    // Without it a live discount on a product outside the old static map is
+    // found on product cards (they have the id) but not in the cart.
+    const ids = [...new Set(mapped.flatMap((d) => d.productIds))];
+    const handleRows = ids.length
+      ? await gql<Record<string, {id: string; urlHandle: string} | null>>(
+          origin, pat, handlesQuery(ids), {},
+        )
+      : {};
+    const handles: Record<string, string> = {};
+    for (const id of ids) {
+      const row = handleRows?.[`p${id}`];
+      if (row?.urlHandle) handles[id] = row.urlHandle;
+    }
+
+    cache = {at: Date.now(), data: {discounts: mapped, handles}};
+    return cache.data;
   } catch (error) {
     console.error('live-discounts: falling back to the static mirror —', (error as Error).message);
     // Serve a stale cache rather than nothing; otherwise let the caller fall back.
