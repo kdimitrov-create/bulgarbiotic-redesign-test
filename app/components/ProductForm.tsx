@@ -52,15 +52,11 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
       : (productDiscount?.msrpPrice ?? null);
   let livePriceObj = variant?.price ?? product.priceRange.minVariantPrice;
 
-  let rulePct: number | null = null;
   if (!comparePriceObj) {
     const synth = synthDiscount(product, livePriceObj);
     if (synth) {
       comparePriceObj = synth.msrpPrice;
       livePriceObj = synth.salePrice;
-      // Keep the rule's own percentage — deriving it back from the rounded sale
-      // price printed 12% next to a 13% badge on the same page.
-      rulePct = synth.percent;
     }
   }
 
@@ -73,10 +69,6 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
   const priceObj = livePriceObj;
   const price = bothCurrencies(priceObj);
   const compare = bothCurrencies(comparePriceObj);
-  const discountPct = isOnSale && comparePriceObj && priceObj
-    ? (rulePct ?? productDiscount?.percent ??
-        Math.round((1 - parseFloat(priceObj.amount) / parseFloat(comparePriceObj.amount)) * 100))
-    : 0;
   const savings =
     isOnSale && price && compare ? compare.eur - price.eur : 0;
 
@@ -102,9 +94,9 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
             <span className="bb-pdp-price-old-bgn">{fmtBg(compare.bgn, 'BGN')}</span>
           </span>
         )}
-        {isOnSale && discountPct > 0 && (
-          <span className="bb-pdp-discount">−{discountPct}%</span>
-        )}
+        {/* The "−44%" pill that used to sit here is gone (client, 2026-08-03):
+            the same percentage already sits on the product photo, and two
+            identical badges within one glance read as two different offers. */}
       </div>
       {isOnSale && savings > 0 && (
         <div className="bb-pdp-savings">
