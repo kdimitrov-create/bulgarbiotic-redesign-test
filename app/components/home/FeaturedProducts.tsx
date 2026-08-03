@@ -133,10 +133,8 @@ function badgeFor(p: Product, idx: number): {kind: 'best' | 'new' | 'sale'; text
     const l = labels[0];
     return {kind: 'best', text: l.name};
   }
-  if (p.discount) {
-    if (p.discount.percent) return {kind: 'sale', text: `-${Math.round(p.discount.percent)}%`};
-    return {kind: 'sale', text: 'Промо'};
-  }
+  // The discount is NOT returned here any more: the client wants "Ново" / label to
+  // keep the standard top-left slot, with the percentage stacked underneath it.
   if (p.isNew) return {kind: 'new', text: 'Ново'};
   if (idx < 2) return {kind: 'best', text: 'Хит продажби'};
   return null;
@@ -227,7 +225,14 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
                   className="bb-pcard"
                   prefetch="intent"
                 >
-                  {badge && <span className={`bb-pcard-tag bb-tag-${badge.kind}`}>{badge.text}</span>}
+                  {(badge || (hasDiscount && effectivePct > 0)) && (
+                    <span className="bb-pcard-tags">
+                      {badge && <span className={`bb-pcard-tag bb-tag-${badge.kind}`}>{badge.text}</span>}
+                      {hasDiscount && effectivePct > 0 && (
+                        <span className="bb-pcard-tag bb-tag-sale">-{effectivePct}%</span>
+                      )}
+                    </span>
+                  )}
                   <span className="bb-pcard-fav" onClick={(e) => e.stopPropagation()}>
                     <WishlistButton productId={p.id} size="md" />
                   </span>
@@ -363,7 +368,11 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
           .bb-pcard-body { padding: 16px 16px 18px; }
           .bb-pcard-name { font-size: 16px; min-height: 0; margin-bottom: 4px; }
           .bb-pcard-tagline { font-size: 12.5px; min-height: 0; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
-          .bb-pcard-tag { top: 12px; left: 12px; padding: 4px 9px; font-size: 9.5px; }
+          .bb-pcard-tags {
+          position: absolute; top: 16px; left: 16px; z-index: 3;
+          display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+        }
+        .bb-pcard-tag { top: 12px; left: 12px; padding: 4px 9px; font-size: 9.5px; }
           .bb-sub-toggle { padding: 10px 12px !important; }
           .bb-sub-detail { font-size: 11px !important; }
         }
@@ -390,7 +399,7 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
           border-color: var(--color-pink-2);
         }
         .bb-pcard-tag {
-          position: absolute; top: 16px; left: 16px;
+          /* placement lives on .bb-pcard-tags now, so the two badges stack */
           padding: 5px 11px; border-radius: 999px;
           font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
           z-index: 3;
