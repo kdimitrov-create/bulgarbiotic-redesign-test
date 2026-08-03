@@ -2,7 +2,7 @@ import {Link, useFetcher} from 'react-router';
 import {useRef, useState, useEffect} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
-import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
+import {realDiscountFor as synthDiscount, displayDiscountPercent} from '~/lib/active-discounts';
 import {WishlistButton} from '~/components/WishlistButton';
 import {ProductMarks} from '~/components/ProductMarks';
 import {useAside} from '~/components/Aside';
@@ -196,14 +196,11 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
               const synth = !realMsrp ? synthDiscount(p, basePrice) : null;
               const effectivePrice = synth ? synth.salePrice : basePrice;
               const effectiveMsrp = realMsrp ?? synth?.msrpPrice ?? null;
-              const effectivePct =
-                (p as any).discount?.percent ??
-                synth?.percent ??
-                (effectiveMsrp
-                  ? Math.round(
-                      (1 - parseFloat(effectivePrice.amount) / parseFloat(effectiveMsrp.amount)) * 100,
-                    )
-                  : 0);
+              const effectivePct = displayDiscountPercent(
+                synth?.percent,
+                parseFloat(effectivePrice?.amount ?? '0'),
+                parseFloat(effectiveMsrp?.amount ?? '0'),
+              );
               const hasDiscount = !!effectiveMsrp;
               return (
                 <Link

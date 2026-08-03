@@ -196,6 +196,31 @@ export function bestDiscountFor(productIdOrGid: string | undefined | null): {
 }
 
 /**
+ * The ONE way the storefront turns a price pair into a "−44%" badge.
+ *
+ * Two products under the same 44 % rule were showing −44 % and −43 % side by
+ * side on the home carousel. The culprit was `product.discount.percent`, which
+ * CloudCart rounds differently from us: 18.89 / 42.94 = 43.99 % came back as 43
+ * while 13.89 / 31.56 = 44.01 % came back as 44. That field is therefore never
+ * used any more — the badge is derived from the very prices printed on the card,
+ * so the number can never contradict what the shopper is reading.
+ *
+ * `rulePercent` is passed ONLY when the sale price was synthesised from an admin
+ * rule (no `compareAtPrice` from the API). In that case the rule's own figure is
+ * exact, while deriving it back from a price rounded to two decimals prints 32 %
+ * for a 33 % rule.
+ */
+export function displayDiscountPercent(
+  rulePercent: number | null | undefined,
+  priceAmount: number,
+  compareAmount: number,
+): number {
+  if (rulePercent && rulePercent > 0) return Math.round(rulePercent);
+  if (!(compareAmount > priceAmount) || !(compareAmount > 0)) return 0;
+  return Math.round((1 - priceAmount / compareAmount) * 100);
+}
+
+/**
  * All product IDs (numeric strings) that have at least one active
  * auto-discount targeting them. Useful for sale-page filtering.
  */

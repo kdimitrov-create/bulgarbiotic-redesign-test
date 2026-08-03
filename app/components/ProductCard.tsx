@@ -5,7 +5,7 @@ import {StarRating} from './StarRating';
 import {WishlistButton} from './WishlistButton';
 import {CardBuyButton} from './CardBuyButton';
 import {ProductMarks} from './ProductMarks';
-import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
+import {realDiscountFor as synthDiscount, displayDiscountPercent} from '~/lib/active-discounts';
 
 const EUR_TO_BGN = 1.95583;
 
@@ -62,9 +62,7 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
   const eur = currency === 'EUR' ? priceAmount : priceAmount / EUR_TO_BGN;
   const bgn = currency === 'BGN' ? priceAmount : priceAmount * EUR_TO_BGN;
   const isOnSale = compareAmount > priceAmount;
-  const discountPct = isOnSale
-    ? (rulePct ?? productDiscount?.percent ?? Math.round((1 - priceAmount / compareAmount) * 100))
-    : 0;
+  const discountPct = displayDiscountPercent(rulePct, priceAmount, compareAmount);
   const compareEur = currency === 'EUR' ? compareAmount : compareAmount / EUR_TO_BGN;
 
   // Multi-variant range pricing

@@ -7,7 +7,7 @@ import {Pagination} from '~/components/Pagination';
 import {ProductMarks} from '~/components/ProductMarks';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
-import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts} from '~/lib/active-discounts';
+import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, displayDiscountPercent} from '~/lib/active-discounts';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 
 const EUR_TO_BGN = 1.95583;
@@ -286,9 +286,7 @@ function PromoCard({product}: {product: any}) {
   const priceAmount = parseFloat(priceObj?.amount ?? '0');
   let displayPriceAmount = priceAmount;
   let compareAmount = compareObj ? parseFloat(compareObj.amount) : 0;
-  let discountPct = isFinite(compareAmount) && compareAmount > priceAmount
-    ? (product.discount?.percent ?? Math.round((1 - priceAmount / compareAmount) * 100))
-    : 0;
+  let discountPct = displayDiscountPercent(null, priceAmount, compareAmount);
 
   // When no Storefront discount data is present but admin-mirror says
   // there IS an active rule, derive sale + msrp from real percent.

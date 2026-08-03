@@ -73,7 +73,7 @@ export function MonthlyPackages({
                 <span className="bb-month-mult">{pkg.months}×</span>
                 {image ? (
                   <img
-                    src={resize(image, 220)}
+                    src={resize(image, 420)}
                     alt=""
                     aria-hidden="true"
                     // Eager: this sits in the buy box, above the fold.
@@ -85,6 +85,10 @@ export function MonthlyPackages({
                     }}
                   />
                 ) : null}
+                {/* The photo is portrait, so it is drawn oversized and cut off.
+                    The gradient does the cutting instead of a hard edge — a
+                    straight crop across a product box reads as a broken image. */}
+                <span className="bb-month-fade" aria-hidden="true" />
               </div>
 
               <span className="bb-month-name">{pkg.months}-месечен пакет</span>
@@ -138,12 +142,13 @@ export function MonthlyPackages({
         .bb-month {
           position: relative;
           display: flex; flex-direction: column; align-items: center; gap: 3px;
-          padding: 18px 14px 14px;
+          padding: 0 14px 14px;
           border: 2px solid rgba(10, 37, 64, 0.12);
           border-radius: 18px;
           background: #fff;
           cursor: pointer;
           text-align: center;
+          overflow: hidden;
           transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
         }
         .bb-month:hover { border-color: var(--color-pink-2); transform: translateY(-2px); }
@@ -152,27 +157,42 @@ export function MonthlyPackages({
           box-shadow: 0 10px 26px -14px rgba(227, 22, 108, 0.55);
         }
 
-        /* The ribbon overlaps the top edge, so the card carries extra headroom. */
+        /* Inside the card now: the photo runs to the edges and the card clips
+           its overflow, so a ribbon straddling the top border would be cut in
+           half. Top-right, opposite the multiplier. */
         .bb-month-flag {
-          position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+          position: absolute; top: 10px; right: 10px; z-index: 4;
           background: var(--color-brand-pink); color: #fff;
-          font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
-          text-transform: uppercase; padding: 5px 12px; border-radius: 999px;
+          font-size: 9.5px; font-weight: 800; letter-spacing: 0.06em;
+          text-transform: uppercase; padding: 5px 10px; border-radius: 999px;
           white-space: nowrap; box-shadow: 0 6px 14px -6px rgba(227, 22, 108, 0.7);
         }
 
+        /* The photo gets the whole width of the card and is cropped by the
+           container; the fade below turns the crop into a soft landing. */
         .bb-month-visual {
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          margin-bottom: 6px; min-height: 74px;
+          position: relative;
+          width: calc(100% + 28px); margin: 0 -14px 4px;
+          height: 132px; overflow: hidden;
+          background: radial-gradient(120% 90% at 50% 0%, #fff 0%, var(--color-cream-2) 100%);
         }
         .bb-month-mult {
+          position: absolute; left: 10px; top: 10px; z-index: 3;
+          width: 38px; height: 38px; border-radius: 50%;
+          background: var(--color-ink); color: #fff;
+          display: flex; align-items: center; justify-content: center;
           font-family: var(--font-serif);
-          font-size: 26px; font-weight: 600; letter-spacing: -1px;
-          color: var(--color-ink); line-height: 1;
+          font-size: 15px; font-weight: 600; letter-spacing: -0.5px;
         }
         .bb-month-img {
-          width: 74px; height: 74px; object-fit: contain;
-          background: transparent; border-radius: 0;
+          position: absolute; left: 50%; top: 6px; transform: translateX(-50%);
+          height: 190px; width: auto; max-width: none;
+          object-fit: contain; background: transparent; border-radius: 0;
+          aspect-ratio: auto;
+        }
+        .bb-month-fade {
+          position: absolute; left: 0; right: 0; bottom: 0; height: 62px; z-index: 2;
+          background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #fff 78%);
         }
 
         .bb-month-name { font-size: 14.5px; font-weight: 800; color: var(--color-ink); }
@@ -209,9 +229,10 @@ export function MonthlyPackages({
         .bb-month-add:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @media (max-width: 400px) {
+          /* One per row here, so the photo has the full column width to fill. */
           .bb-months-grid { grid-template-columns: 1fr; }
-          .bb-month-visual { min-height: 62px; }
-          .bb-month-img { width: 62px; height: 62px; }
+          .bb-month-visual { height: 150px; }
+          .bb-month-img { height: 215px; }
         }
       `}</style>
     </div>
