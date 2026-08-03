@@ -3,6 +3,7 @@ import type {CartData} from '@cloudcart/nitro';
 import {getEnhancedFeatured} from '~/lib/product-images';
 import {CheckoutButton} from './CheckoutButton';
 import {fallbackToPlaceholder} from './CartDrawer';
+import {CartOffersStrip} from './CartOffers';
 import {bestDiscountForHandle} from '~/lib/active-discounts';
 import {
   EUR_TO_BGN,
@@ -75,6 +76,8 @@ export function CartPage({cart}: {cart: CartData | null}) {
             <div className="bb-cart-shipping-track">
               <div className="bb-cart-shipping-fill" style={{width: `${shippingPct}%`}} />
             </div>
+            {/* The merchant's gift offers and cart rules, live from the panel. */}
+            <CartOffersStrip subtotalEur={subtotalEur} />
           </div>
 
           <ul className="bb-cart-items">

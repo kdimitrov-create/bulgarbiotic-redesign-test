@@ -7,6 +7,8 @@ import {fetchProductMarks} from '~/lib/product-marks.server';
 import {setProductMarks} from '~/lib/product-marks';
 import {fetchQuantityPackages} from '~/lib/quantity-packages.server';
 import {setQuantityPackages} from '~/lib/quantity-packages';
+import {fetchCartOffers} from '~/lib/cart-offers.server';
+import {setCartOffers} from '~/lib/cart-offers';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {AsideProvider, Aside} from '~/components/Aside';
 import {CartDrawer} from '~/components/CartDrawer';
@@ -38,16 +40,18 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // and they read this module synchronously.
   // Labels and banners ride along for the same reason: the listing queries do
   // not return them, so without this the badges only ever appear on the PDP.
-  const [live, marks, packages] = await Promise.all([
+  const [live, marks, packages, offers] = await Promise.all([
     fetchAutoDiscounts(env),
     fetchProductMarks(env),
     fetchQuantityPackages(env),
+    fetchCartOffers(env),
   ]);
   setAutoDiscounts(live?.discounts, live?.handles);
   setProductMarks(marks);
   setQuantityPackages(packages);
+  setCartOffers(offers);
 
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages};
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -83,6 +87,7 @@ export default function App() {
   setAutoDiscounts(data?.live?.discounts, data?.live?.handles);
   setProductMarks(data?.marks);
   setQuantityPackages(data?.packages);
+  setCartOffers(data?.offers);
 
   const shop = data?.shop ?? {name: 'Bulgar Biotic', description: null};
 

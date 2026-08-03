@@ -76,7 +76,8 @@ export function MonthlyPackages({
                     src={resize(image, 220)}
                     alt=""
                     aria-hidden="true"
-                    loading="lazy"
+                    // Eager: this sits in the buy box, above the fold.
+                    loading="eager"
                     className="bb-month-img"
                     onError={(e) => {
                       const base = image.split('?')[0];

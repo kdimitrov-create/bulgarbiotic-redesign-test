@@ -6,6 +6,7 @@ import {getEnhancedFeatured} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {bestDiscountFor, bestDiscountForHandle} from '~/lib/active-discounts';
 import {CheckoutButton} from './CheckoutButton';
+import {CartOffersStrip} from './CartOffers';
 
 export const EUR_TO_BGN = 1.95583;
 // Free-shipping target = the merchant's BumpCart `totalCartAmount` setting
@@ -129,6 +130,8 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
           <div className="bb-cd-shipping-track">
             <div className="bb-cd-shipping-fill" style={{width: `${shippingPct}%`}} />
           </div>
+          {/* The merchant's gift offers and cart rules, live from the panel. */}
+          <CartOffersStrip subtotalEur={subtotal.eur} />
         </div>
       )}
 
