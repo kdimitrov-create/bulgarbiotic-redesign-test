@@ -5,6 +5,7 @@ import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {ProductMarks} from '~/components/ProductMarks';
+import {markPricing} from '~/lib/product-marks';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
 import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, displayDiscountPercent} from '~/lib/active-discounts';
@@ -269,34 +270,18 @@ export default function PromotionsPage() {
 
 /** Promo-specific product card — bigger discount badge, EUR primary price. */
 function PromoCard({product}: {product: any}) {
-  const variant = product.variants?.nodes?.[0];
-  const priceObj = variant?.price ?? product.priceRange?.minVariantPrice;
-  // Real Storefront-exposed discount data if present
-  let compareObj: any = variant?.compareAtPrice
-    ?? product.discount?.msrpPrice
-    ?? null;
-
-  // Live (real) price the customer will be CHARGED at checkout —
-  // CloudCart auto-applies the active discount engine, so this is
-  // the post-discount amount the cart will reflect once integration
-  // wires it through. For display, we compute the "msrp / was" price
-  // by reversing the discount % from our admin-API mirror.
-  const realDiscount = bestDiscountFor(product.id);
+  // Both prices exactly as CloudCart reports them.
+  //
+  // 🛑 This block used to do `price × (1 − percent/100)` whenever the query gave
+  // it no compare price — and the paginated listing fragment never does. The
+  // catalogue price already has the promotion applied, so that turned a 17.67 €
+  // product into 9.90 € on the card while the product page said 17.67 €.
+  const {price: priceObj, compareAtPrice: compareObj} = markPricing(product);
 
   const priceAmount = parseFloat(priceObj?.amount ?? '0');
-  let displayPriceAmount = priceAmount;
-  let compareAmount = compareObj ? parseFloat(compareObj.amount) : 0;
-  let discountPct = displayDiscountPercent(null, priceAmount, compareAmount);
-
-  // When no Storefront discount data is present but admin-mirror says
-  // there IS an active rule, derive sale + msrp from real percent.
-  // Note: bulgarbiotic.bg shows the storefront `price` already as the
-  // pre-discount amount, so sale = price × (1 − percent/100), msrp = price.
-  if (!compareObj && realDiscount && priceAmount > 0) {
-    discountPct = realDiscount.percent;
-    compareAmount = priceAmount; // original
-    displayPriceAmount = priceAmount * (1 - realDiscount.percent / 100);
-  }
+  const displayPriceAmount = priceAmount;
+  const compareAmount = compareObj ? parseFloat(compareObj.amount) : 0;
+  const discountPct = displayDiscountPercent(null, priceAmount, compareAmount);
 
   const currency = (priceObj?.currencyCode ?? 'EUR') as 'EUR' | 'BGN';
   const eur = currency === 'EUR' ? displayPriceAmount : displayPriceAmount / EUR_TO_BGN;

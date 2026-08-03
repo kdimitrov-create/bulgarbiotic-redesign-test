@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from 'react';
 import {AddToCartButton} from './AddToCartButton';
-import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
+import {markPricing} from '~/lib/product-marks';
 
 interface Props {
   product: {
@@ -96,10 +96,10 @@ export function MobileStickyCart({product, variant}: Props) {
     return () => document.body.classList.remove('bb-pdp-sticky-active');
   }, [visible]);
 
-  // Apply synthesised store-wide promo if no real discount is set.
-  const synth = synthDiscount(product as any, variant.price);
-  const livePrice = synth ? synth.salePrice : variant.price;
-  const msrpPrice = synth ? synth.msrpPrice : null;
+  // Same price pair as the buy box above — read from CloudCart, never computed.
+  const shared = markPricing(product as any);
+  const livePrice = variant.price ?? shared.price;
+  const msrpPrice = variant.compareAtPrice ?? shared.compareAtPrice;
 
   const amount = parseFloat(livePrice.amount);
   const currency = (livePrice.currencyCode ?? 'EUR') as 'EUR' | 'BGN';

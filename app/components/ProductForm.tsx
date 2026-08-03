@@ -4,7 +4,7 @@ import {VariantSelector} from '@cloudcart/nitro-react';
 import {AddToCartButton} from './AddToCartButton';
 import {OptionSwatch} from './OptionSwatch';
 import {MonthlyPackages} from './pdp/MonthlyPackages';
-import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
+import {markPricing} from '~/lib/product-marks';
 
 interface ProductFormProps {
   product: any;
@@ -38,27 +38,12 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
   const variant = selectedVariant;
   const hasMultiplePrices =
     product.priceRange.minVariantPrice.amount !== product.priceRange.maxVariantPrice.amount;
-  // Sale-source priority:
-  //   1) variant.compareAtPrice (variant-specific override)
-  //   2) product.discount.msrpPrice (catalogue-wide active discount)
-  //   3) synthDiscount() — synthesises the active store-wide promo when
-  //      neither of the above is set (CloudCart Storefront API doesn't
-  //      surface auto-applied catalogue promos like "−30% за май").
-  const productDiscount = (product as any).discount;
-  const variantCompare = variant?.compareAtPrice;
-  let comparePriceObj: {amount: string; currencyCode?: string} | null =
-    variantCompare && parseFloat(variantCompare.amount) > parseFloat(variant?.price?.amount ?? '0')
-      ? variantCompare
-      : (productDiscount?.msrpPrice ?? null);
-  let livePriceObj = variant?.price ?? product.priceRange.minVariantPrice;
-
-  if (!comparePriceObj) {
-    const synth = synthDiscount(product, livePriceObj);
-    if (synth) {
-      comparePriceObj = synth.msrpPrice;
-      livePriceObj = synth.salePrice;
-    }
-  }
+  // Both prices as CloudCart reports them. The selected variant wins over the
+  // product-level snapshot, because a variant can be priced on its own.
+  const shared = markPricing(product);
+  const livePriceObj = variant?.price ?? shared.price ?? product.priceRange.minVariantPrice;
+  const comparePriceObj: {amount: string; currencyCode?: string} | null =
+    variant?.compareAtPrice ?? shared.compareAtPrice ?? null;
 
   const isOnSale = !!(
     comparePriceObj &&

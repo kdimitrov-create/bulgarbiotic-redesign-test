@@ -31,10 +31,17 @@ const QUERY = `query ProductMarks($first: Int!, $after: String) {
       isFeatured
       labels { name color textColor }
       banners { id name imageUrl position }
+      priceRange { minVariantPrice { amount currencyCode } }
+      compareAtPriceRange { minVariantPrice { amount currencyCode } }
     }
     pageInfo { hasNextPage endCursor }
   }
 }`;
+
+interface RawMoney {
+  amount: string;
+  currencyCode: string;
+}
 
 interface RawNode {
   id: string;
@@ -42,6 +49,8 @@ interface RawNode {
   isFeatured: boolean;
   labels: Array<{name: string; color: string | null; textColor: string | null}> | null;
   banners: Array<{id: string; name: string | null; imageUrl: string; position: string}> | null;
+  priceRange: {minVariantPrice: RawMoney | null} | null;
+  compareAtPriceRange: {minVariantPrice: RawMoney | null} | null;
 }
 
 let cache: {at: number; data: Record<string, ProductMark>} | null = null;
@@ -88,6 +97,11 @@ export async function fetchProductMarks(
             imageUrl: b.imageUrl,
             position: (String(b.position || 'bl').toLowerCase() as ProductMark['banners'][number]['position']),
           })),
+          // The listing fragment CloudCart ships asks for `priceRange` only, so
+          // without these two a category card cannot tell a discounted price
+          // from a regular one. That gap is what produced a second 44 % cut.
+          price: node.priceRange?.minVariantPrice ?? null,
+          compareAtPrice: node.compareAtPriceRange?.minVariantPrice ?? null,
         };
       }
 

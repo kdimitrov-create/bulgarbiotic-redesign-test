@@ -255,38 +255,13 @@ export function discountedProductIds(): Set<string> {
  *  - The base price is missing / non-positive
  */
 export function realDiscountFor(
-  product: {
-    id?: string;
-    handle?: string;
-    discount?: unknown;
-    variants?: {nodes?: Array<{compareAtPrice?: unknown}>};
-  },
-  basePrice: {amount: string; currencyCode?: string} | null | undefined,
+  _product: unknown,
+  _basePrice: {amount: string; currencyCode?: string} | null | undefined,
 ): {
   salePrice: {amount: string; currencyCode?: string};
   msrpPrice: {amount: string; currencyCode?: string};
   percent: number;
   label: string;
 } | null {
-  if (!basePrice) return null;
-  // Always defer to real CloudCart-provided discount if present.
-  if ((product as any).discount?.msrpPrice) return null;
-  const firstVariant = product.variants?.nodes?.[0] as any;
-  if (firstVariant?.compareAtPrice?.amount) return null;
-
-  const best = bestDiscountFor(product.id);
-  if (!best || best.percent <= 0) return null;
-
-  const msrp = parseFloat(basePrice.amount);
-  if (!isFinite(msrp) || msrp <= 0) return null;
-  const sale = msrp * (1 - best.percent / 100);
-  return {
-    salePrice: {amount: sale.toFixed(2), currencyCode: basePrice.currencyCode},
-    msrpPrice: {amount: msrp.toFixed(2), currencyCode: basePrice.currencyCode},
-    percent: best.percent,
-    // Human-readable label for the badge — use a friendly Bulgarian
-    // phrasing instead of the raw discount name ("15", "30%-may-kampaniq")
-    // which is internal merchant naming, not customer-facing copy.
-    label: `−${best.percent}% автоматично`,
-  };
+  return null;
 }

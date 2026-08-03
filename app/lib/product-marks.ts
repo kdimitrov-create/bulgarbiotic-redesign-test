@@ -38,11 +38,20 @@ export interface ProductLabel {
   textColor?: string | null;
 }
 
+export interface MarkMoney {
+  amount: string;
+  currencyCode: string;
+}
+
 export interface ProductMark {
   isNew: boolean;
   isFeatured: boolean;
   labels: ProductLabel[];
   banners: ProductBanner[];
+  /** What the shopper pays today — already includes any running promotion. */
+  price: MarkMoney | null;
+  /** The struck-through "was" price, straight from `compareAtPriceRange`. */
+  compareAtPrice: MarkMoney | null;
 }
 
 /** A text badge, already translated and coloured, ready to render. */
@@ -54,7 +63,14 @@ export interface MarkTag {
   fg: string;
 }
 
-const EMPTY: ProductMark = {isNew: false, isFeatured: false, labels: [], banners: []};
+const EMPTY: ProductMark = {
+  isNew: false,
+  isFeatured: false,
+  labels: [],
+  banners: [],
+  price: null,
+  compareAtPrice: null,
+};
 
 /**
  * The two built-in CloudCart labels come back in English and duplicate the
@@ -103,7 +119,48 @@ export function marksFor(product: any): ProductMark {
     isFeatured: product?.isFeatured ?? shared.isFeatured,
     labels: ownLabels?.length ? ownLabels : shared.labels,
     banners: ownBanners?.length ? ownBanners : shared.banners,
+    price: shared.price,
+    compareAtPrice: shared.compareAtPrice,
   };
+}
+
+/**
+ * The authoritative price pair for a product: what it costs now and what it
+ * cost before the promotion.
+ *
+ * Why this exists: CloudCart's `PRODUCT_LISTING_FIELDS` — the fragment behind
+ * every paginated category page — asks for `priceRange` and nothing else. No
+ * variants, no `compareAtPrice`, no `discount`. A listing card therefore sees
+ * only the already-discounted price with no sign that a promotion is running,
+ * which is how a 17.67 € product ended up advertised at 9.90 €: the card
+ * assumed the price was the pre-discount one and took 44 % off it a second time.
+ *
+ * 🛑 NEVER compute a sale price by applying a percentage to a catalogue price.
+ * CloudCart already folds active promotions into `priceRange`; the "was" price
+ * is `compareAtPriceRange`, which the catalogue fetch supplies here for the
+ * surfaces whose own query left it out.
+ */
+export function markPricing(product: any): {price: MarkMoney | null; compareAtPrice: MarkMoney | null} {
+  const shared = marksFor(product);
+  const variant = product?.variants?.nodes?.[0];
+
+  const price: MarkMoney | null =
+    variant?.price ?? product?.priceRange?.minVariantPrice ?? shared.price ?? null;
+
+  // Order matters: a variant-level override beats the product-level one, and a
+  // range from the product's own query beats the shared catalogue snapshot.
+  const compareAtPrice: MarkMoney | null =
+    variant?.compareAtPrice ??
+    product?.discount?.msrpPrice ??
+    product?.compareAtPriceRange?.minVariantPrice ??
+    shared.compareAtPrice ??
+    null;
+
+  // A "was" price at or below the current one is not a promotion — CloudCart
+  // returns the regular price there when nothing is running.
+  const compare = compareAtPrice ? parseFloat(compareAtPrice.amount) : 0;
+  const now = price ? parseFloat(price.amount) : 0;
+  return {price, compareAtPrice: compare > now ? compareAtPrice : null};
 }
 
 /**

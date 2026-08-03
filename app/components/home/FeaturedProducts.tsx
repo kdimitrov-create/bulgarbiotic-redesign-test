@@ -2,7 +2,8 @@ import {Link, useFetcher} from 'react-router';
 import {useRef, useState, useEffect} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
-import {realDiscountFor as synthDiscount, displayDiscountPercent} from '~/lib/active-discounts';
+import {displayDiscountPercent} from '~/lib/active-discounts';
+import {markPricing} from '~/lib/product-marks';
 import {WishlistButton} from '~/components/WishlistButton';
 import {ProductMarks} from '~/components/ProductMarks';
 import {useAside} from '~/components/Aside';
@@ -185,19 +186,9 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
               // Resolve effective sale + msrp exactly like the category ProductCard
               // (variant.compareAtPrice → product.discount.msrpPrice → synthesised),
               // so on-sale products turn the price pink — same as the PDP.
-              const variant0 = (p as any).variants?.nodes?.[0];
-              const basePrice = variant0?.price ?? p.priceRange.minVariantPrice;
-              const variantCompare = variant0?.compareAtPrice;
-              const realMsrp =
-                variantCompare &&
-                parseFloat(variantCompare.amount) > parseFloat(basePrice?.amount ?? '0')
-                  ? variantCompare
-                  : (p as any).discount?.msrpPrice ?? null;
-              const synth = !realMsrp ? synthDiscount(p, basePrice) : null;
-              const effectivePrice = synth ? synth.salePrice : basePrice;
-              const effectiveMsrp = realMsrp ?? synth?.msrpPrice ?? null;
+              const {price: effectivePrice, compareAtPrice: effectiveMsrp} = markPricing(p);
               const effectivePct = displayDiscountPercent(
-                synth?.percent,
+                null,
                 parseFloat(effectivePrice?.amount ?? '0'),
                 parseFloat(effectiveMsrp?.amount ?? '0'),
               );

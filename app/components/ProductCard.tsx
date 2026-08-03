@@ -5,7 +5,8 @@ import {StarRating} from './StarRating';
 import {WishlistButton} from './WishlistButton';
 import {CardBuyButton} from './CardBuyButton';
 import {ProductMarks} from './ProductMarks';
-import {realDiscountFor as synthDiscount, displayDiscountPercent} from '~/lib/active-discounts';
+import {displayDiscountPercent} from '~/lib/active-discounts';
+import {markPricing} from '~/lib/product-marks';
 
 const EUR_TO_BGN = 1.95583;
 
@@ -31,38 +32,17 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
   const p = product as any;
   const reviewSummary = p.reviewSummary;
 
-  const variant = p.variants?.nodes?.[0];
-  let priceObj = variant?.price ?? p.priceRange?.minVariantPrice;
-  // Discount sources, in order:
-  //   1) variant.compareAtPrice
-  //   2) product.discount.msrpPrice (CloudCart catalogue promo)
-  //   3) synthDiscount() — store-wide promo synthesised client-side
-  //      because CloudCart's Storefront API doesn't surface auto-applied
-  //      catalogue promos through the GraphQL response.
-  const variantCompare = variant?.compareAtPrice;
-  const productDiscount = p.discount;
-  let compareObj =
-    variantCompare && parseFloat(variantCompare.amount) > parseFloat(priceObj?.amount ?? '0')
-      ? variantCompare
-      : (productDiscount?.msrpPrice ?? null);
-  let rulePct: number | null = null;
-  if (!compareObj && priceObj) {
-    const synth = synthDiscount(p, priceObj);
-    if (synth) {
-      compareObj = synth.msrpPrice;
-      priceObj = synth.salePrice;
-      // Keep the rule's own percentage. Deriving it back from the rounded sale
-      // price prints 32% for a 33% rule, which contradicts the admin panel.
-      rulePct = synth.percent;
-    }
-  }
+  // Both prices come straight from CloudCart — the one the shopper pays and the
+  // one it was before. Nothing here multiplies a price by a percentage; the
+  // catalogue price already has the promotion in it.
+  const {price: priceObj, compareAtPrice: compareObj} = markPricing(p);
   const priceAmount = priceObj ? parseFloat(priceObj.amount) : 0;
   const compareAmount = compareObj ? parseFloat(compareObj.amount) : 0;
   const currency = (priceObj?.currencyCode ?? 'EUR') as 'EUR' | 'BGN';
   const eur = currency === 'EUR' ? priceAmount : priceAmount / EUR_TO_BGN;
   const bgn = currency === 'BGN' ? priceAmount : priceAmount * EUR_TO_BGN;
   const isOnSale = compareAmount > priceAmount;
-  const discountPct = displayDiscountPercent(rulePct, priceAmount, compareAmount);
+  const discountPct = displayDiscountPercent(null, priceAmount, compareAmount);
   const compareEur = currency === 'EUR' ? compareAmount : compareAmount / EUR_TO_BGN;
 
   // Multi-variant range pricing
