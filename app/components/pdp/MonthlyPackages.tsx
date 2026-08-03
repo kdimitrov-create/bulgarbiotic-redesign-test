@@ -203,7 +203,9 @@ export function MonthlyPackages({
           padding: 11px 14px;
           transition: background 0.18s, transform 0.12s;
         }
-        .bb-month-add:hover:not(:disabled) { background: var(--color-ink); transform: translateY(-1px); }
+        /* Same green as the main "Купи" button (#15803d = the "В наличност"
+           green), so the two CTAs on the page behave identically on hover. */
+        .bb-month-add:hover:not(:disabled) { background: #15803d; transform: translateY(-1px); }
         .bb-month-add:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @media (max-width: 400px) {

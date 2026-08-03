@@ -23,10 +23,20 @@ import {
  * escape and pin themselves to the page.
  */
 
+/**
+ * Banner geometry is expressed as a share of the product photo, because the same
+ * card is ~300px wide in the home carousel and ~155px in a four-column grid.
+ *
+ * These land in an INLINE style on purpose. Several surfaces style their images
+ * from a component-level <style> block — `.bb-pcard-image img { height: 100% }`
+ * in the home carousel, for one — and those blocks are emitted after app.css, so
+ * a class rule of equal specificity loses and the marks get stretched to the
+ * full height of the card. Inline wins against all of them without !important.
+ */
 const SIZES = {
-  sm: {inset: 12, banner: 58},
-  md: {inset: 10, banner: 74},
-  lg: {inset: 12, banner: 84},
+  sm: {inset: 12, width: '27%', maxWidth: 62, minWidth: 34, cdn: 62},
+  md: {inset: 10, width: '30%', maxWidth: 74, minWidth: 38, cdn: 74},
+  lg: {inset: 12, width: '17%', maxWidth: 88, minWidth: 58, cdn: 88},
 } as const;
 
 type Size = keyof typeof SIZES;
@@ -94,7 +104,7 @@ export function ProductMarkBanners({
   tagRows?: number;
 }) {
   const banners = markBanners(product);
-  const {inset, banner: bannerSize} = SIZES[size];
+  const {inset, width, maxWidth, minWidth, cdn} = SIZES[size];
 
   return (
     <>
@@ -102,14 +112,23 @@ export function ProductMarkBanners({
         banners[corner].map((banner) => (
           <img
             key={`${corner}-${banner.id}`}
-            src={bannerImageUrl(banner.imageUrl, bannerSize)}
+            src={bannerImageUrl(banner.imageUrl, cdn)}
             alt=""
             aria-hidden="true"
             loading="lazy"
-            className={`pm-banner pm-banner-${size}`}
+            className="pm-banner"
             style={{
-              // Only placement is inline — the size lives in CSS so it can scale
-              // with the card instead of being frozen at one pixel value.
+              position: 'absolute',
+              zIndex: 2,
+              width,
+              maxWidth,
+              minWidth,
+              height: 'auto',
+              aspectRatio: '1 / 1',
+              objectFit: 'contain',
+              borderRadius: 0,
+              background: 'transparent',
+              pointerEvents: 'none',
               // Both top corners are usually taken — "tl" by the tag stack and
               // "tr" by the wishlist heart — so a banner there starts below them.
               ...(corner === 'tl' || corner === 'tr'

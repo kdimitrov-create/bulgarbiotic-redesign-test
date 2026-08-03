@@ -4294,32 +4294,16 @@ body.bb-pdp-sticky-active { padding-bottom: 84px; }
 /* `img.` on purpose: several surfaces style their images with utility classes
    like [&_img]:object-cover / rounded-xl / aspect-square, and a plain .pm-banner
    would tie with them on specificity and lose to whichever came last. */
+/* Position and size live in an inline style on the element — see the comment in
+   ProductMarks.tsx. Only the shadow is left here, because nothing competes for
+   it and it is the one thing worth keeping editable in one place. */
 img.pm-banner {
-  position: absolute;
-  z-index: 2;
-  object-fit: contain;
-  border-radius: 0;
-  background: transparent;
-  pointer-events: none;
   user-select: none;
   filter: drop-shadow(0 3px 10px rgba(10, 37, 64, 0.22));
-  /* Sized against the photo, not in fixed pixels: the same card is ~300px wide
-     in the home carousel and ~155px in a four-column grid, and 74px there ate
-     half the product. Two marks (bottom-left + bottom-right) have to fit side
-     by side without touching, which caps each at just under a third. */
-  width: 30%;
-  max-width: 74px;
-  min-width: 38px;
-  height: auto;
-  aspect-ratio: 1 / 1;
 }
 
-img.pm-banner-sm { width: 27%; max-width: 62px; }
-img.pm-banner-lg { width: 17%; max-width: 88px; min-width: 58px; }
-
 @media (max-width: 560px) {
-  /* Cards are roughly half as wide here — a full-size mark would swallow the
-     product photo, which is the one thing the shopper is actually looking at. */
-  img.pm-banner { max-width: 54px; min-width: 32px; }
+  /* The banners already shrink with the card because their width is a
+     percentage; only the pills need help at this size. */
   .pm-tag { padding: 4px 8px; font-size: 9px; }
 }
