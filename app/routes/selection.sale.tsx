@@ -76,6 +76,25 @@ export async function loader({context, request}: Route.LoaderArgs) {
     return numericId ? realDiscountIds.has(numericId) : false;
   });
 
+  // The page above is only the first 60 products by the chosen sort, so a
+  // discounted product outside that window never made it onto the page. The
+  // live discount data carries the handles of exactly the targeted products —
+  // fetch those directly and merge, so the page is driven by the discounts
+  // rather than by whatever happened to be on page one.
+  const liveHandles = Object.values(live?.handles ?? {});
+  if (liveHandles.length) {
+    const seen = new Set(discounted.map((p: any) => String(p.id)));
+    const fetched = await Promise.all(
+      liveHandles.map((h) => ctx.storefront.getProduct(h).catch(() => null)),
+    );
+    for (const prod of enhanceProducts(fetched.filter(Boolean) as any[])) {
+      if (!seen.has(String((prod as any).id))) {
+        seen.add(String((prod as any).id));
+        discounted.push(prod as any);
+      }
+    }
+  }
+
   // Sort by biggest discount first so the deepest deals lead (overrides
   // the CloudCart sort when the chosen sort is by price). Real discount
   // percent comes from `bestDiscountFor` (admin mirror).
