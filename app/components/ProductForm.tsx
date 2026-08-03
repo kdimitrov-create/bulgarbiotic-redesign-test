@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {VariantSelector} from '@cloudcart/nitro-react';
 import {AddToCartButton} from './AddToCartButton';
 import {OptionSwatch} from './OptionSwatch';
+import {MonthlyPackages} from './pdp/MonthlyPackages';
 import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
 
 interface ProductFormProps {
@@ -153,6 +154,18 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
           })
         }
       </VariantSelector>
+
+      {/* Месечни пакети — the merchant's quantity discounts from the admin
+          panel. Picking one just sets the quantity below, so there is still a
+          single add-to-cart path. */}
+      {variant && price && (
+        <MonthlyPackages
+          productId={product.id}
+          singlePriceEur={price.eur}
+          quantity={qty}
+          onSelect={(next) => setQty(Math.min(maxQty, next))}
+        />
+      )}
 
       {/* Quantity + Add to cart row */}
       {variant && (
