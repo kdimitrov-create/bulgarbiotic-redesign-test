@@ -17,7 +17,9 @@ import type {AutoDiscount} from './active-discounts';
  */
 
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 min — promos change rarely; keep edge calls cheap
-const REQUEST_TIMEOUT_MS = 4000;
+// 8s, not 4: a cold worker plus a slow admin response was timing out and
+// silently falling back, which is why some pages showed live data and others did not.
+const REQUEST_TIMEOUT_MS = 8000;
 
 export interface LiveDiscounts {
   discounts: AutoDiscount[];

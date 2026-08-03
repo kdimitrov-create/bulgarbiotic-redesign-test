@@ -45,14 +45,17 @@ export interface AutoDiscount {
  * Discount 473 ("20 bf - prolet mart") was excluded — its dateEnd
  * 2026-04-30 had already passed at sync time (2026-05-21).
  */
-export const AUTO_DISCOUNTS: AutoDiscount[] = [
-  {id: '489', name: '15',                   percent: 15, dateEnd: '2026-05-30', orderOver: null, productIds: ['90', '103', '67', '68']},
-  {id: '485', name: '35-may-kampaniq-2026', percent: 35, dateEnd: '2026-06-30', orderOver: null, productIds: ['79', '82']},
-  {id: '482', name: '40 bf prolet',         percent: 40, dateEnd: '2026-06-30', orderOver: null, productIds: ['80']},
-  {id: '472', name: '10 bf prolet',         percent: 10, dateEnd: '2026-05-30', orderOver: null, productIds: ['38', '61', '81', '82', '83']},
-  {id: '469', name: '25 bf prolet mart',    percent: 25, dateEnd: '2026-05-30', orderOver: null, productIds: ['57', '58', '62', '80']},
-  {id: '467', name: '30%-may-kampaniq',     percent: 30, dateEnd: '2026-06-30', orderOver: null, productIds: ['13', '14', '37', '59', '75']},
-];
+/**
+ * Deliberately EMPTY. This used to mirror the merchant's rules by hand, but every
+ * entry had expired (May–June 2026) while the lookups never checked `dateEnd`, so
+ * the site advertised discounts that checkout no longer applied — a customer saw
+ * 23.67 € on the PDP and paid 31.56 €.
+ *
+ * Live rules now come from the Admin API (`live-discounts.server.ts`). When that
+ * call fails, falling back to NOTHING is the safe outcome: a missing badge is a
+ * cosmetic loss, a wrong price destroys trust. Do not repopulate this by hand.
+ */
+export const AUTO_DISCOUNTS: AutoDiscount[] = [];
 
 /**
  * Numeric product ID → URL handle map for the 20 SKUs that participate
