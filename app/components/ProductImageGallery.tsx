@@ -1,10 +1,13 @@
 import {useState, useCallback} from 'react';
 import type {Image as ImageType} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
+import {ProductMarkBanners} from './ProductMarks';
 
-export function ProductImageGallery({images, featuredImage}: {
+export function ProductImageGallery({images, featuredImage, product}: {
   images: ImageType[];
   featuredImage: ImageType | null;
+  /** Only used to draw the admin-configured banners over the main image. */
+  product?: any;
 }) {
   const allImages = images.filter((img) => img?.url).length > 0 ? images.filter((img) => img?.url) : featuredImage?.url ? [featuredImage] : [];
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -24,29 +27,11 @@ export function ProductImageGallery({images, featuredImage}: {
     <div onKeyDown={allImages.length > 1 ? handleKeyDown : undefined}>
       <div className="relative [&_img]:w-full [&_img]:rounded-xl [&_img]:aspect-square [&_img]:object-cover [&_img]:bg-gray-100">
         <Image data={selectedImage} alt={selectedImage.altText ?? ''} loading="eager" />
-        {/* Client (2026-07): circular trust-badge image replaces the old
-            "Клин. доказани щамове" text pill. Sizing is inline so it overrides
-            the parent's [&_img]:w-full / aspect-square / object-cover rules.
-            Moved to the BOTTOM-left (2026-07-31) so it no longer covers the
-            badge baked into the product photo's own top-left corner. */}
-        <img
-          src="https://bulgarbiotic.bg/cdn/img/products_banners/2/A_circular_graphic_transparent_100x100%20%281%29.png?width=150&height=150&v=1777459060"
-          alt="Клинично доказани щамове"
-          loading="eager"
-          className="absolute bottom-3 left-3 z-10"
-          style={{
-            width: 78,
-            height: 78,
-            objectFit: 'contain',
-            background: 'transparent',
-            aspectRatio: 'auto',
-            borderRadius: 0,
-            filter: 'drop-shadow(0 4px 12px rgba(10,37,64,0.25))',
-          }}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).style.display = 'none';
-          }}
-        />
+        {/* The trust marks ("клинично доказани щамове", the Forbes award) come
+            from the admin panel, in the corner the merchant picked there. This
+            used to be a hardcoded <img> — one of three copies that had already
+            drifted apart across the site. */}
+        {product ? <ProductMarkBanners product={product} size="lg" /> : null}
       </div>
       {allImages.length > 1 && (
         <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-none" role="listbox" aria-label="Product images">

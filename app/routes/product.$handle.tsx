@@ -7,6 +7,7 @@ import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductImageGallery} from '~/components/ProductImageGallery';
+import {ProductMarks, ProductMarkTags} from '~/components/ProductMarks';
 import {Breadcrumbs} from '~/components/Breadcrumbs';
 import {StarRating} from '~/components/StarRating';
 import {WishlistButton} from '~/components/WishlistButton';
@@ -203,7 +204,6 @@ export default function ProductPage() {
 function ProductMedia({product, variant}: {product: any; variant: any}) {
   const isOnSale = variant?.compareAtPrice &&
     parseFloat(variant.compareAtPrice.amount) > parseFloat(variant.price.amount);
-  const labels: Array<{name: string; color?: string; textColor?: string}> = product.labels ?? [];
   // Prefer the admin rule's own percentage. Deriving it from prices rounded to two
   // decimals is what made this corner badge disagree with the one next to the price
   // (−44% here, −43% there) on the very same page.
@@ -219,42 +219,16 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
         <div className="absolute top-3 right-3 z-[2]">
           <WishlistButton productId={product.id} size="lg" />
         </div>
-        <div className="absolute top-3 left-3 z-[2] flex flex-wrap gap-1.5">
-          {product.isNew && (
-            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white">
-              Ново
-            </span>
-          )}
-          {product.isFeatured && (
-            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-amber-500 text-white">
-              Бестселър
-            </span>
-          )}
-          {isOnSale && (
-            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white">
-              {discountPct > 0 ? `−${discountPct}%` : 'Промо'}
-            </span>
-          )}
-          {product.availableForSale === false && (
-            <span className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
-              Изчерпан
-            </span>
-          )}
-          {labels
-            .filter((l) => !['New', 'Featured'].includes(l.name))
-            .map((label) => (
-              <span
-                key={label.name}
-                className="py-1 px-3 rounded-full text-[0.65rem] font-bold uppercase tracking-wider leading-none bg-gray-700 text-white"
-                style={label.color ? {backgroundColor: label.color, color: label.textColor || '#fff'} : undefined}
-              >
-                {label.name}
-              </span>
-            ))}
-        </div>
+        <ProductMarkTags
+          product={product}
+          discountPct={isOnSale ? discountPct : 0}
+          soldOut={product.availableForSale === false}
+          size="lg"
+        />
         <ProductImageGallery
           images={product.images?.nodes ?? []}
           featuredImage={product.featuredImage}
+          product={product}
         />
       </div>
     </div>
@@ -387,24 +361,12 @@ function LinkedProducts({products}: {products: any[]}) {
                   className="aspect-square object-cover w-full"
                 />
               )}
-              {p.availableForSale === false && (
-                <span className="absolute top-2 right-2 py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
-                  Изчерпан
-                </span>
-              )}
-              {p.labels?.length > 0 && (
-                <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                  {p.labels.slice(0, 1).map((label: any) => (
-                    <span
-                      key={label.name}
-                      className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white"
-                      style={label.color ? {backgroundColor: label.color, color: label.textColor || '#fff'} : undefined}
-                    >
-                      {label.name}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <ProductMarks
+                product={p}
+                soldOut={p.availableForSale === false}
+                discountPct={bestDiscountFor(p.id)?.percent ?? 0}
+                size="sm"
+              />
             </div>
             <h4 className="text-sm font-bold mt-3 leading-tight text-[var(--color-ink)] line-clamp-2">
               {p.title}

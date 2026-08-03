@@ -4250,3 +4250,65 @@ body.bb-pdp-sticky-active { padding-bottom: 84px; }
   .bb-cart-item { grid-template-columns: 76px 1fr; gap: 14px; }
   .bb-cart-item-price { grid-column: 2; text-align: left; margin-top: 4px; }
 }
+
+/* ============================================================
+   Продуктови етикети — ЕДИН набор правила за всички витрини.
+   Rendered by app/components/ProductMarks.tsx. Every listing, the home
+   carousel, "Промоции" and the product page use these exact rules, so a
+   product cannot look different depending on where you meet it.
+   ============================================================ */
+
+.pm-stack {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 72%;
+  pointer-events: none;
+}
+
+.pm-tag {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(10, 37, 64, 0.12);
+}
+
+/* The discount pill and "Изчерпан" are the two badges the merchant cannot
+   colour from the admin panel, so they keep fixed house colours. */
+.pm-tag-sale { background: var(--color-brand-pink); color: #fff; }
+.pm-tag-out  { background: var(--color-ink); color: #fff; }
+
+.pm-stack-sm .pm-tag { padding: 4px 9px; font-size: 9.5px; }
+.pm-stack-lg .pm-tag { padding: 6px 12px; font-size: 11px; }
+
+/* `img.` on purpose: several surfaces style their images with utility classes
+   like [&_img]:object-cover / rounded-xl / aspect-square, and a plain .pm-banner
+   would tie with them on specificity and lose to whichever came last. */
+img.pm-banner {
+  position: absolute;
+  z-index: 2;
+  object-fit: contain;
+  aspect-ratio: auto;
+  border-radius: 0;
+  background: transparent;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 3px 10px rgba(10, 37, 64, 0.22));
+}
+
+@media (max-width: 560px) {
+  /* Cards are roughly half as wide here — a full-size mark would swallow the
+     product photo, which is the one thing the shopper is actually looking at. */
+  img.pm-banner { width: 52px !important; height: 52px !important; }
+  .pm-tag { padding: 4px 8px; font-size: 9px; }
+}

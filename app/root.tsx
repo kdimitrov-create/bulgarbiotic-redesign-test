@@ -3,6 +3,8 @@ import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {setAutoDiscounts} from '~/lib/active-discounts';
+import {fetchProductMarks} from '~/lib/product-marks.server';
+import {setProductMarks} from '~/lib/product-marks';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {AsideProvider, Aside} from '~/components/Aside';
 import {CartDrawer} from '~/components/CartDrawer';
@@ -32,10 +34,13 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // Apply live discounts here, not only during render: route loaders and the
   // components that price cart lines can run before root's component body does,
   // and they read this module synchronously.
-  const live = await fetchAutoDiscounts(env);
+  // Labels and banners ride along for the same reason: the listing queries do
+  // not return them, so without this the badges only ever appear on the PDP.
+  const [live, marks] = await Promise.all([fetchAutoDiscounts(env), fetchProductMarks(env)]);
   setAutoDiscounts(live?.discounts, live?.handles);
+  setProductMarks(marks);
 
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live};
+  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -69,6 +74,7 @@ export default function App() {
   // Live discounts from the admin panel replace the static mirror, on the server
   // for SSR and again on the client after hydration.
   setAutoDiscounts(data?.live?.discounts, data?.live?.handles);
+  setProductMarks(data?.marks);
 
   const shop = data?.shop ?? {name: 'Bulgar Biotic', description: null};
 

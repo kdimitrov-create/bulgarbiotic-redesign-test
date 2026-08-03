@@ -4,6 +4,7 @@ import {Image} from '@cloudcart/nitro-react';
 import {StarRating} from './StarRating';
 import {WishlistButton} from './WishlistButton';
 import {CardBuyButton} from './CardBuyButton';
+import {ProductMarks} from './ProductMarks';
 import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
 
 const EUR_TO_BGN = 1.95583;
@@ -28,7 +29,6 @@ const fmt = (n: number, currency: 'EUR' | 'BGN') =>
  */
 export function ProductCard({product, loading}: {product: Product; loading?: 'eager' | 'lazy'}) {
   const p = product as any;
-  const labels: Array<{name: string; color?: string; textColor?: string}> = p.labels ?? [];
   const reviewSummary = p.reviewSummary;
 
   const variant = p.variants?.nodes?.[0];
@@ -95,61 +95,19 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           />
         )}
 
-        {/* Top-left badges stack */}
-        <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 max-w-[70%]">
-          {p.isNew && (
-            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white">
-              Ново
-            </span>
-          )}
-          {p.isFeatured && (
-            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-amber-500 text-white">
-              Бестселър
-            </span>
-          )}
-          {labels
-            .filter((l) => !['New', 'Featured'].includes(l.name))
-            .slice(0, 1)
-            .map((label) => (
-              <span
-                key={label.name}
-                className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-gray-700 text-white"
-                style={label.color ? {backgroundColor: label.color, color: label.textColor || '#fff'} : undefined}
-              >
-                {label.name}
-              </span>
-            ))}
-        </div>
-
-        {/* Top-right stack: discount % + sold out.
-            The discount badge moved here because the left stack already carries
-            the product labels ("клинично доказани щамове"). Both live in ONE
-            column so a sold-out product on promo stacks them instead of
-            overlapping. */}
-        <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 z-10">
+        {/* Above the badge overlay so the heart stays clickable. */}
+        <div className="absolute top-2.5 right-2.5 z-20">
           <WishlistButton productId={product.id} size="lg" />
-          {isOnSale && discountPct > 0 && (
-            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white shadow-sm">
-              −{discountPct}%
-            </span>
-          )}
-          {product.availableForSale === false && (
-            <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-ink)] text-white">
-              Изчерпан
-            </span>
-          )}
         </div>
 
-        {/* Real "клинично доказани щамове" mark from the store CDN, bottom-LEFT of
-            the image (the CSS-drawn circle it replaces was only a stand-in).
-            ⚠️ Served from the live store's CDN — copy it into public/ before the
-            real cutover so the storefront does not depend on another shop. */}
-        <img
-          src="https://bulgarbiotic.bg/cdn/img/products_banners/2/A_circular_graphic_transparent_100x100%20%281%29.png?width=150&height=150&v=1777459060"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="absolute bottom-2.5 left-2.5 z-10 size-[74px] pointer-events-none select-none"
+        {/* Every badge on this card — labels, the strains mark, the Forbes
+            award — comes from the admin panel through ProductMarks. Nothing
+            about them is hardcoded here any more. */}
+        <ProductMarks
+          product={p}
+          discountPct={isOnSale ? discountPct : 0}
+          soldOut={product.availableForSale === false}
+          size="md"
         />
       </div>
 

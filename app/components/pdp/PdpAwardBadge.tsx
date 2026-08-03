@@ -33,16 +33,11 @@ export function PdpAwardBadge() {
       </svg>
     </Link>
 
-      {/* Client (2026-07): extra award/quality graphic next to the badge. */}
-      <img
-        className="bb-pdp-award-extra"
-        src="https://bulgarbiotic.bg/cdn/img/products_banners/7/%21%21%21%D1%81.png?width=150&height=150&v=1777459060"
-        alt="Отличие Bactology"
-        loading="eager"
-        onError={(e) => {
-          (e.currentTarget as HTMLImageElement).style.display = 'none';
-        }}
-      />
+      {/* The Forbes graphic that used to be hardcoded here is now a product
+          banner in the admin panel, so it is drawn over the product photo in
+          the corner the merchant chose — showing it twice on one page read as
+          a mistake. Nothing to restore in code if it should come back: it is
+          the same banner, just a second placement. */}
 
       <style>{`
         .bb-pdp-award-row {

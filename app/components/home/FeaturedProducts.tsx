@@ -4,6 +4,7 @@ import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {realDiscountFor as synthDiscount} from '~/lib/active-discounts';
 import {WishlistButton} from '~/components/WishlistButton';
+import {ProductMarks} from '~/components/ProductMarks';
 import {useAside} from '~/components/Aside';
 
 /**
@@ -127,19 +128,6 @@ function categoryLabel(p: Product): string {
   return 'BACTOLOGY';
 }
 
-function badgeFor(p: Product, idx: number): {kind: 'best' | 'new' | 'sale'; text: string} | null {
-  const labels = p.labels ?? [];
-  if (labels.length > 0) {
-    const l = labels[0];
-    return {kind: 'best', text: l.name};
-  }
-  // The discount is NOT returned here any more: the client wants "Ново" / label to
-  // keep the standard top-left slot, with the percentage stacked underneath it.
-  if (p.isNew) return {kind: 'new', text: 'Ново'};
-  if (idx < 2) return {kind: 'best', text: 'Хит продажби'};
-  return null;
-}
-
 export function FeaturedProducts({products}: FeaturedProductsProps) {
   const items = (products || []).slice(0, 10);
   const isEmpty = items.length === 0;
@@ -193,7 +181,6 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
           <>
           <div ref={scrollRef} className="bb-pgrid reveal">
             {items.map((p, i) => {
-              const badge = badgeFor(p, i);
               const rating = p.reviewSummary;
               // Resolve effective sale + msrp exactly like the category ProductCard
               // (variant.compareAtPrice → product.discount.msrpPrice → synthesised),
@@ -225,14 +212,6 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
                   className="bb-pcard"
                   prefetch="intent"
                 >
-                  {(badge || (hasDiscount && effectivePct > 0)) && (
-                    <span className="bb-pcard-tags">
-                      {badge && <span className={`bb-pcard-tag bb-tag-${badge.kind}`}>{badge.text}</span>}
-                      {hasDiscount && effectivePct > 0 && (
-                        <span className="bb-pcard-tag bb-tag-sale">-{effectivePct}%</span>
-                      )}
-                    </span>
-                  )}
                   <span className="bb-pcard-fav" onClick={(e) => e.stopPropagation()}>
                     <WishlistButton productId={p.id} size="md" />
                   </span>
@@ -249,6 +228,8 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
                     <div className="bb-pcard-overlay">
                       <div className="bb-pcard-quick">Бърз преглед →</div>
                     </div>
+                    {/* Same badges, from the same source, as every other listing. */}
+                    <ProductMarks product={p} discountPct={hasDiscount ? effectivePct : 0} size="sm" />
                   </div>
                   <div className="bb-pcard-body">
                     {/* Client (2026-07): home carousel cards carry the SAME info
@@ -368,11 +349,6 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
           .bb-pcard-body { padding: 16px 16px 18px; }
           .bb-pcard-name { font-size: 16px; min-height: 0; margin-bottom: 4px; }
           .bb-pcard-tagline { font-size: 12.5px; min-height: 0; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 10px; }
-          .bb-pcard-tags {
-          position: absolute; top: 16px; left: 16px; z-index: 3;
-          display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
-        }
-        .bb-pcard-tag { top: 12px; left: 12px; padding: 4px 9px; font-size: 9.5px; }
           .bb-sub-toggle { padding: 10px 12px !important; }
           .bb-sub-detail { font-size: 11px !important; }
         }
@@ -398,15 +374,9 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
           box-shadow: 0 28px 56px -16px rgba(10, 37, 64, 0.18);
           border-color: var(--color-pink-2);
         }
-        .bb-pcard-tag {
-          /* placement lives on .bb-pcard-tags now, so the two badges stack */
-          padding: 5px 11px; border-radius: 999px;
-          font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
-          z-index: 3;
-        }
-        .bb-tag-best { background: var(--color-brand-pink); color: white; }
-        .bb-tag-new { background: var(--color-blue-2); color: var(--color-brand-blue); }
-        .bb-tag-sale { background: #FFE082; color: #5C3A00; }
+        /* The card's own badge styles are gone: badges now come from
+           ProductMarks, styled once in app.css so this carousel cannot drift
+           away from the category grid again. */
 
         .bb-pcard-image { aspect-ratio: 1/1; background: var(--color-cream-2); position: relative; overflow: hidden; }
         .bb-pcard-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1); }

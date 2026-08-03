@@ -4,6 +4,7 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
+import {ProductMarks} from '~/components/ProductMarks';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
 import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts} from '~/lib/active-discounts';
@@ -318,9 +319,15 @@ function PromoCard({product}: {product: any}) {
         ) : (
           <img src="/noimage.svg" alt={product.title} />
         )}
-        {discountPct > 0 && (
-          <span className="bb-promo-card-badge">−{discountPct}%</span>
-        )}
+        {/* Same badges as everywhere else. This page used to draw only its own
+            discount pill, which is why the strains and Forbes marks were
+            missing here while the category grid had them. */}
+        <ProductMarks
+          product={product}
+          discountPct={discountPct}
+          soldOut={product.availableForSale === false}
+          size="md"
+        />
       </div>
       <div className="bb-promo-card-body">
         <h3 className="bb-promo-card-title">{product.title}</h3>
