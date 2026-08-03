@@ -6,7 +6,7 @@ import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
-import {bestDiscountFor, discountedProductIds, setAutoDiscounts} from '~/lib/active-discounts';
+import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts} from '~/lib/active-discounts';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 
 const EUR_TO_BGN = 1.95583;
@@ -66,7 +66,11 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // targeting them in the real CloudCart admin (no synthetic fallback).
   const enhanced = enhanceProducts((products as any).nodes ?? []);
   const realDiscountIds = discountedProductIds();
+  // A store-wide rule (admin target "all") names no product ids, so the id filter
+  // would empty the page even though every product is on promotion.
+  const storeWide = activeDiscounts().some((d) => d.appliesToAll);
   const discounted = enhanced.filter((p: any) => {
+    if (storeWide) return true;
     // Prefer real Storefront-exposed discounts if/when CloudCart wires them
     if (p.discount?.msrpPrice) return true;
     if (p.variants?.nodes?.[0]?.compareAtPrice?.amount) return true;

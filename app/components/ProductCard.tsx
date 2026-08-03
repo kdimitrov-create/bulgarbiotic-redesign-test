@@ -45,11 +45,15 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
     variantCompare && parseFloat(variantCompare.amount) > parseFloat(priceObj?.amount ?? '0')
       ? variantCompare
       : (productDiscount?.msrpPrice ?? null);
+  let rulePct: number | null = null;
   if (!compareObj && priceObj) {
     const synth = synthDiscount(p, priceObj);
     if (synth) {
       compareObj = synth.msrpPrice;
       priceObj = synth.salePrice;
+      // Keep the rule's own percentage. Deriving it back from the rounded sale
+      // price prints 32% for a 33% rule, which contradicts the admin panel.
+      rulePct = synth.percent;
     }
   }
   const priceAmount = priceObj ? parseFloat(priceObj.amount) : 0;
@@ -59,7 +63,7 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
   const bgn = currency === 'BGN' ? priceAmount : priceAmount * EUR_TO_BGN;
   const isOnSale = compareAmount > priceAmount;
   const discountPct = isOnSale
-    ? (productDiscount?.percent ?? Math.round((1 - priceAmount / compareAmount) * 100))
+    ? (rulePct ?? productDiscount?.percent ?? Math.round((1 - priceAmount / compareAmount) * 100))
     : 0;
   const compareEur = currency === 'EUR' ? compareAmount : compareAmount / EUR_TO_BGN;
 

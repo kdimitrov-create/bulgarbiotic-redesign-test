@@ -16,7 +16,9 @@ import type {AutoDiscount} from './active-discounts';
  * discount list, which is public information anyway.
  */
 
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 min — promos change rarely; keep edge calls cheap
+// 2 min, not 10: the merchant changes a percentage in admin and expects to see it.
+// A long cache made one page show the new value and another the old one.
+const CACHE_TTL_MS = 2 * 60 * 1000;
 // 8s, not 4: a cold worker plus a slow admin response was timing out and
 // silently falling back, which is why some pages showed live data and others did not.
 const REQUEST_TIMEOUT_MS = 8000;
