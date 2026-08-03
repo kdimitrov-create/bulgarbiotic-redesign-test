@@ -165,8 +165,12 @@ function toAutoDiscount(
   // rules would need the category expanded to its products — if the merchant uses
   // those, this covers fewer products than checkout applies. Verify against real
   // data before relying on it.
+  // CloudCart expresses "the whole catalogue" as a single target of type "all".
+  // Verified 2026-08-03: a 38% store-wide rule arrives as targets [{type:"all"}]
+  // with no product rows, and treating it as "no targets" made it invisible.
+  const appliesToAll = targets.some((t) => t.type === 'all');
   const productIds = targets.filter((t) => t.type === 'product').map((t) => String(t.itemId));
-  if (productIds.length === 0) return null;
+  if (!appliesToAll && productIds.length === 0) return null;
   const percent = toPercent(d.typeValue as number);
   if (percent <= 0) return null;
   return {
@@ -176,6 +180,7 @@ function toAutoDiscount(
     dateEnd: d.dateEnd,
     orderOver: d.orderOver,
     productIds,
+    appliesToAll,
   };
 }
 

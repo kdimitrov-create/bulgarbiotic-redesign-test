@@ -120,6 +120,11 @@ export const PROMO: PromoConfig = {
  * Resolve the discount % for a given product, or 0 if no synth promo applies.
  */
 export function discountPctFor(handle: string | undefined): number {
+  // DISABLED: this hardcoded campaign kept painting a stale percentage (37%) that
+  // checkout never applied, competing with the live admin rules. Discounts now come
+  // only from the Admin API. Kept as dead config rather than deleted so the shape is
+  // available if a code-driven campaign is ever wanted again.
+  return 0;
   if (!PROMO.active || !handle) return 0;
   if (PROMO.noDiscountHandles.has(handle)) return 0;
   return PROMO.perHandlePercent[handle] ?? PROMO.defaultPercent;
@@ -140,6 +145,8 @@ export function synthDiscount(
   product: {handle?: string; id?: string; discount?: unknown; variants?: {nodes?: Array<{compareAtPrice?: unknown}>}},
   basePrice: {amount: string; currencyCode?: string} | null | undefined,
 ): {
+  // DISABLED — see discountPctFor above.
+  return null;
   salePrice: {amount: string; currencyCode?: string};
   msrpPrice: {amount: string; currencyCode?: string};
   percent: number;

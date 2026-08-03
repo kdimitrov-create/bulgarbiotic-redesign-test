@@ -35,6 +35,8 @@ export interface AutoDiscount {
   orderOver: number | null;
   /** Numeric product IDs this discount targets. */
   productIds: string[];
+  /** Store-wide rule (admin target type "all") — applies to every product. */
+  appliesToAll?: boolean;
 }
 
 /**
@@ -153,7 +155,13 @@ export function bestDiscountForHandle(handle: string | undefined | null): {
 } | null {
   if (!handle) return null;
   const pid = currentHandleToId[handle];
-  if (!pid) return null;
+  // Store-wide rules apply even when the handle is not in the id map.
+  if (!pid) {
+    const all = currentDiscounts.filter((d) => d.appliesToAll);
+    if (!all.length) return null;
+    const best = all.reduce((a, b) => (b.percent > a.percent ? b : a));
+    return {percent: best.percent, id: best.id, name: best.name};
+  }
   return bestDiscountFor(pid);
 }
 
@@ -178,7 +186,8 @@ export function bestDiscountFor(productIdOrGid: string | undefined | null): {
   if (!pid) return null;
   let best: {percent: number; id: string; name: string} | null = null;
   for (const d of currentDiscounts) {
-    if (!d.productIds.includes(pid)) continue;
+    // A store-wide rule targets every product, so there is no id list to check.
+    if (!d.appliesToAll && !d.productIds.includes(pid)) continue;
     if (!best || d.percent > best.percent) {
       best = {percent: d.percent, id: d.id, name: d.name};
     }
