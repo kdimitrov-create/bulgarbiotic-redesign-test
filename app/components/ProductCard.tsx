@@ -140,20 +140,17 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           )}
         </div>
 
-        {/* Round claim badge, bottom-right of the image — mirrors the live store.
-            It is NOT a CloudCart label (products return an empty `labels` list),
-            so it is part of the design and shows on every card. The heart moved
-            up into the top-right stack to free this corner. */}
-        <span
-          className="absolute bottom-2.5 right-2.5 z-10 grid place-items-center size-[74px] rounded-full bg-[var(--color-brand-pink)] text-white text-center px-2 text-[0.55rem] font-bold uppercase leading-[1.15] tracking-wide shadow-md pointer-events-none"
+        {/* Real "клинично доказани щамове" mark from the store CDN, bottom-LEFT of
+            the image (the CSS-drawn circle it replaces was only a stand-in).
+            ⚠️ Served from the live store's CDN — copy it into public/ before the
+            real cutover so the storefront does not depend on another shop. */}
+        <img
+          src="https://bulgarbiotic.bg/cdn/img/products_banners/2/A_circular_graphic_transparent_100x100%20%281%29.png?width=150&height=150&v=1777459060"
+          alt=""
           aria-hidden="true"
-        >
-          Клинично
-          <br />
-          доказани
-          <br />
-          щамове
-        </span>
+          loading="lazy"
+          className="absolute bottom-2.5 left-2.5 z-10 size-[74px] pointer-events-none select-none"
+        />
       </div>
 
       <div className="mt-3 px-0.5">

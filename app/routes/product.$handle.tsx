@@ -1,6 +1,7 @@
 import {useLoaderData, data, Link} from 'react-router';
 import type {Route} from './+types/product.$handle';
 import {getContext} from '~/lib/context';
+import {bestDiscountFor} from '~/lib/active-discounts';
 import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
@@ -203,10 +204,14 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
   const isOnSale = variant?.compareAtPrice &&
     parseFloat(variant.compareAtPrice.amount) > parseFloat(variant.price.amount);
   const labels: Array<{name: string; color?: string; textColor?: string}> = product.labels ?? [];
-  const discountPct =
-    isOnSale && variant?.compareAtPrice
+  // Prefer the admin rule's own percentage. Deriving it from prices rounded to two
+  // decimals is what made this corner badge disagree with the one next to the price
+  // (−44% here, −43% there) on the very same page.
+  const rule = bestDiscountFor(product?.id);
+  const discountPct = rule?.percent
+    ?? (isOnSale && variant?.compareAtPrice
       ? Math.round((1 - parseFloat(variant.price.amount) / parseFloat(variant.compareAtPrice.amount)) * 100)
-      : 0;
+      : 0);
 
   return (
     <div className="relative">
