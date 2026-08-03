@@ -160,7 +160,8 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
           single add-to-cart path. */}
       {variant && price && (
         <MonthlyPackages
-          productId={product.id}
+          product={product}
+          variant={variant}
           singlePriceEur={price.eur}
           quantity={qty}
           onSelect={(next) => setQty(Math.min(maxQty, next))}
