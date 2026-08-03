@@ -51,11 +51,15 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
       : (productDiscount?.msrpPrice ?? null);
   let livePriceObj = variant?.price ?? product.priceRange.minVariantPrice;
 
+  let rulePct: number | null = null;
   if (!comparePriceObj) {
     const synth = synthDiscount(product, livePriceObj);
     if (synth) {
       comparePriceObj = synth.msrpPrice;
       livePriceObj = synth.salePrice;
+      // Keep the rule's own percentage — deriving it back from the rounded sale
+      // price printed 12% next to a 13% badge on the same page.
+      rulePct = synth.percent;
     }
   }
 
@@ -69,7 +73,7 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
   const price = bothCurrencies(priceObj);
   const compare = bothCurrencies(comparePriceObj);
   const discountPct = isOnSale && comparePriceObj && priceObj
-    ? (productDiscount?.percent ??
+    ? (rulePct ?? productDiscount?.percent ??
         Math.round((1 - parseFloat(priceObj.amount) / parseFloat(comparePriceObj.amount)) * 100))
     : 0;
   const savings =
