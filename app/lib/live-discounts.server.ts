@@ -16,9 +16,11 @@ import type {AutoDiscount} from './active-discounts';
  * discount list, which is public information anyway.
  */
 
-// 2 min, not 10: the merchant changes a percentage in admin and expects to see it.
-// A long cache made one page show the new value and another the old one.
-const CACHE_TTL_MS = 2 * 60 * 1000;
+// 30s. The merchant edits a percentage and wants to see it, so freshness wins over
+// saving calls. It cannot go to zero: the fetch is awaited in the root loader, so a
+// miss adds three admin round-trips to that page render. If pages ever feel slow,
+// the fix is serve-stale-then-refresh, not a longer window.
+const CACHE_TTL_MS = 30 * 1000;
 // 8s, not 4: a cold worker plus a slow admin response was timing out and
 // silently falling back, which is why some pages showed live data and others did not.
 const REQUEST_TIMEOUT_MS = 8000;
