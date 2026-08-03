@@ -106,12 +106,10 @@ export function ProductMarkBanners({
             alt=""
             aria-hidden="true"
             loading="lazy"
-            width={bannerSize}
-            height={bannerSize}
-            className="pm-banner"
+            className={`pm-banner pm-banner-${size}`}
             style={{
-              width: bannerSize,
-              height: bannerSize,
+              // Only placement is inline — the size lives in CSS so it can scale
+              // with the card instead of being frozen at one pixel value.
               // Both top corners are usually taken — "tl" by the tag stack and
               // "tr" by the wishlist heart — so a banner there starts below them.
               ...(corner === 'tl' || corner === 'tr'
