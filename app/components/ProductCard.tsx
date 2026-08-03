@@ -123,6 +123,7 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
             column so a sold-out product on promo stacks them instead of
             overlapping. */}
         <div className="absolute top-2.5 right-2.5 flex flex-col items-end gap-1.5 z-10">
+          <WishlistButton productId={product.id} size="lg" />
           {isOnSale && discountPct > 0 && (
             <span className="py-1 px-3 rounded-full text-[0.6rem] font-bold uppercase tracking-wider leading-none bg-[var(--color-brand-pink)] text-white shadow-sm">
               −{discountPct}%
@@ -135,10 +136,20 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           )}
         </div>
 
-        {/* Wishlist heart — always visible + prominent (client request). */}
-        <div className="absolute bottom-2.5 right-2.5">
-          <WishlistButton productId={product.id} size="lg" />
-        </div>
+        {/* Round claim badge, bottom-right of the image — mirrors the live store.
+            It is NOT a CloudCart label (products return an empty `labels` list),
+            so it is part of the design and shows on every card. The heart moved
+            up into the top-right stack to free this corner. */}
+        <span
+          className="absolute bottom-2.5 right-2.5 z-10 grid place-items-center size-[74px] rounded-full bg-[var(--color-brand-pink)] text-white text-center px-2 text-[0.55rem] font-bold uppercase leading-[1.15] tracking-wide shadow-md pointer-events-none"
+          aria-hidden="true"
+        >
+          Клинично
+          <br />
+          доказани
+          <br />
+          щамове
+        </span>
       </div>
 
       <div className="mt-3 px-0.5">
