@@ -132,16 +132,39 @@ export function isFilterActive(searchParams: URLSearchParams, input: string): bo
   return searchParams.getAll(param.key).includes(param.value);
 }
 
-/** Sort key mapping from URL param to GraphQL ProductSortKeys. */
+/**
+ * Sort key mapping from URL param to GraphQL ProductSortKeys.
+ *
+ * `best-selling` is deliberately NOT here any more. The Storefront API's
+ * `BEST_SELLING` does not match what the store actually sold — measured
+ * 2026-08-04 against the merchant's own order data: Femin (21 043 units sold,
+ * #1) came back 6th and Плоско коремче (20 706, #2) came back 16th, while
+ * Пакет за бременни (1 019 units, #18) came back 2nd. Listings now rank by the
+ * real numbers instead — see `isRealSalesOrder` and `best-sellers.server.ts`.
+ */
 const SORT_MAP: Record<string, {sortKey: string; reverse: boolean}> = {
   'price-asc': {sortKey: 'PRICE', reverse: false},
   'price-desc': {sortKey: 'PRICE', reverse: true},
   'title-asc': {sortKey: 'TITLE', reverse: false},
   'title-desc': {sortKey: 'TITLE', reverse: true},
   'created-desc': {sortKey: 'CREATED_AT', reverse: true},
-  'best-selling': {sortKey: 'BEST_SELLING', reverse: false},
   'updated-desc': {sortKey: 'UPDATED_AT', reverse: true},
 };
+
+/**
+ * True when the listing should be ordered by units actually sold — the default,
+ * and what `?sort=best-selling` now means. `?sort=store` opts back out to the
+ * merchant's own arrangement from the admin panel.
+ */
+export function isRealSalesOrder(searchParams: URLSearchParams): boolean {
+  const sort = searchParams.get('sort');
+  return !sort || sort === 'best-selling';
+}
+
+/** `?page=N` → N (1-based). Mirrors the Pagination component's own parsing. */
+export function currentPage(url: URL): number {
+  return Math.max(1, parseInt(url.searchParams.get('page') ?? '1', 10) || 1);
+}
 
 /**
  * Convert a sort URL param to GraphQL sortKey + reverse.

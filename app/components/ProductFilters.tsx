@@ -72,13 +72,14 @@ export function ProductFilters({filters = [], totalCount, hideSort = false}: Pro
             value={currentSort}
             onChange={(e) => updateParam('sort', e.target.value)}
           >
-            <option value="">Препоръчани</option>
+            {/* Default = ranked by units actually sold (admin order data). */}
+            <option value="">Най-продавани</option>
+            <option value="store">Ред на магазина</option>
             <option value="price-asc">Цена: ниска → висока</option>
             <option value="price-desc">Цена: висока → ниска</option>
             <option value="title-asc">Име: А → Я</option>
             <option value="title-desc">Име: Я → А</option>
             <option value="created-desc">Най-нови</option>
-            <option value="best-selling">Най-продавани</option>
           </select>
         </div>
       )}

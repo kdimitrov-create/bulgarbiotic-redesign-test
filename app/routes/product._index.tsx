@@ -6,7 +6,13 @@ import {ProductCard} from '~/components/ProductCard';
 import {ListingAside} from '~/components/ListingAside';
 import {ActiveFilterChips} from '~/components/ActiveFilterChips';
 import {Pagination} from '~/components/Pagination';
-import {buildFiltersFromParams, buildSortFromParams} from '~/lib/filters';
+import {
+  buildFiltersFromParams,
+  buildSortFromParams,
+  currentPage,
+  isRealSalesOrder,
+} from '~/lib/filters';
+import {fetchBestSellers, orderByRealSales, pageSlice} from '~/lib/best-sellers.server';
 import {enhanceProducts} from '~/lib/product-images';
 
 export const meta: Route.MetaFunction = () =>
@@ -16,22 +22,40 @@ export const meta: Route.MetaFunction = () =>
       'Разгледай всички пробиотични продукти на Bactology — 25+ научно проучени формули за червата, имунитета, женското здраве, децата и красотата. Произведено в България.',
   });
 
+const PAGE_SIZE = 12;
+
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const url = new URL(request.url);
-  const paginationVariables = getPaginationVariables(request, {pageBy: 12});
+  const paginationVariables = getPaginationVariables(request, {pageBy: PAGE_SIZE});
   const filters = buildFiltersFromParams(url.searchParams);
   const {sortKey, reverse} = buildSortFromParams(url.searchParams);
+  const salesOrder = isRealSalesOrder(url.searchParams);
 
+  // Ranking by real sales cannot be delegated to the API, so the whole (small)
+  // catalogue is fetched once and paginated here — otherwise page 1 would only
+  // ever be the API's own first 12 products, re-sorted among themselves.
   const [products, collections] = await Promise.all([
-    ctx.storefront.getProductsPaginated({
-      ...paginationVariables,
-      sortKey,
-      reverse,
-      filters,
-    }),
+    ctx.storefront.getProductsPaginated(
+      salesOrder
+        ? {first: 100, filters}
+        : {...paginationVariables, sortKey, reverse, filters},
+    ),
     ctx.storefront.getCollections(8).catch(() => []),
   ]);
+
+  if (salesOrder) {
+    const sales = await fetchBestSellers(ctx.env as Record<string, string | undefined>);
+    const page = currentPage(url);
+    const ordered = orderByRealSales((products as any).nodes ?? [], sales);
+    const slice = pageSlice(ordered, page, PAGE_SIZE);
+    (products as any).nodes = slice.nodes;
+    (products as any).pageInfo = {
+      ...((products as any).pageInfo ?? {}),
+      hasNextPage: slice.hasNextPage,
+      hasPreviousPage: slice.hasPreviousPage,
+    };
+  }
 
   // Apply AI-enhanced lifestyle photos for visual consistency across
   // every listing surface (matches homepage / sale / category cards).
@@ -110,8 +134,9 @@ export function ListingBody({products, collections}: {products: any; collections
             value={currentSort}
             onChange={(e) => changeSort(e.target.value)}
           >
-            <option value="">Препоръчани</option>
-            <option value="best-selling">Най-продавани</option>
+            {/* Default = ranked by units actually sold (admin order data). */}
+            <option value="">Най-продавани</option>
+            <option value="store">Ред на магазина</option>
             <option value="created-desc">Най-нови</option>
             <option value="price-asc">Цена: ниска → висока</option>
             <option value="price-desc">Цена: висока → ниска</option>

@@ -4,7 +4,13 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Breadcrumbs} from '~/components/Breadcrumbs';
-import {buildFiltersFromParams, buildSortFromParams} from '~/lib/filters';
+import {
+  buildFiltersFromParams,
+  buildSortFromParams,
+  currentPage,
+  isRealSalesOrder,
+} from '~/lib/filters';
+import {fetchBestSellers, orderByRealSales, pageSlice} from '~/lib/best-sellers.server';
 import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
@@ -27,12 +33,18 @@ export const meta: Route.MetaFunction = ({data: d}) => {
   return seo;
 };
 
+const PAGE_SIZE = 12;
+
 export async function loader({params, context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const url = new URL(request.url);
-  const paginationVariables = getPaginationVariables(request, {pageBy: 12});
+  const paginationVariables = getPaginationVariables(request, {pageBy: PAGE_SIZE});
   const filters = buildFiltersFromParams(url.searchParams);
   const {sortKey, reverse} = buildSortFromParams(url.searchParams);
+  // Default order = units actually sold. Needs the whole category in one call,
+  // because the ranking is ours and the API cannot paginate by it.
+  const salesOrder = isRealSalesOrder(url.searchParams);
+  const pageVars = salesOrder ? {first: 100} : paginationVariables;
 
   // Try with filters; if the Storefront API rejects an unknown tag/option
   // value (returns 500), gracefully retry without filters so the user lands
@@ -42,7 +54,7 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   const fetchProducts = async () => {
     try {
       return await ctx.storefront.getCollectionProductsPaginated(params.handle, {
-        ...paginationVariables,
+        ...pageVars,
         sortKey,
         reverse,
         filters,
@@ -71,10 +83,12 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   // Redesign-only supplement: inject hand-picked extra products into specific
   // categories without editing the live store's collections. Only on the
   // unfiltered first page, appended after (and deduped against) the real ones.
+  // With the sales ordering the whole category is in hand, so the extras have to
+  // be present on every page — they are ranked with the rest, not pinned last.
   const extraHandles = CATEGORY_EXTRA_PRODUCTS[params.handle] ?? [];
   const isFirstPage = !url.searchParams.has('cursor') && !url.searchParams.has('page');
   let extraNodes: any[] = [];
-  if (extraHandles.length > 0 && isFirstPage && filters.length === 0) {
+  if (extraHandles.length > 0 && (salesOrder || isFirstPage) && filters.length === 0) {
     const existing = new Set(((result.products as any).nodes ?? []).map((n: any) => n.handle));
     const fetched = await Promise.all(
       extraHandles
@@ -86,9 +100,21 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
 
   // Apply AI-enhanced lifestyle photos so every product card on listings
   // uses the same brand-consistent imagery as the homepage / sale page.
+  const allNodes = enhanceProducts([...(((result.products as any).nodes) ?? []), ...extraNodes]);
+  let nodes = allNodes;
+  let pageInfo = (result.products as any).pageInfo;
+
+  if (salesOrder) {
+    const sales = await fetchBestSellers(ctx.env as Record<string, string | undefined>);
+    const slice = pageSlice(orderByRealSales(allNodes, sales), currentPage(url), PAGE_SIZE);
+    nodes = slice.nodes;
+    pageInfo = {...(pageInfo ?? {}), hasNextPage: slice.hasNextPage, hasPreviousPage: slice.hasPreviousPage};
+  }
+
   const productsWithEnhancement = {
     ...result.products,
-    nodes: enhanceProducts([...(((result.products as any).nodes) ?? []), ...extraNodes]),
+    nodes,
+    pageInfo,
     totalCount: ((result.products as any).totalCount ?? 0) + extraNodes.length,
   };
 

@@ -12,6 +12,7 @@
  * Only the resulting ranking (public information: which products sell best)
  * reaches the browser.
  */
+import {markProductId} from './product-marks';
 
 // 30 min. Sales move far slower than a discount percentage, and this ranking is
 // awaited in the root loader, so a miss costs the page a round-trip.
@@ -92,6 +93,43 @@ export async function fetchBestSellers(
     console.error('best-sellers: keeping the storefront order —', (error as Error).message);
     return cache?.data ?? null;
   }
+}
+
+/**
+ * Order a listing page by units sold, most sold first. Products the store has
+ * never sold (and everything else, when the ranking is unavailable) keep the
+ * order the Storefront API gave them, after the ones that did sell.
+ */
+export function orderByRealSales<T extends {id?: string}>(
+  nodes: T[],
+  sales: BestSellers | null,
+): T[] {
+  if (!sales || !nodes?.length) return nodes ?? [];
+
+  const rank = new Map<string, number>();
+  sales.order.forEach((id, i) => rank.set(id, i));
+  const rankOf = (node: T) => {
+    const id = markProductId(node?.id);
+    const r = id ? rank.get(id) : undefined;
+    return r ?? Number.MAX_SAFE_INTEGER;
+  };
+
+  // Decorate with the original index so ties stay in the API's order — a plain
+  // sort on equal keys is not guaranteed to be stable across engines.
+  return nodes
+    .map((node, i) => ({node, i, r: rankOf(node)}))
+    .sort((a, b) => (a.r !== b.r ? a.r - b.r : a.i - b.i))
+    .map((x) => x.node);
+}
+
+/** The slice of an already-ordered list that belongs on `?page=N`. */
+export function pageSlice<T>(nodes: T[], page: number, size: number) {
+  const start = Math.max(0, (page - 1) * size);
+  return {
+    nodes: nodes.slice(start, start + size),
+    hasNextPage: start + size < nodes.length,
+    hasPreviousPage: page > 1,
+  };
 }
 
 /** Walk `orderedProducts` pages until one comes back short. */

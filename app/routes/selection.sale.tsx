@@ -10,6 +10,7 @@ import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
 import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, displayDiscountPercent} from '~/lib/active-discounts';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
+import {fetchBestSellers, orderByRealSales} from '~/lib/best-sellers.server';
 
 const EUR_TO_BGN = 1.95583;
 const fmt = (n: number, c: 'EUR' | 'BGN') =>
@@ -52,7 +53,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   const sortMap: Record<string, {sortKey?: string; reverse?: boolean}> = {
     'price-asc':   {sortKey: 'PRICE', reverse: false},
     'price-desc':  {sortKey: 'PRICE', reverse: true},
-    'best-selling':{sortKey: 'BEST_SELLING', reverse: false},
+    // 'best-selling' is handled below from the real order data, not by the API.
     'created-desc':{sortKey: 'CREATED_AT', reverse: true},
   };
   const {sortKey, reverse} = sortMap[sort] ?? sortMap['price-asc'];
@@ -112,11 +113,21 @@ export async function loader({context, request}: Route.LoaderArgs) {
     });
   }
 
+  // "Най-продавани" means the same thing here as on the other listings: units
+  // actually sold, from the merchant's order data.
+  const nodes =
+    sort === 'best-selling'
+      ? orderByRealSales(
+          discounted,
+          await fetchBestSellers(ctx.env as Record<string, string | undefined>),
+        )
+      : discounted;
+
   return {
     products: {
       ...products,
-      nodes: discounted,
-      totalCount: discounted.length,
+      nodes,
+      totalCount: nodes.length,
     },
   };
 }
