@@ -45,7 +45,7 @@ const COLUMN_GOAL: ColumnSpec = {
     {label: 'Женско здраве', to: '/category/probiotik-za-jeni', hint: 'Интимно здраве'},
     {label: 'Стрес и сън', to: '/product/bactology-anti-stress', hint: 'Anti Stress'},
     {label: 'За отслабване', to: '/category/probiotik-za-otslabvane', hint: 'Микробиом и метаболизъм'},
-    {label: 'Отслабване', to: '/category/probiotik-za-otslabvane', hint: 'Плосък корем'},
+    {/* „Отслабване" беше дубликат на „За отслабване" (същата категория) — махнат 2026-08-04. */}
   ],
 };
 
