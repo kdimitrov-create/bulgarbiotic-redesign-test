@@ -4,7 +4,6 @@ import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing} from '~/lib/product-marks';
-import {WishlistButton} from '~/components/WishlistButton';
 import {ProductMarks} from '~/components/ProductMarks';
 import {useAside} from '~/components/Aside';
 
@@ -200,9 +199,7 @@ export function FeaturedProducts({products}: FeaturedProductsProps) {
                   className="bb-pcard"
                   prefetch="intent"
                 >
-                  <span className="bb-pcard-fav" onClick={(e) => e.stopPropagation()}>
-                    <WishlistButton productId={p.id} size="md" />
-                  </span>
+                  {/* „Любими“ е изключено в модула „Продуктов каталог“ (клиент 2026-08-04). */}
                   <div className="bb-pcard-image">
                     <img
                       src={pickImage(p)}

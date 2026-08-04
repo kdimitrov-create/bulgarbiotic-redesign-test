@@ -2,7 +2,6 @@ import {Link} from 'react-router';
 import type {Product} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {StarRating} from './StarRating';
-import {WishlistButton} from './WishlistButton';
 import {CardBuyButton} from './CardBuyButton';
 import {ProductMarks} from './ProductMarks';
 import {displayDiscountPercent} from '~/lib/active-discounts';
@@ -73,10 +72,8 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           />
         )}
 
-        {/* Above the badge overlay so the heart stays clickable. */}
-        <div className="absolute top-2.5 right-2.5 z-20">
-          <WishlistButton productId={product.id} size="lg" />
-        </div>
+        {/* „Любими“ е изключено в модула „Продуктов каталог“ (клиент 2026-08-04) —
+            сърцето е махнато от картите, каруселите и продуктовата страница. */}
 
         {/* Every badge on this card — labels, the strains mark, the Forbes
             award — comes from the admin panel through ProductMarks. Nothing
