@@ -272,11 +272,8 @@ export function CartTrustStrip() {
             <path d="M16 4.5a8 8 0 010 11" fill="#FF5F00" />
           </svg>
         </span>
-        <span className="bb-cd-trust-divider" aria-hidden="true" />
-        <span className="bb-cd-trust-courier" title="Еконт">Еконт</span>
-        <span className="bb-cd-trust-courier" title="Спиди">Спиди</span>
-        <span className="bb-cd-trust-courier" title="BOX NOW">BOX NOW</span>
-        <span className="bb-cd-trust-courier bb-cd-trust-courier--hide-sm" title="Sameday">Sameday</span>
+        {/* Куриерите (Еконт / Спиди / BOX NOW / Sameday) са премахнати по
+            заявка на клиента (2026-08-04) — остават само плащанията. */}
         <span className="bb-cd-trust-divider" aria-hidden="true" />
         <span className="bb-cd-trust-lock" aria-label="Сигурно плащане">
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
