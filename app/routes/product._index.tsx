@@ -49,6 +49,11 @@ export async function loader({context, request}: Route.LoaderArgs) {
     ctx.storefront.getCollections(8).catch(() => []),
   ]);
 
+  // Never mutate the connection: the storefront client caches the very object it
+  // returns, so writing the page slice back into it served the next request a
+  // catalogue of 12 — which is what emptied page 2. Always build a new one.
+  let listing: any = products;
+
   if (salesOrder) {
     const [sales, allNodes] = await Promise.all([
       fetchBestSellers(ctx.env as Record<string, string | undefined>),
@@ -56,21 +61,23 @@ export async function loader({context, request}: Route.LoaderArgs) {
         ctx.storefront.getProductsPaginated({first: 100, after, filters}) as any,
       ),
     ]);
-    const ordered = orderByRealSales(allNodes, sales);
-    const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
-    (products as any).nodes = slice.nodes;
-    (products as any).pageInfo = {
-      ...((products as any).pageInfo ?? {}),
-      hasNextPage: slice.hasNextPage,
-      hasPreviousPage: slice.hasPreviousPage,
+    const slice = pageSlice(orderByRealSales(allNodes, sales), currentPage(url), PAGE_SIZE);
+    listing = {
+      ...(products as any),
+      nodes: slice.nodes,
+      pageInfo: {
+        ...((products as any).pageInfo ?? {}),
+        hasNextPage: slice.hasNextPage,
+        hasPreviousPage: slice.hasPreviousPage,
+      },
     };
   }
 
   // Apply AI-enhanced lifestyle photos for visual consistency across
   // every listing surface (matches homepage / sale / category cards).
   const productsWithEnhancement = {
-    ...products,
-    nodes: enhanceProducts((products as any).nodes ?? []),
+    ...listing,
+    nodes: enhanceProducts(listing.nodes ?? []),
   };
 
   return {products: productsWithEnhancement, collections};
