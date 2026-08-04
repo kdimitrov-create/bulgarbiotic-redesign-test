@@ -4,7 +4,8 @@ import type {CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
 import {getEnhancedFeatured} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
-import {bestDiscountFor, bestDiscountForHandle} from '~/lib/active-discounts';
+import {displayDiscountPercent} from '~/lib/active-discounts';
+import {markPricingForLine, marksForHandle} from '~/lib/product-marks';
 import {CheckoutButton} from './CheckoutButton';
 import {CartOffersStrip} from './CartOffers';
 
@@ -72,19 +73,16 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
   const isEmpty = !cart || cart.totalQuantity === 0;
 
   // Storefront cart.cost is always MSRP — it doesn't fold in CloudCart's
-  // order-level auto-discounts. We recompute the line-level + grand
-  // total on the client using the real merchant discount mirror so the
-  // drawer's numbers match the PDP / sale page / final checkout.
+  // order-level auto-discounts. The saving is therefore the gap between that
+  // MSRP and the real price each line already carries on its variant; see
+  // `markPricingForLine`. Never a percentage applied to a catalogue price.
   const rawSubtotal = bothCurrencies(cart?.cost?.subtotalAmount);
   const rawTotal = bothCurrencies(cart?.cost?.totalAmount);
   let totalDiscountEur = 0;
   for (const l of lines as any[]) {
-    const lineEur = bothCurrencies(l.cost?.totalAmount).eur;
-    const handle = l.merchandise?.product?.handle as string | undefined;
-    const d = bestDiscountForHandle(handle);
-    if (d && d.percent > 0) {
-      totalDiscountEur += lineEur * (d.percent / 100);
-    }
+    const {price, compareAtPrice} = markPricingForLine(l);
+    if (!compareAtPrice) continue;
+    totalDiscountEur += bothCurrencies(compareAtPrice).eur - bothCurrencies(price).eur;
   }
   const subtotal = {
     eur: Math.max(0, rawSubtotal.eur - totalDiscountEur),
@@ -312,16 +310,16 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
   const img = enhanced || realImg || '/noimage.svg';
 
   const variantTitle = m.title && m.title !== 'Default Title' ? m.title : null;
-  // CloudCart cart.cost is always MSRP (Storefront API doesn't fold in
-  // order-level auto-discounts). Apply the live merchant-configured
-  // discount (mirrored from Admin API in active-discounts.ts) on top
-  // so PDP, cart line, and checkout all display the same number.
-  const msrp = bothCurrencies(line.cost?.totalAmount);
-  const discount = bestDiscountForHandle(handle);
-  const hasDiscount = !!discount && discount.percent > 0;
-  const saleEur = hasDiscount ? msrp.eur * (1 - discount.percent / 100) : msrp.eur;
-  const saleBgn = hasDiscount ? msrp.bgn * (1 - discount.percent / 100) : msrp.bgn;
-  const savingsEur = hasDiscount ? msrp.eur - saleEur : 0;
+  // Both prices come straight from CloudCart: the variant price the line
+  // carries (promotion included) and the line cost the cart API leaves at
+  // MSRP. Passing the optimistic `qty` keeps them in step while a +/− is in
+  // flight. Nothing is derived from a discount percentage here.
+  const pricing = markPricingForLine(line, qty);
+  const sale = bothCurrencies(pricing.price);
+  const msrp = pricing.compareAtPrice ? bothCurrencies(pricing.compareAtPrice) : sale;
+  const hasDiscount = msrp.eur > sale.eur + 0.005;
+  const saleEur = sale.eur;
+  const saleBgn = sale.bgn;
 
   return (
     <li className="bb-cd-item">
@@ -615,16 +613,18 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
   const isAdding = add.state !== 'idle';
   const enhanced = getEnhancedFeatured(suggestion.handle);
   const img = enhanced || suggestion.image || '/noimage.svg';
-  const msrp = bothCurrencies(suggestion.price);
-  // Real auto-discount from CloudCart Admin mirror — keeps the price
-  // displayed here CONSISTENT with what the cart line + checkout show
-  // after the customer clicks "Купи". Without this, the suggestion
-  // would show MSRP, the customer would click, and the cart line
-  // would suddenly drop ~20–35% — a worse mismatch than the old synth.
-  const discount = bestDiscountFor(suggestion.id);
-  const hasDiscount = !!discount && discount.percent > 0;
-  const saleEur = hasDiscount ? msrp.eur * (1 - discount.percent / 100) : msrp.eur;
-  const saleBgn = hasDiscount ? msrp.bgn * (1 - discount.percent / 100) : msrp.bgn;
+  // `suggestion.price` is the variant price, which ALREADY has the promotion
+  // in it — taking the rule percentage off it a second time advertised a
+  // Femin at 11.74 € that the cart then charged 19.25 €. The "was" price comes
+  // from the catalogue snapshot, looked up by handle, and the badge is derived
+  // from the two prices printed on the card so it can never contradict them.
+  const sale = bothCurrencies(suggestion.price);
+  const shared = marksForHandle(suggestion.handle);
+  const msrp = shared?.compareAtPrice ? bothCurrencies(shared.compareAtPrice) : sale;
+  const hasDiscount = msrp.eur > sale.eur + 0.005;
+  const discountPct = hasDiscount ? displayDiscountPercent(null, sale.eur, msrp.eur) : 0;
+  const saleEur = sale.eur;
+  const saleBgn = sale.bgn;
 
   useEffect(() => {
     if (add.state === 'idle' && add.data) {
@@ -636,7 +636,7 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
     <div className="bb-cd-upsell-card">
       <Link to={`/product/${suggestion.handle}`} className="bb-cd-upsell-img" prefetch="intent">
         <img src={img} alt={suggestion.title} loading="lazy" onError={fallbackToPlaceholder} />
-        {hasDiscount && <span className="bb-cd-upsell-badge">−{discount.percent}%</span>}
+        {hasDiscount && <span className="bb-cd-upsell-badge">−{discountPct}%</span>}
       </Link>
       <div className="bb-cd-upsell-info">
         <Link to={`/product/${suggestion.handle}`} className="bb-cd-upsell-title" prefetch="intent">
