@@ -192,28 +192,49 @@ const ARTICLE_IMAGES: Record<string, ArticleImageEntry> = {
 const CDN_BASE = 'https://bulgarbiotic.bg/cdn/img/articles';
 
 /**
+ * Client (2026-08-04): "ползвай реалните снимки на блога". The AI-enhanced
+ * local covers are kept in the repo but no longer served — flip this to bring
+ * them back.
+ */
+const USE_ENHANCED_ARTICLE_IMAGES = false;
+
+export type ArticleImageMap = Record<string, {id: number; filename: string}>;
+
+/**
+ * Covers read live from the admin panel (see `blog-images.server.ts`). Filled
+ * on the server before render and again on the client after hydration, exactly
+ * like the product marks. Empty until then, so the static map below stays the
+ * safety net.
+ */
+let live: ArticleImageMap = {};
+
+export function setArticleImages(next: ArticleImageMap | null | undefined) {
+  if (!next || !Object.keys(next).length) return;
+  live = next;
+}
+
+/**
  * Build the best available image URL for an article. Priority:
- *  1. AI-enhanced local PNG under `/images/articles/<handle>.png` (when
- *     the handle is in ENHANCED_AVAILABLE — listed there only after the
- *     gen-article-images.py script confirms the file was created).
- *  2. CloudCart CDN reconstructed from the admin-known {id, filename}.
- *  3. null (caller falls back to placeholder).
+ *  1. The cover the merchant actually uploaded, read live from the admin.
+ *  2. The static filename map (last known good, for when the admin call fails).
+ *  3. AI-enhanced local PNG — only if `USE_ENHANCED_ARTICLE_IMAGES` is on.
+ *  4. null (caller falls back to placeholder).
  */
 export function articleImageUrl(
   handle: string | undefined,
   options: {width?: number; height?: number} = {},
 ): string | null {
   if (!handle) return null;
-  // 1) Local enhanced PNG — served straight from /public, no CDN params.
-  if (ENHANCED_AVAILABLE.has(handle)) {
+  const entry = live[handle] ?? ARTICLE_IMAGES[handle];
+  if (entry) {
+    const {width = 800, height = 600} = options;
+    const filename = encodeURIComponent(entry.filename);
+    return `${CDN_BASE}/${entry.id}/${filename}?width=${width}&height=${height}`;
+  }
+  if (USE_ENHANCED_ARTICLE_IMAGES && ENHANCED_AVAILABLE.has(handle)) {
     return `/images/articles/${handle}.png`;
   }
-  // 2) CDN fallback
-  const entry = ARTICLE_IMAGES[handle];
-  if (!entry) return null;
-  const {width = 800, height = 600} = options;
-  const filename = encodeURIComponent(entry.filename);
-  return `${CDN_BASE}/${entry.id}/${filename}?width=${width}&height=${height}`;
+  return null;
 }
 
 /**

@@ -5,7 +5,8 @@ import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {Breadcrumbs} from '~/components/Breadcrumbs';
-import {enhanceArticleImages} from '~/lib/article-images';
+import {enhanceArticleImages, setArticleImages} from '~/lib/article-images';
+import {fetchArticleImages} from '~/lib/blog-images.server';
 
 export const meta: Route.MetaFunction = ({data: d}) => getSeoMeta({
   title: d?.blog ? `${d.blog.title} | Bactology Блог` : 'Блог | Bactology',
@@ -18,10 +19,14 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   const blog = await ctx.storefront.getBlog(params.blogHandle);
   if (!blog) throw data('Блогът не е намерен', {status: 404});
   const paginationVariables = getPaginationVariables(request, {pageBy: 12});
-  const articles = await ctx.storefront.getArticlesPaginated(params.blogHandle, paginationVariables);
-  // CloudCart Storefront API returns an empty image.url for every article.
-  // Decorate each one with the real CDN URL via the admin-derived map in
-  // app/lib/article-images.ts so the listing actually shows cover photos.
+  const [articles, liveImages] = await Promise.all([
+    ctx.storefront.getArticlesPaginated(params.blogHandle, paginationVariables),
+    fetchArticleImages(ctx.env as Record<string, string | undefined>),
+  ]);
+  // CloudCart Storefront API returns an empty image.url for every article, so
+  // the covers come from the admin panel (client 2026-08-04: "ползвай реалните
+  // снимки"). The static map in article-images.ts is the fallback.
+  setArticleImages(liveImages);
   const decorated = {
     ...articles,
     nodes: enhanceArticleImages((articles as any).nodes ?? [], {width: 800, height: 600}),

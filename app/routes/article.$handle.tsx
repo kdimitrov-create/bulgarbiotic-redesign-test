@@ -4,7 +4,8 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {RichText, Image} from '@cloudcart/nitro-react';
 import {PageShell, PageBackLink} from '~/components/PageShell';
-import {enhanceArticleImage} from '~/lib/article-images';
+import {enhanceArticleImage, setArticleImages} from '~/lib/article-images';
+import {fetchArticleImages} from '~/lib/blog-images.server';
 
 /** Default blog handle on bulgarbiotic.bg. All articles live in this blog,
  *  matching the legacy single-segment URL pattern `/article/{slug}`. */
@@ -25,12 +26,15 @@ export const meta: Route.MetaFunction = ({data: d}) => {
 
 export async function loader({params, context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
-  const article = await ctx.storefront
-    .getArticle(DEFAULT_BLOG_HANDLE, params.handle)
-    .catch(() => null);
+  const [article, liveImages] = await Promise.all([
+    ctx.storefront.getArticle(DEFAULT_BLOG_HANDLE, params.handle).catch(() => null),
+    fetchArticleImages(ctx.env as Record<string, string | undefined>),
+  ]);
   if (!article) throw data('Статията не е намерена', {status: 404});
   // Decorate with the real cover image URL — storefront returns empty.
+  // Covers come from the admin panel; the static map is the fallback.
   // Use a wider hero image (1600x900) for the article hero banner.
+  setArticleImages(liveImages);
   return {article: enhanceArticleImage(article as any, {width: 1600, height: 900})};
 }
 
