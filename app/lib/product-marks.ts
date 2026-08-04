@@ -44,6 +44,8 @@ export interface MarkMoney {
 }
 
 export interface ProductMark {
+  /** URL handle — the only id a cart line carries. */
+  handle: string | null;
   isNew: boolean;
   isFeatured: boolean;
   labels: ProductLabel[];
@@ -64,6 +66,7 @@ export interface MarkTag {
 }
 
 const EMPTY: ProductMark = {
+  handle: null,
   isNew: false,
   isFeatured: false,
   labels: [],
@@ -86,6 +89,8 @@ const BUILT_IN: Record<string, {text: string; bg: string; fg: string}> = {
 const DEFAULT_LABEL = {bg: 'var(--color-brand-blue)', fg: '#ffffff'};
 
 let current: Record<string, ProductMark> = {};
+/** Built on first use from `current`, thrown away whenever that is replaced. */
+let byHandle: Record<string, ProductMark> | null = null;
 
 /**
  * Install the catalogue-wide marks fetched by the server. Ignores an empty
@@ -95,6 +100,7 @@ let current: Record<string, ProductMark> = {};
 export function setProductMarks(next: Record<string, ProductMark> | null | undefined) {
   if (!next || !Object.keys(next).length) return;
   current = next;
+  byHandle = null;
 }
 
 /** "gid://cloudcart/Product/37" → "37". Plain numeric ids pass through. */
@@ -115,6 +121,7 @@ export function marksFor(product: any): ProductMark {
   const ownBanners: ProductBanner[] | undefined = product?.banners;
   const ownLabels: ProductLabel[] | undefined = product?.labels;
   return {
+    handle: product?.handle ?? shared.handle,
     isNew: product?.isNew ?? shared.isNew,
     isFeatured: product?.isFeatured ?? shared.isFeatured,
     labels: ownLabels?.length ? ownLabels : shared.labels,
@@ -161,6 +168,80 @@ export function markPricing(product: any): {price: MarkMoney | null; compareAtPr
   const compare = compareAtPrice ? parseFloat(compareAtPrice.amount) : 0;
   const now = price ? parseFloat(price.amount) : 0;
   return {price, compareAtPrice: compare > now ? compareAtPrice : null};
+}
+
+/**
+ * The marks for a product identified only by its URL handle.
+ *
+ * The cart needs this because a cart line carries no product id at all: its
+ * `merchandise.id` is a **variant** gid, so `markProductId` — and therefore
+ * `marksFor` — can never resolve one. The handle on `merchandise.product` is
+ * the only thing that ties a line back to the catalogue.
+ */
+export function marksForHandle(handle: string | null | undefined): ProductMark | null {
+  if (!handle) return null;
+  if (!byHandle) {
+    byHandle = {};
+    for (const mark of Object.values(current)) {
+      if (mark.handle) byHandle[mark.handle] = mark;
+    }
+  }
+  return byHandle[handle] ?? null;
+}
+
+/** The same money, multiplied out for a quantity. */
+function scaleMoney(money: MarkMoney | null | undefined, quantity: number): MarkMoney | null {
+  if (!money) return null;
+  const amount = parseFloat(money.amount);
+  if (!isFinite(amount)) return null;
+  return {amount: String(amount * quantity), currencyCode: money.currencyCode};
+}
+
+/**
+ * The price pair for one CART line — what this line costs now and what it cost
+ * before the promotion, both as line totals for `quantity` items.
+ *
+ * The cart is the one surface where the two numbers arrive the other way round
+ * from the rest of the shop, and both halves were measured against the live API
+ * (2 × Femin, a product under the store-wide campaign):
+ *
+ *   • `merchandise.price`     → 19.25 — the real price, promotion included
+ *   • `cost.totalAmount`      → 63.12 for qty 2, i.e. 31.56 apiece — the MSRP.
+ *     The Storefront cart does NOT fold CloudCart's order-level promotions in.
+ *
+ * So the line already carries both figures and nothing needs to be derived from
+ * a discount percentage — which is what the 🛑 above forbids, and which used to
+ * leave the drawer showing full MSRP whenever the admin mirror had no rule for a
+ * product (category-scoped campaigns resolve to nothing there).
+ *
+ * Both halves are computed per unit and then multiplied by the quantity being
+ * displayed, so an optimistic +/− keeps the two prices in step.
+ */
+export function markPricingForLine(
+  line: any,
+  quantity?: number,
+): {price: MarkMoney | null; compareAtPrice: MarkMoney | null} {
+  const lineQty = Number(line?.quantity) || 0;
+  const qty = Number.isFinite(quantity) ? Math.max(0, quantity as number) : lineQty;
+  // A line only knows its handle, so the catalogue snapshot is the fallback for
+  // the thin merchandise objects the cart sometimes ships.
+  const shared = marksForHandle(line?.merchandise?.product?.handle);
+
+  const unitNow: MarkMoney | null = line?.merchandise?.price ?? shared?.price ?? null;
+  const lineCost = line?.cost?.totalAmount;
+  const unitWas: MarkMoney | null =
+    lineCost && lineQty > 0
+      ? {amount: String(parseFloat(lineCost.amount) / lineQty), currencyCode: lineCost.currencyCode}
+      : shared?.compareAtPrice ?? null;
+
+  const was = scaleMoney(unitWas, qty);
+  const price = scaleMoney(unitNow, qty) ?? was;
+
+  // Half a cent of tolerance: dividing a line total back to a unit price can
+  // land a hair above the real one, and that must not read as a promotion.
+  const wasAmount = was ? parseFloat(was.amount) : 0;
+  const nowAmount = price ? parseFloat(price.amount) : 0;
+  return {price, compareAtPrice: wasAmount > nowAmount + 0.005 ? was : null};
 }
 
 /**

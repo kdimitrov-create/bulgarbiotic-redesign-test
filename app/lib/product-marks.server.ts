@@ -27,6 +27,7 @@ const QUERY = `query ProductMarks($first: Int!, $after: String) {
   products(first: $first, after: $after) {
     nodes {
       id
+      handle
       isNew
       isFeatured
       labels { name color textColor }
@@ -45,6 +46,7 @@ interface RawMoney {
 
 interface RawNode {
   id: string;
+  handle: string;
   isNew: boolean;
   isFeatured: boolean;
   labels: Array<{name: string; color: string | null; textColor: string | null}> | null;
@@ -88,6 +90,7 @@ export async function fetchProductMarks(
         const id = node.id.match(/Product\/(\d+)/)?.[1];
         if (!id) continue;
         out[id] = {
+          handle: node.handle ?? null,
           isNew: !!node.isNew,
           isFeatured: !!node.isFeatured,
           labels: node.labels ?? [],
