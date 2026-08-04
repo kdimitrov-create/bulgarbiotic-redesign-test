@@ -122,6 +122,30 @@ export function orderByRealSales<T extends {id?: string}>(
     .map((x) => x.node);
 }
 
+/**
+ * Every product of a listing, not just the first page.
+ *
+ * Asking for `first: 100` is not enough: the Storefront API silently caps the
+ * page and returned 12 of 25 products (measured 2026-08-04), which left page 2
+ * of the sales-ordered listing empty. So walk the cursor until it runs out.
+ */
+export async function collectAllNodes(
+  first: {nodes?: any[]; pageInfo?: {hasNextPage?: boolean; endCursor?: string | null}} | null,
+  fetchNext: (after: string) => Promise<{nodes?: any[]; pageInfo?: any} | null>,
+  maxPages = 8,
+): Promise<any[]> {
+  const nodes = [...(first?.nodes ?? [])];
+  let info = first?.pageInfo;
+  for (let i = 1; i < maxPages; i++) {
+    if (!info?.hasNextPage || !info?.endCursor) break;
+    const next = await fetchNext(info.endCursor);
+    if (!next) break;
+    nodes.push(...(next.nodes ?? []));
+    info = next.pageInfo;
+  }
+  return nodes;
+}
+
 /** The slice of an already-ordered list that belongs on `?page=N`. */
 export function pageSlice<T>(nodes: T[], page: number, size: number) {
   const start = Math.max(0, (page - 1) * size);

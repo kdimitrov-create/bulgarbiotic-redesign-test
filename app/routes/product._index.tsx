@@ -12,7 +12,12 @@ import {
   currentPage,
   isRealSalesOrder,
 } from '~/lib/filters';
-import {fetchBestSellers, orderByRealSales, pageSlice} from '~/lib/best-sellers.server';
+import {
+  collectAllNodes,
+  fetchBestSellers,
+  orderByRealSales,
+  pageSlice,
+} from '~/lib/best-sellers.server';
 import {enhanceProducts} from '~/lib/product-images';
 
 export const meta: Route.MetaFunction = () =>
@@ -45,10 +50,14 @@ export async function loader({context, request}: Route.LoaderArgs) {
   ]);
 
   if (salesOrder) {
-    const sales = await fetchBestSellers(ctx.env as Record<string, string | undefined>);
-    const page = currentPage(url);
-    const ordered = orderByRealSales((products as any).nodes ?? [], sales);
-    const slice = pageSlice(ordered, page, PAGE_SIZE);
+    const [sales, allNodes] = await Promise.all([
+      fetchBestSellers(ctx.env as Record<string, string | undefined>),
+      collectAllNodes(products as any, (after) =>
+        ctx.storefront.getProductsPaginated({first: 100, after, filters}) as any,
+      ),
+    ]);
+    const ordered = orderByRealSales(allNodes, sales);
+    const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
     (products as any).nodes = slice.nodes;
     (products as any).pageInfo = {
       ...((products as any).pageInfo ?? {}),

@@ -10,7 +10,12 @@ import {
   currentPage,
   isRealSalesOrder,
 } from '~/lib/filters';
-import {fetchBestSellers, orderByRealSales, pageSlice} from '~/lib/best-sellers.server';
+import {
+  collectAllNodes,
+  fetchBestSellers,
+  orderByRealSales,
+  pageSlice,
+} from '~/lib/best-sellers.server';
 import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
@@ -100,13 +105,23 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
 
   // Apply AI-enhanced lifestyle photos so every product card on listings
   // uses the same brand-consistent imagery as the homepage / sale page.
-  const allNodes = enhanceProducts([...(((result.products as any).nodes) ?? []), ...extraNodes]);
-  let nodes = allNodes;
+  // In sales order the whole category is ranked, so every page of it is needed
+  // up front — the API caps a single request well below `first: 100`.
+  const categoryNodes = salesOrder
+    ? await collectAllNodes(result.products as any, (after) =>
+        ctx.storefront
+          .getCollectionProductsPaginated(params.handle, {first: 100, after, filters})
+          .then((r: any) => r?.products ?? null),
+      )
+    : ((result.products as any).nodes ?? []);
+
+  const everyNode = enhanceProducts([...categoryNodes, ...extraNodes]);
+  let nodes = everyNode;
   let pageInfo = (result.products as any).pageInfo;
 
   if (salesOrder) {
     const sales = await fetchBestSellers(ctx.env as Record<string, string | undefined>);
-    const slice = pageSlice(orderByRealSales(allNodes, sales), currentPage(url), PAGE_SIZE);
+    const slice = pageSlice(orderByRealSales(everyNode, sales), currentPage(url), PAGE_SIZE);
     nodes = slice.nodes;
     pageInfo = {...(pageInfo ?? {}), hasNextPage: slice.hasNextPage, hasPreviousPage: slice.hasPreviousPage};
   }
