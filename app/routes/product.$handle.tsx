@@ -10,7 +10,6 @@ import {ProductImageGallery} from '~/components/ProductImageGallery';
 import {ProductMarks, ProductMarkTags} from '~/components/ProductMarks';
 import {Breadcrumbs} from '~/components/Breadcrumbs';
 import {StarRating} from '~/components/StarRating';
-import {WishlistButton} from '~/components/WishlistButton';
 import {ReviewList} from '~/components/ReviewList';
 import {CertificationsStrip} from '~/components/CertificationsStrip';
 import {ProductTrustRow} from '~/components/ProductTrustRow';
@@ -122,8 +121,6 @@ export default function ProductPage() {
       <ProductDescription
         handle={product.handle}
         descriptionHtml={product.descriptionHtml}
-        heroImageUrl={product.featuredImage?.url}
-        heroTitle={product.title}
       />
 
       {/* FAQ accordion moved up (client 2026-07): now sits directly above the
@@ -217,9 +214,7 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
   return (
     <div className="relative">
       <div className="relative md:sticky md:top-[calc(4rem+1.5rem)]">
-        <div className="absolute top-3 right-3 z-[2]">
-          <WishlistButton productId={product.id} size="lg" />
-        </div>
+        {/* „Любими“ е изключено в модула „Продуктов каталог“ (клиент 2026-08-04). */}
         <ProductMarkTags
           product={product}
           discountPct={isOnSale ? discountPct : 0}

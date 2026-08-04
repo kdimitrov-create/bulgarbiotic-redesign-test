@@ -26,46 +26,44 @@ function extractVideoHtml(html?: string): string | null {
   const m = html.match(
     /<iframe\b[^>]*(?:youtube|youtu\.be|vimeo|\.mp4|\/video\/)[^>]*>[\s\S]*?<\/iframe>/i,
   );
-  return m ? `<div class="bb-desc-video">${m[0]}</div>` : null;
+  return m ? `<div class="bb-desc-video bb-desc-video--hero">${m[0]}</div>` : null;
+}
+
+/** The same embed, removed from the body — it now leads the section instead. */
+function stripVideoHtml(html: string): string {
+  return html.replace(
+    /<iframe\b[^>]*(?:youtube|youtu\.be|vimeo|\.mp4|\/video\/)[^>]*>[\s\S]*?<\/iframe>/i,
+    '',
+  );
 }
 
 export function ProductDescription({
   descriptionHtml,
-  heroImageUrl,
-  heroTitle,
   handle,
 }: {
   descriptionHtml?: string;
-  heroImageUrl?: string;
-  heroTitle?: string;
   handle?: string;
 }) {
   // Client (2026-07): per-product description override from the Google Doc.
   // When present, it replaces the CloudCart CMS description TEXT in this section
-  // — but we keep the product VIDEO that was embedded in the CMS description
-  // (it sits directly above the text), extracting it so it survives the swap.
+  // — but we keep the product VIDEO that was embedded in the CMS description.
+  //
+  // Client (2026-08-04): the wide product photo that used to open this section is
+  // gone and the video took its place, at the photo's size. So the embed is
+  // pulled out of the body for EVERY product, not just the overridden ones, and
+  // stripped from the text so it does not render twice.
   const override = handle ? PRODUCT_DESCRIPTIONS[handle] : undefined;
-  const overrideVideo = override ? extractVideoHtml(descriptionHtml) : null;
-  if (!override && !descriptionHtml) return null;
-  const parsed = override ? null : parseProductDescription(descriptionHtml!);
+  const video = extractVideoHtml(descriptionHtml);
+  const body = descriptionHtml ? stripVideoHtml(descriptionHtml) : undefined;
+  if (!override && !body) return null;
+  const parsed = override ? null : parseProductDescription(body!);
 
   return (
     <section id="description" className="bb-pdp-tabs-wrap">
       <div className="bb-pdp-tabs">
-        {heroImageUrl && (
-          <div className="bb-desc-hero">
-            <img src={heroImageUrl} alt={heroTitle || 'Bactology'} loading="lazy" />
-            {heroTitle && (
-              <div className="bb-desc-hero-caption">
-                <span className="bb-desc-hero-tag">За продукта</span>
-                <h2 className="bb-desc-hero-title">{heroTitle}</h2>
-              </div>
-            )}
-          </div>
-        )}
+        {video && <div dangerouslySetInnerHTML={{__html: video}} />}
         {override ? (
           <CollapsibleDescription>
-            {overrideVideo && <div dangerouslySetInnerHTML={{__html: overrideVideo}} />}
             <div className={proseClass} dangerouslySetInnerHTML={{__html: override}} />
           </CollapsibleDescription>
         ) : (

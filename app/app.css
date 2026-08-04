@@ -2776,6 +2776,17 @@ body {
   border-radius: 16px; overflow: hidden; background: #000;
 }
 .bb-desc-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+/* Client (2026-08-04): the video replaced the wide product photo that used to
+   open the description, so it inherits that photo's box exactly. */
+.bb-desc-video--hero {
+  max-width: 100%;
+  aspect-ratio: 21 / 9;
+  border-radius: 22px;
+  margin: 0 0 28px;
+}
+@media (max-width: 767px) {
+  .bb-desc-video--hero { aspect-ratio: 16 / 9; border-radius: 16px; margin-bottom: 20px; }
+}
 
 /* Checklist for the per-product description override ("Основни ползи"). */
 .bb-desc-check { list-style: none; padding-left: 0; margin: 14px 0; }
