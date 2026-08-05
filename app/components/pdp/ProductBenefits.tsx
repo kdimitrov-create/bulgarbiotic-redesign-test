@@ -20,7 +20,7 @@ export function ProductBenefits({benefits, compact = false}: Props) {
   if (!benefits || benefits.length < 3) return null;
 
   return (
-    <section className={`bb-benefits${compact ? ' bb-benefits--compact' : ''}`} aria-label="Ключови ползи">
+    <section id="benefits" className={`bb-benefits${compact ? ' bb-benefits--compact' : ''}`} aria-label="Ключови ползи">
       <header className="bb-benefits-head">
         <span className="bb-benefits-tag">Какво прави продуктът</span>
         <h3>Ключови ползи</h3>

@@ -5,6 +5,20 @@ interface Props {
   poster?: string;
   title?: string;
   subtitle?: string;
+  /** Product handle — only used to decide morning vs evening intake. */
+  handle?: string;
+}
+
+/**
+ * Products taken in the EVENING rather than with the first meal. The client
+ * named Gastro Balance specifically (2026-08-05); everything else keeps the
+ * morning instruction.
+ */
+const EVENING_INTAKE = new Set(['bactology-probiotik-za-podut-korem-i-gazove-gastro-balance']);
+
+/** Step 1's subline, which is the only stage that differs per product. */
+function intakeLine(handle?: string): string {
+  return EVENING_INTAKE.has(handle ?? '') ? 'С вода, вечер след хранене' : 'С вода, сутрин след хранене';
 }
 
 /**
@@ -12,7 +26,8 @@ interface Props {
  * clinical 4-station horizontal infographic that's appropriate for any
  * audience and reads at a glance.
  *
- * Stages: Глътка → Защитена в стомаха → DR-Caps™ се разтваря → Бактериите цъфтят
+ * Stages (client wording, 2026-08-05):
+ *   Прием → Защита в стомаха → Разтваряне → Активиране
  *
  * Capsule travels along the connector line; final station has a "bloom" of
  * pink dots representing bacteria multiplying in the colon.
@@ -20,8 +35,9 @@ interface Props {
 export function ProductVideo({
   videoSrc,
   poster,
+  handle,
   title = 'Как работи пробиотикът',
-  subtitle = 'От поглъщането до колонизирането на червата — четири стъпки, обяснени за 9 секунди.',
+  subtitle = 'От приема до активирането в червата — четири стъпки.',
 }: Props = {}) {
   return (
     <section className="bb-pvideo" aria-labelledby="bb-pvideo-title">
@@ -42,10 +58,10 @@ export function ProductVideo({
             {/* Desktop: horizontal SVG animation (capsule travels stations).
              * Mobile: vertical timeline so each station is fully readable. */}
             <div className="bb-pvideo-desktop-only">
-              <CapsuleJourneyAnimation />
+              <CapsuleJourneyAnimation handle={handle} />
             </div>
             <div className="bb-pvideo-mobile-only">
-              <CapsuleJourneyVertical />
+              <CapsuleJourneyVertical handle={handle} />
             </div>
           </>
         )}
@@ -116,13 +132,13 @@ export function ProductVideo({
  * Each station is a circular icon with a label; a thin connector line carries
  * the moving capsule; pink dots "bloom" at the end station.
  */
-function CapsuleJourneyAnimation() {
+function CapsuleJourneyAnimation({handle}: {handle?: string}) {
   // Station positions (x coords in 800-wide viewbox)
   const STATIONS = [
-    {x: 100, label: '1. Глътка',           sub: 'С вода, сутрин'},
-    {x: 300, label: '2. Защитена в стомаха', sub: 'DR-Caps™ устойчиви'},
+    {x: 100, label: '1. Прием',              sub: intakeLine(handle)},
+    {x: 300, label: '2. Защита в стомаха',   sub: 'DRcaps™ капсула, устойчива на стомашната киселина'},
     {x: 500, label: '3. Разтваряне',         sub: 'В тънкото черво'},
-    {x: 700, label: '4. Цъфтеж',             sub: '50 млрд CFU в колона'},
+    {x: 700, label: '4. Активиране',         sub: '50 млрд. активни пробиотични бактерии'},
   ];
 
   return (
@@ -295,7 +311,7 @@ function CapsuleJourneyAnimation() {
             fillOpacity="0.55"
             letterSpacing="0.8"
             fontFamily="Manrope, sans-serif"
-          >9-СЕКУНДНА ВИЗУАЛИЗАЦИЯ · ПЪТЯТ НА BACTOLOGY ПРОБИОТИКА</text>
+          >ПЪТЯТ НА ДОБРИТЕ БАКТЕРИИ НА BACTOLOGY</text>
         </g>
       </svg>
 
@@ -316,12 +332,12 @@ function CapsuleJourneyAnimation() {
  * runs down the left side; each station has number, icon, title, and a
  * short subline. Final station pulses pink ("colonization bloom").
  */
-function CapsuleJourneyVertical() {
+function CapsuleJourneyVertical({handle}: {handle?: string}) {
   const STATIONS = [
-    {n: 1, title: 'Глътка',                sub: 'С вода, сутрин на гладно',                  icon: 'drop'},
-    {n: 2, title: 'Защитена в стомаха',    sub: 'DR-Caps™ устойчиви на pH 1.5',              icon: 'shield'},
-    {n: 3, title: 'Разтваряне',            sub: 'В средата на тънкото черво',                icon: 'capsule'},
-    {n: 4, title: 'Цъфтеж',                sub: '50 млрд CFU колонизират дебелото черво',    icon: 'bloom'},
+    {n: 1, title: 'Прием',              sub: intakeLine(handle),                                        icon: 'drop'},
+    {n: 2, title: 'Защита в стомаха',   sub: 'DRcaps™ капсула, устойчива на стомашната киселина',       icon: 'shield'},
+    {n: 3, title: 'Разтваряне',         sub: 'В тънкото черво',                                         icon: 'capsule'},
+    {n: 4, title: 'Активиране',         sub: '50 млрд. активни пробиотични бактерии',                   icon: 'bloom'},
   ];
   return (
     <ol className="bb-pjv" aria-label="Пътят на пробиотика — 4 стъпки">

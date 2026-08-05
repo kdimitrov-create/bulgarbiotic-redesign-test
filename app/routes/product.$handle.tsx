@@ -17,9 +17,7 @@ import {ProductSubscription} from '~/components/ProductSubscription';
 import {ProductTabs} from '~/components/ProductTabs';
 import {MobileStickyCart} from '~/components/MobileStickyCart';
 import {PdpAwardBadge} from '~/components/pdp/PdpAwardBadge';
-import {ProductStats} from '~/components/pdp/ProductStats';
 import {UsageSteps} from '~/components/pdp/UsageSteps';
-import {SocialProofBlock} from '~/components/pdp/SocialProofBlock';
 import {MythBuster} from '~/components/pdp/MythBuster';
 import {ComparisonTable} from '~/components/pdp/ComparisonTable';
 import {ProductVideo} from '~/components/pdp/ProductVideo';
@@ -129,12 +127,12 @@ export default function ProductPage() {
 
       {/* Long-form storytelling sections (NL Beauty-style scroll) */}
       <section id="video">
-        <ProductVideo />
+        <ProductVideo handle={product.handle} />
       </section>
 
-      <section id="stats">
-        <ProductStats />
-      </section>
+      {/* Client 2026-08-05: the "Реални резултати" figures (94% / 89% / 3 303)
+          are identical on every product, so on a product page they read as if
+          they were about THIS product when they are not. Removed. */}
 
       <section id="usage">
         <UsageSteps />
@@ -170,8 +168,8 @@ export default function ProductPage() {
 
       {/* (Certifications strip moved up — now renders right after Key benefits.) */}
 
-      {/* Big social-proof block (Slice 1) — late in scroll, final push */}
-      <SocialProofBlock />
+      {/* Client 2026-08-05: the "Над 260 000 поръчки" band belongs on the home
+          page, not on a product page — same store-wide numbers on every SKU. */}
 
       {/* Real customer reviews with verified badges (Slice 2 upgrade) */}
       <section id="reviews">

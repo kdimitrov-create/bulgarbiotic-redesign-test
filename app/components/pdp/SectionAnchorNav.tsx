@@ -9,14 +9,42 @@ interface Props {
   sections?: Section[];
 }
 
+/**
+ * Order and wording set by the client (2026-08-05). "Описание" used to point
+ * at the tabbed block far down the page instead of the description itself —
+ * it now lands on the description, and "Ползи" / "Съставки" jump to the exact
+ * spots that cover them.
+ */
 const DEFAULT_SECTIONS: Section[] = [
-  {id: 'video', label: 'Виж в действие'},
-  {id: 'stats', label: 'Резултати'},
-  {id: 'usage', label: 'Употреба'},
-  {id: 'compare', label: 'Сравнение'},
-  {id: 'tabs', label: 'Описание'},
+  {id: 'description', label: 'Описание'},
+  {id: 'benefits', label: 'Ползи'},
+  {id: 'ingredients', label: 'Съставки'},
+  {id: 'usage', label: 'Начин на употреба'},
+  {id: 'faq', label: 'Често задавани въпроси'},
   {id: 'reviews', label: 'Отзиви'},
 ];
+
+/**
+ * The merchant writes the description in the admin panel, so its "Състав"
+ * heading carries no id — and not every product even has one (Femin does,
+ * Пакет Beauty does not). Tag the first heading that announces it so
+ * "Съставки" has somewhere to land; products without one lose the link.
+ */
+function ensureIngredientsAnchor() {
+  if (document.getElementById('ingredients')) return;
+  const root = document.getElementById('description');
+  if (!root) return;
+  for (const el of Array.from(root.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,b'))) {
+    const text = (el.textContent ?? '').trim();
+    // Short line starting with "Състав" — a heading, not a sentence that
+    // happens to mention the word.
+    if (text.length <= 80 && /^състав/i.test(text)) {
+      const target = (el.closest('p') ?? el) as HTMLElement;
+      target.id = 'ingredients';
+      return;
+    }
+  }
+}
 
 /**
  * Sticky horizontal anchor nav that appears AFTER the user scrolls past the
@@ -29,6 +57,18 @@ const DEFAULT_SECTIONS: Section[] = [
 export function SectionAnchorNav({sections = DEFAULT_SECTIONS}: Props = {}) {
   const [active, setActive] = useState<string>('');
   const [stuck, setStuck] = useState<boolean>(false);
+  // Not every product has every section — "Съставки" only exists when the
+  // merchant's description actually carries a Състав heading, and a product
+  // with no reviews renders no reviews block. A link that scrolls nowhere is
+  // worse than no link, so anything without a target is dropped once mounted.
+  const [present, setPresent] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    ensureIngredientsAnchor();
+    setPresent(sections.filter((s) => document.getElementById(s.id)).map((s) => s.id));
+  }, [sections]);
+
+  const visibleSections = present ? sections.filter((s) => present.includes(s.id)) : sections;
 
   // Track which section is in viewport to highlight the matching tab
   useEffect(() => {
@@ -108,7 +148,7 @@ export function SectionAnchorNav({sections = DEFAULT_SECTIONS}: Props = {}) {
   return (
     <nav className={`bb-anchor-nav${stuck ? ' bb-anchor-nav--stuck' : ''}`} aria-label="Бърза навигация">
       <div className="bb-anchor-nav-inner">
-        {sections.map((s) => (
+        {visibleSections.map((s) => (
           <a
             key={s.id}
             href={`#${s.id}`}

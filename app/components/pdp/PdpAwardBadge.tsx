@@ -33,11 +33,24 @@ export function PdpAwardBadge() {
       </svg>
     </Link>
 
-      {/* The Forbes graphic that used to be hardcoded here is now a product
-          banner in the admin panel, so it is drawn over the product photo in
-          the corner the merchant chose — showing it twice on one page read as
-          a mistake. Nothing to restore in code if it should come back: it is
-          the same banner, just a second placement. */}
+      {/* Client 2026-08-05: "тука не се разбира въобще какво е това" — the bare
+          Forbes graphic said nothing on its own, so it is spelled out. Same
+          image the merchant uses as a product banner, now with its own label. */}
+      <div className="bb-pdp-award-forbes">
+        <img
+          src="https://bulgarbiotic.bg/cdn/img/products_banners/7/%21%21%21%D1%81.png?width=96&height=96&v=1777459060"
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+        <span className="bb-pdp-award-text">
+          <span className="bb-pdp-award-line1">Номиниран за Forbes</span>
+          <span className="bb-pdp-award-line2">Семейна компания на 2026</span>
+        </span>
+      </div>
 
       <style>{`
         .bb-pdp-award-row {
@@ -47,20 +60,23 @@ export function PdpAwardBadge() {
           flex-wrap: wrap;
           margin: 10px 0 6px;
         }
-        /* Match the neighbouring EVA award pill (client request): dark-navy
-           fill, gold hairline border, soft rounding + shadow. */
-        .bb-pdp-award-extra {
-          width: 108px; height: 50px;
+        /* Matches the neighbouring EVA award pill: dark-navy fill, gold
+           hairline border, soft rounding + shadow. */
+        .bb-pdp-award-forbes {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 16px 8px 10px;
+          background: linear-gradient(135deg, #0a2540 0%, #112c4d 100%);
+          border: 1px solid rgba(244, 213, 133, 0.3);
+          border-radius: 999px;
+          box-shadow: 0 6px 16px -8px rgba(10, 37, 64, 0.45);
+        }
+        .bb-pdp-award-forbes img {
+          width: 32px; height: 32px;
           object-fit: contain;
           flex-shrink: 0;
-          background: linear-gradient(135deg, #0a2540 0%, #112c4d 100%);
-          border: 1px solid rgba(244, 213, 133, 0.35);
-          border-radius: 999px;
-          padding: 6px 20px;
-          box-shadow: 0 6px 16px -8px rgba(10, 37, 64, 0.45);
-          transition: transform 0.18s, border-color 0.18s;
         }
-        .bb-pdp-award-extra:hover { transform: translateY(-1px); border-color: #f4d585; }
         .bb-pdp-award {
           display: inline-flex;
           align-items: center;
