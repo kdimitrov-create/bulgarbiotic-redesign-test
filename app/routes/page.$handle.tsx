@@ -324,7 +324,10 @@ function DisneylandGiveawayPage({page}: {page: any}) {
 /* ============================================================ */
 
 // Real outlets pulled from /pages/mediite-za-nas builderDesign tree
-// (CMS page id=36). Each link points to the actual external article.
+// (CMS page id=36). Client 2026-08-05: these rows must NOT be links — only the
+// four outlets on the home strip are clickable, and those go to our own
+// articles. The `url` of each row is kept as the source reference behind the
+// headline, deliberately not rendered.
 const PRESS_LIST = [
   {outlet: 'ELLE', region: 'България', headline: '10 успели жени празнуват живота с Bulgar Biotic', url: 'https://www.elle.bg/a/10-uspeli-zheni-praznuvat-zhivota-s-bulgar-biotik'},
   {outlet: 'Cosmopolitan', region: 'България', headline: 'Bulgar Biotic — вдъхновение от традициите и природата', url: 'https://www.cosmopolitan.bg/a/bulgar-biotik-vdxnovenie-ot-tradiciite-i-prirodata'},
@@ -355,22 +358,13 @@ function MediaPressPage({page}: {page: any}) {
     >
       <div className="bb-press-list">
         {PRESS_LIST.map((item, i) => (
-          <a
-            key={i}
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bb-press-list-item"
-          >
+          <div key={i} className="bb-press-list-item">
             <div className="bb-press-list-outlet">
               <span className="bb-press-list-name">{item.outlet}</span>
               <span className="bb-press-list-region">{item.region}</span>
             </div>
             <div className="bb-press-list-headline">{item.headline}</div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="bb-press-list-arrow">
-              <path d="M7 17L17 7M9 7h8v8" />
-            </svg>
-          </a>
+          </div>
         ))}
       </div>
 
@@ -389,34 +383,25 @@ function MediaPressPage({page}: {page: any}) {
         @media (max-width: 720px) {
           .bb-press-list { grid-template-columns: 1fr; }
         }
+        /* Not a link any more (client 2026-08-05) — two columns, and no hover
+           lift/invert, because those read as "click me". */
         .bb-press-list-item {
           display: grid;
-          grid-template-columns: 200px 1fr auto;
+          grid-template-columns: 200px 1fr;
           gap: 18px;
           align-items: center;
           padding: 18px 22px;
           background: white;
           border: 1px solid rgba(10, 37, 64, 0.08);
           border-radius: 14px;
-          text-decoration: none;
           color: var(--color-ink);
-          transition: all 0.18s;
         }
         @media (max-width: 540px) {
           .bb-press-list-item {
-            grid-template-columns: 1fr auto;
-            gap: 10px;
+            grid-template-columns: 1fr;
+            gap: 8px;
             padding: 16px 18px;
           }
-          .bb-press-list-outlet { grid-column: 1 / 3; }
-        }
-        .bb-press-list-item:hover {
-          background: var(--color-ink);
-          color: var(--color-cream-1);
-          border-color: var(--color-ink);
-          text-decoration: none;
-          transform: translateY(-2px);
-          box-shadow: 0 12px 28px -10px rgba(10, 37, 64, 0.25);
         }
         .bb-press-list-outlet {
           display: flex;
@@ -444,16 +429,6 @@ function MediaPressPage({page}: {page: any}) {
           font-weight: 600;
           line-height: 1.45;
           opacity: 0.85;
-        }
-        .bb-press-list-arrow {
-          width: 16px; height: 16px;
-          opacity: 0.5;
-          flex-shrink: 0;
-          transition: transform 0.18s, opacity 0.18s;
-        }
-        .bb-press-list-item:hover .bb-press-list-arrow {
-          opacity: 1;
-          transform: translate(2px, -2px);
         }
         .bb-press-list-note {
           margin-top: 36px;

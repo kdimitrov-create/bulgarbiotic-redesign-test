@@ -3,13 +3,14 @@ import {Link} from 'react-router';
 /**
  * Press / media strip — REAL outlets that have covered Bulgar Biotic.
  *
- * Sourced from `/page/mediite-za-nas` (CMS page id=36) — the actual
- * "Медиите за нас" page on bulgarbiotic.bg lists 19 real article mentions.
- * We surface 8 of the most recognizable Bulgarian outlets; each chip links
- * to the actual external article so users can verify the coverage.
+ * Client 2026-08-05: the chips must keep the visitor ON our site, so each one
+ * now points at OUR OWN article about that coverage instead of the publisher's
+ * page, and only the four outlets she named are shown (was eight). The full
+ * list still lives on `/page/mediite-za-nas`, where the client wants the rows
+ * to carry NO links at all.
  *
- * Earlier version had fabricated logos (Forbes / Капитал / БНТ / Manager /
- * DarikNews) — these are now replaced with verified mentions only.
+ * Every `article` below is a real handle in the store's `beauty-and-health`
+ * blog, matched to the titles she supplied.
  *
  * Typographic representation only (no licensed logos used).
  */
@@ -17,19 +18,32 @@ type Outlet = {
   name: string;
   tagline?: string;
   headline: string;
-  url: string;
+  /** Handle of our own article — rendered as `/article/{handle}`. */
+  article: string;
   family: 'sans' | 'serif';
 };
 
 const OUTLETS: Outlet[] = [
-  {name: 'ELLE',         family: 'serif', tagline: 'България',  headline: '10 успели жени празнуват живота с Bulgar Biotic',  url: 'https://www.elle.bg/a/10-uspeli-zheni-praznuvat-zhivota-s-bulgar-biotik'},
-  {name: 'Cosmopolitan', family: 'sans',  tagline: 'България',  headline: 'Вдъхновение от традициите и природата',           url: 'https://www.cosmopolitan.bg/a/bulgar-biotik-vdxnovenie-ot-tradiciite-i-prirodata'},
-  {name: '24 часа',      family: 'sans',  tagline: 'Daily',     headline: 'Българска фирма впечатли германците с пробиотици с шоколад', url: 'https://www.24chasa.bg/bulgaria/article/17511201'},
-  {name: 'Mediapool',    family: 'sans',  tagline: 'News',      headline: 'Изсушено кисело мляко под формата на перли',     url: 'https://www.mediapool.bg/izsusheno-kiselo-mlyako-pod-formata-na-perli-v-nov-shokoladov-probiotik-news302802.html'},
-  {name: 'Manager',      family: 'serif', tagline: 'Магазин',   headline: 'Bulgar Biotik — вдъхновение от традициите',       url: 'https://manager.bg/общество/bulgar-biotik-vdahnovenie-ot-tradiciite-i-prirodata'},
-  {name: 'az-жената',    family: 'sans',  tagline: 'Здраве',    headline: 'Bulgar Biotic — здраве и красота',                url: 'https://www.az-jenata.bg/a/5-zdrave-i-krasota/69992-bulgar-biotik'},
-  {name: 'Mila',         family: 'serif', tagline: 'Lifestyle', headline: 'Bulgar Biotic — нашите традиции',                 url: 'https://www.mila.bg/Article/17511480'},
-  {name: 'Mama 24',      family: 'sans',  tagline: 'За майки',  headline: 'Bulgar Biotic за цялото семейство',               url: 'https://www.mama24.bg/Article/17512059'},
+  {
+    name: 'EVA', family: 'serif', tagline: 'Награда',
+    headline: 'Булгар Биотик e най-добрият български бранд за пробиотици за 2025 г.',
+    article: 'bulgar-biotik-e-nay-dobriyat-balgarski-brand-za-probiotici-za-2025-g',
+  },
+  {
+    name: 'Mediapool', family: 'sans', tagline: 'News',
+    headline: 'Bactology Babies & Kids – пробиотични перли с млечен шоколад за силен детски имунитет',
+    article: 'bactology-babies-kids-probiotichni-perli-s-mlechen-shokolad-za-silen-detski-imunitet',
+  },
+  {
+    name: 'Grazia', family: 'serif', tagline: 'Lifestyle',
+    headline: 'Искаш да отслабнеш? Пробиотиците идват на помощ!',
+    article: 'iskash-da-otslabnesh-probioticite-idvat-na-pomosht',
+  },
+  {
+    name: 'Manager', family: 'serif', tagline: 'Бизнес',
+    headline: 'Булгар Биотик: вдъхновение от традициите и природата',
+    article: 'bulgarbiotik-vdahnovenie-ot-tradiciite-i-prirod',
+  },
 ];
 
 export function PressStrip() {
@@ -42,18 +56,17 @@ export function PressStrip() {
         </div>
         <div className="bb-press-row">
           {OUTLETS.map((o) => (
-            <a
+            <Link
               key={o.name}
-              href={o.url}
-              target="_blank"
-              rel="noopener noreferrer"
+              to={`/article/${o.article}`}
+              prefetch="intent"
               className={`bb-press-logo bb-press-logo--${o.family}`}
               title={o.headline}
               aria-label={`${o.name}: ${o.headline}`}
             >
               <span className="bb-press-name">{o.name}</span>
               {o.tagline && <span className="bb-press-small">{o.tagline}</span>}
-            </a>
+            </Link>
           ))}
         </div>
         <div className="bb-press-allcta">
