@@ -27,14 +27,23 @@ export function Header({shop, menu, cart}: HeaderProps) {
   // (client request). It's a styled pink button, not a CloudCart menu entry.
   const blogIdx = baseItems.findIndex((i) => i.url === '/blog' || i.title.toLowerCase().includes('блог'));
   const newsletterNav = {title: 'Абонирай се за бюлетин', url: '/page/abomanmet-za-byuletin'};
-  // Skip the injection once the merchant has such an entry in the admin menu —
-  // otherwise the same CTA shows up twice (2026-08-05).
+  const eventsNav = {title: 'Събития', url: '/page/events'};
+  // Skip either injection once the merchant has such an entry in the admin menu —
+  // otherwise the same link shows up twice (2026-08-05).
   const hasOwnNewsletter = baseItems.some((i) => i.title.toLowerCase().includes('абонирай'));
-  const items = hasOwnNewsletter
+  const hasOwnEvents = baseItems.some(
+    (i) => i.url === '/page/events' || i.title.toLowerCase().includes('събити'),
+  );
+  // Order matters: "Събития" sits between "Наука" and the newsletter pill.
+  const injected = [
+    ...(hasOwnEvents ? [] : [eventsNav]),
+    ...(hasOwnNewsletter ? [] : [newsletterNav]),
+  ];
+  const items = injected.length === 0
     ? baseItems
     : blogIdx >= 0
-      ? [...baseItems.slice(0, blogIdx), newsletterNav, ...baseItems.slice(blogIdx)]
-      : [...baseItems, newsletterNav];
+      ? [...baseItems.slice(0, blogIdx), ...injected, ...baseItems.slice(blogIdx)]
+      : [...baseItems, ...injected];
   const {open} = useAside();
   const headerRef = useRef<HTMLElement>(null);
   const cartBtnRef = useRef<HTMLButtonElement>(null);

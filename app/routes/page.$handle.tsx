@@ -13,8 +13,11 @@ import {
 export const meta: Route.MetaFunction = ({data: d}) => {
   const page = d?.page as any;
   if (!page) return getSeoMeta({title: 'Страница | Bactology'});
+  // For pages we author ourselves the CMS title is a leftover stub ("Events"),
+  // so the Bulgarian one we ship wins.
+  const title = HANDLE_TITLES[page.handle] ?? page.title;
   return getSeoMeta({
-    title: `${page.title} | Bactology`,
+    title: `${title} | Bactology`,
     description: (page as any).seoDescription || undefined,
   });
 };
@@ -30,6 +33,7 @@ const HANDLE_TITLES: Record<string, string> = {
   'abomanmet-za-byuletin': 'Абонирай се за бюлетин',
   'pateshestvie': 'Семейна екскурзия до Дисниленд в Париж',
   'mediite-za-nas': 'Медиите за нас',
+  'events': 'Събития и активности',
 };
 
 export async function loader({params, context, request}: Route.LoaderArgs) {
@@ -98,6 +102,7 @@ const PAGES_WITH_OWN_HERO = new Set([
   'kosa-koja-i-nokti',
   'naukata-zad-bulgar-biotic',
   'abomanmet-za-byuletin',
+  'events',
 ]);
 
 function DefaultPage({page}: {page: any}) {

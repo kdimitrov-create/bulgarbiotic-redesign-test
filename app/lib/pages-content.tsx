@@ -3,6 +3,7 @@ import type {ReactNode} from 'react';
 import {SciencePageContent} from '~/components/pages/SciencePageContent';
 import {BeautyPageContent} from '~/components/pages/BeautyPageContent';
 import {NewsletterPageContent} from '~/components/pages/NewsletterPageContent';
+import {EventsPageContent} from '~/components/pages/EventsPageContent';
 
 /**
  * Content override map for CMS pages whose `body` field is null because they
@@ -23,6 +24,7 @@ import {NewsletterPageContent} from '~/components/pages/NewsletterPageContent';
 export const PAGES_CONTENT: Record<string, () => ReactNode> = {
   'naukata-zad-bulgar-biotic': () => <SciencePageContent />,
   'abomanmet-za-byuletin': () => <NewsletterPageContent />,
+  'events': () => <EventsPageContent />,
   /**
    * "За нас" (client 2026-08-05): keep the opening paragraph exactly as the
    * merchant wrote it, drop the general wellness paragraph that followed, and
@@ -575,4 +577,4 @@ export const PAGES_WITH_CUSTOM_LAYOUT = new Set(['pateshestvie', 'mediite-za-nas
  * right for pages nobody has rewritten — but here the client asked for exact
  * wording, so the code owns the copy.
  */
-export const PAGES_WITH_AUTHORED_BODY = new Set(['about-us']);
+export const PAGES_WITH_AUTHORED_BODY = new Set(['about-us', 'events']);

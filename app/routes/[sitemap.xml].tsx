@@ -14,6 +14,7 @@ const STATIC_PAGES = [
   'probiotik-ot-bactology',
   'mediite-za-nas',
   'pateshestvie',
+  'events',
 ];
 
 export async function loader({context, request}: Route.LoaderArgs) {
