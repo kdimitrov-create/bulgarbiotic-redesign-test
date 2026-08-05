@@ -87,14 +87,14 @@ export function DoctorsSection() {
             </h3>
             <div className="bb-doc-title">{d.title}</div>
             {d.affiliation && <div className="bb-doc-aff">{d.affiliation}</div>}
-            <p className="bb-doc-bio">{d.bio}</p>
-            {/* Client (2026-07-31): the quote is hidden by default and unfolds
-                downwards on hover. Pure CSS (0fr → 1fr grid row), so it also
-                works with keyboard focus and stays open on touch devices. */}
-            <span className="bb-doc-hint" aria-hidden="true">Мнението на специалиста</span>
-            <div className="bb-doc-quote-wrap">
-              <div className="bb-doc-quote-clip">
-                <blockquote className="bb-doc-quote">{d.quote}</blockquote>
+            {/* Client (2026-08-05) reversed the 2026-07-31 behaviour: the quote
+                is what a visitor came to read, so it is always visible and does
+                not move. The credentials fold away and unfold on hover instead. */}
+            <blockquote className="bb-doc-quote">{d.quote}</blockquote>
+            <span className="bb-doc-hint" aria-hidden="true">Визитка</span>
+            <div className="bb-doc-bio-wrap">
+              <div className="bb-doc-bio-clip">
+                <p className="bb-doc-bio">{d.bio}</p>
               </div>
             </div>
           </article>
@@ -137,14 +137,14 @@ export function DoctorsSection() {
         .bb-doc-cred { font-weight: 600; color: rgba(10, 37, 64, 0.5); }
         .bb-doc-title { margin-top: 5px; font-size: 13px; font-weight: 700; color: var(--color-brand-pink); }
         .bb-doc-aff { margin-top: 3px; font-size: 12px; color: rgba(10, 37, 64, 0.55); }
-        .bb-doc-bio { margin: 16px 0 0; font-size: 13.5px; line-height: 1.65; color: rgba(10, 37, 64, 0.72); }
+        .bb-doc-bio { margin: 0; font-size: 13.5px; line-height: 1.65; color: rgba(10, 37, 64, 0.72); }
         /* Hover-unfold: the wrapper animates its grid row from 0fr to 1fr —
            the only way to transition to a content-driven height in CSS. */
-        .bb-doc-quote-wrap {
+        .bb-doc-bio-wrap {
           width: 100%; display: grid; grid-template-rows: 0fr; margin-top: 0;
           transition: grid-template-rows .45s cubic-bezier(.22,.61,.36,1), margin-top .45s cubic-bezier(.22,.61,.36,1);
         }
-        .bb-doc-quote-clip { overflow: hidden; min-height: 0; }
+        .bb-doc-bio-clip { overflow: hidden; min-height: 0; }
         .bb-doc-hint {
           margin-top: 14px; font-size: 12px; font-weight: 700; letter-spacing: .4px;
           color: var(--color-brand-pink); opacity: .75;
@@ -153,13 +153,11 @@ export function DoctorsSection() {
         }
         .bb-doc-hint::after { content: ' ▾'; }
         .bb-doc:hover .bb-doc-hint, .bb-doc:focus-within .bb-doc-hint { opacity: 0; max-height: 0; margin-top: 0; }
-        .bb-doc:hover .bb-doc-quote-wrap, .bb-doc:focus-within .bb-doc-quote-wrap { grid-template-rows: 1fr; margin-top: 18px; }
-        .bb-doc:hover .bb-doc-quote, .bb-doc:focus-within .bb-doc-quote { opacity: 1; transform: none; }
+        .bb-doc:hover .bb-doc-bio-wrap, .bb-doc:focus-within .bb-doc-bio-wrap { grid-template-rows: 1fr; margin-top: 14px; }
 
         .bb-doc-quote {
-          opacity: 0; transform: translateY(-6px);
-          transition: opacity .3s ease .06s, transform .35s cubic-bezier(.22,.61,.36,1);
-          position: relative; margin: 0; padding: 16px 18px 16px 20px;
+          margin: 18px 0 0;
+          position: relative; padding: 16px 18px 16px 20px;
           text-align: left; font-size: 13.5px; line-height: 1.65; font-style: italic;
           color: var(--color-ink); background: var(--color-cream-2, #f7f2e8); border-radius: 14px;
           border-left: 3px solid var(--color-brand-pink);
@@ -169,14 +167,13 @@ export function DoctorsSection() {
           font-family: var(--font-serif); font-size: 40px; color: rgba(227, 22, 108, 0.28); line-height: 1;
         }
 
-        /* Touch devices have no hover — keep the quotes visible there. */
+        /* Touch devices have no hover — show the credentials outright there. */
         @media (hover: none) {
-          .bb-doc-quote-wrap { grid-template-rows: 1fr; margin-top: 18px; }
-          .bb-doc-quote { opacity: 1; transform: none; }
+          .bb-doc-bio-wrap { grid-template-rows: 1fr; margin-top: 14px; }
           .bb-doc-hint { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .bb-doc-quote-wrap, .bb-doc-quote, .bb-doc-hint { transition: none; }
+          .bb-doc-bio-wrap, .bb-doc-hint { transition: none; }
         }
 
         @media (max-width: 900px) { .bb-docs-grid { grid-template-columns: 1fr; max-width: 520px; margin: 0 auto; } }
