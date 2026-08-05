@@ -4,7 +4,11 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {RichText} from '@cloudcart/nitro-react';
 import {PageShell, PageBackLink} from '~/components/PageShell';
-import {getPageContentOverride, PAGES_WITH_CUSTOM_LAYOUT} from '~/lib/pages-content';
+import {
+  getPageContentOverride,
+  PAGES_WITH_CUSTOM_LAYOUT,
+  PAGES_WITH_AUTHORED_BODY,
+} from '~/lib/pages-content';
 
 export const meta: Route.MetaFunction = ({data: d}) => {
   const page = d?.page as any;
@@ -95,8 +99,12 @@ const PAGES_WITH_OWN_HERO = new Set([
 
 function DefaultPage({page}: {page: any}) {
   const body = (page.body || '').trim();
-  const hasRealHtml = bodyIsHtml(body);
   const override = getPageContentOverride(page.handle);
+  // Normally the merchant's CMS body wins and the override is only a fallback.
+  // For a handful of pages the client dictated the exact copy, so there the
+  // override comes first — see PAGES_WITH_AUTHORED_BODY.
+  const authored = override && PAGES_WITH_AUTHORED_BODY.has(page.handle);
+  const hasRealHtml = !authored && bodyIsHtml(body);
   // When the override component provides its own hero, render the shell
   // barebones (just breadcrumbs + content, full width).
   const useBarebones = override && PAGES_WITH_OWN_HERO.has(page.handle);

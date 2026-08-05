@@ -23,6 +23,47 @@ import {NewsletterPageContent} from '~/components/pages/NewsletterPageContent';
 export const PAGES_CONTENT: Record<string, () => ReactNode> = {
   'naukata-zad-bulgar-biotic': () => <SciencePageContent />,
   'abomanmet-za-byuletin': () => <NewsletterPageContent />,
+  /**
+   * "За нас" (client 2026-08-05): keep the opening paragraph exactly as the
+   * merchant wrote it, drop the general wellness paragraph that followed, and
+   * state what the portfolio actually is. The store photo at the end is the
+   * same file the CMS page carries, so the page looks unchanged apart from
+   * the text. Listed in PAGES_WITH_AUTHORED_BODY so this wins over the CMS
+   * body — the page does return real HTML, unlike the builder-built ones.
+   */
+  'about-us': () => (
+    <>
+      <p>
+        Bulgar Biotic Ви предлага пробиотици от ново поколение Bactology! Нашето производство
+        се основава на стари български традиции и най-нови съвременни технологии. Нашият
+        производствен екип се състои от водещи учени и технолози, които контролират всички
+        процеси и следят за постигането на най-високо качество и безвредност на всички наши
+        продукти.
+      </p>
+      <p>
+        Продуктовото портфолио е изградено на базата на автентичния{' '}
+        <strong>Lactobacillus bulgaricus</strong>, комбиниран с клинично утвърдени щамове от
+        родовете Lactobacillus, Bifidobacterium и Streptococcus, както и пребиотици и
+        биоактивни съставки с доказана физиологична роля.
+      </p>
+      <p>
+        Формулите са разработени за различни възрастови групи и специфични потребности —
+        гастроинтестинален баланс, имунна подкрепа, женско и детско здраве, орална микрофлора
+        и микробиом-свързан стрес. Производството съчетава българската традиция в
+        пробиотичните култури със съвременни технологии за лиофилизация, контрол на
+        стабилността и гарантирана концентрация на жизнеспособни микроорганизми до края на
+        срока на годност.
+      </p>
+      <p>
+        Екип от учени и технолози осъществява микробиологичен контрол на всяка производствена
+        партида, като компанията развива и образователни инициативи за повишаване на
+        информираността относно ролята на микробиома в ежедневната медицинска практика.
+      </p>
+      <p>
+        <img src="https://cdncloudcart.com/26194/files/image/about-us.jpg" alt="" loading="lazy" />
+      </p>
+    </>
+  ),
   // ───── legacy long-form entry below kept for reference only ─────
   '_legacy_naukata-zad-bulgar-biotic': () => (
     <>
@@ -527,3 +568,11 @@ export function getPageContentOverride(handle: string): (() => ReactNode) | null
 
 /** Pages that have custom routes/layouts and should bypass the override fallback. */
 export const PAGES_WITH_CUSTOM_LAYOUT = new Set(['pateshestvie', 'mediite-za-nas']);
+
+/**
+ * Pages whose JSX override must win even though the CMS returns real HTML.
+ * The normal rule is "CMS body first, override only as a fallback", which is
+ * right for pages nobody has rewritten — but here the client asked for exact
+ * wording, so the code owns the copy.
+ */
+export const PAGES_WITH_AUTHORED_BODY = new Set(['about-us']);
