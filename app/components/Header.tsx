@@ -4,6 +4,7 @@ import type {Shop, Menu, CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
 import {SearchOverlay} from './SearchOverlay';
 import {MegaMenu} from './MegaMenu';
+import {productsNode} from '~/lib/navigation';
 
 interface HeaderProps {
   shop: Shop;
@@ -26,9 +27,14 @@ export function Header({shop, menu, cart}: HeaderProps) {
   // (client request). It's a styled pink button, not a CloudCart menu entry.
   const blogIdx = baseItems.findIndex((i) => i.url === '/blog' || i.title.toLowerCase().includes('блог'));
   const newsletterNav = {title: 'Абонирай се за бюлетин', url: '/page/abomanmet-za-byuletin'};
-  const items = blogIdx >= 0
-    ? [...baseItems.slice(0, blogIdx), newsletterNav, ...baseItems.slice(blogIdx)]
-    : [...baseItems, newsletterNav];
+  // Skip the injection once the merchant has such an entry in the admin menu —
+  // otherwise the same CTA shows up twice (2026-08-05).
+  const hasOwnNewsletter = baseItems.some((i) => i.title.toLowerCase().includes('абонирай'));
+  const items = hasOwnNewsletter
+    ? baseItems
+    : blogIdx >= 0
+      ? [...baseItems.slice(0, blogIdx), newsletterNav, ...baseItems.slice(blogIdx)]
+      : [...baseItems, newsletterNav];
   const {open} = useAside();
   const headerRef = useRef<HTMLElement>(null);
   const cartBtnRef = useRef<HTMLButtonElement>(null);
@@ -261,7 +267,7 @@ export function Header({shop, menu, cart}: HeaderProps) {
         onMouseEnter={openMega}
         onMouseLeave={scheduleCloseMega}
       >
-        <MegaMenu open={megaOpen} onNav={closeMega} />
+        <MegaMenu open={megaOpen} onNav={closeMega} node={productsNode(menu as any)} />
       </div>
 
       {/* Subtle page dim while menu is open (desktop only) */}

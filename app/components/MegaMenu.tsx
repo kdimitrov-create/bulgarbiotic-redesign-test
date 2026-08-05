@@ -1,5 +1,6 @@
 import {Link} from 'react-router';
 import type {ReactNode} from 'react';
+import type {NavNode} from '~/lib/navigation';
 
 /**
  * Premium 4-column mega-menu inspired by seed.com / Mejuri / Glossier patterns.
@@ -84,9 +85,22 @@ const FEATURED_PRODUCT = {
 interface Props {
   open: boolean;
   onNav?: () => void;
+  /**
+   * The "Продукти" branch of the merchant's own menu (Дизайн → Навигация).
+   * When it has children they drive this panel — a sub-group becomes a column,
+   * a plain entry becomes a link, and an HTML/widget entry is injected as
+   * authored. The columns below are the fallback until the merchant has built
+   * the equivalent groups in the panel.
+   */
+  node?: NavNode | null;
 }
 
-export function MegaMenu({open, onNav}: Props) {
+const ACCENTS = ['pink', 'blue', 'cream'] as const;
+const FLAT_COLUMN_SIZE = 6;
+
+export function MegaMenu({open, onNav, node}: Props) {
+  const fromAdmin = buildColumns(node);
+
   return (
     <div
       className={`bb-megamenu${open ? ' bb-megamenu--open' : ''}`}
@@ -95,10 +109,34 @@ export function MegaMenu({open, onNav}: Props) {
       aria-hidden={!open}
     >
       <div className="bb-megamenu-grid">
-        <Column spec={COLUMN_GOAL} onNav={onNav} accent="pink" />
-        <Column spec={COLUMN_AUDIENCE} onNav={onNav} accent="blue" />
-        <Column spec={COLUMN_FORM} onNav={onNav} accent="cream" />
-        <Featured onNav={onNav} />
+        {fromAdmin ? (
+          <>
+            {fromAdmin.columns.map((col, i) =>
+              col.html ? (
+                <div
+                  key={col.key}
+                  className={`bb-megamenu-col bb-megamenu-html${col.className ? ` ${col.className}` : ''}`}
+                  dangerouslySetInnerHTML={{__html: col.html}}
+                />
+              ) : (
+                <Column
+                  key={col.key}
+                  spec={{heading: col.heading, links: col.links}}
+                  onNav={onNav}
+                  accent={ACCENTS[i % ACCENTS.length]}
+                />
+              ),
+            )}
+            {!fromAdmin.hasHtml && <Featured onNav={onNav} />}
+          </>
+        ) : (
+          <>
+            <Column spec={COLUMN_GOAL} onNav={onNav} accent="pink" />
+            <Column spec={COLUMN_AUDIENCE} onNav={onNav} accent="blue" />
+            <Column spec={COLUMN_FORM} onNav={onNav} accent="cream" />
+            <Featured onNav={onNav} />
+          </>
+        )}
       </div>
 
       <div className="bb-megamenu-foot">
@@ -122,6 +160,70 @@ export function MegaMenu({open, onNav}: Props) {
       </div>
     </div>
   );
+}
+
+interface AdminColumn {
+  key: string;
+  heading: string;
+  links: MenuLink[];
+  html: string | null;
+  className: string | null;
+}
+
+/**
+ * Turn the merchant's menu branch into panel columns.
+ *
+ * - a child WITH children  → its own column, heading = its name
+ * - a child with HTML      → injected verbatim, in its own column
+ * - plain children         → chunked into columns of six, so a long flat list
+ *                            still reads as a menu instead of one tall stack
+ *
+ * Returns null when there is nothing to show, which keeps the hardcoded
+ * columns on screen rather than leaving a blank panel.
+ */
+function buildColumns(node?: NavNode | null): {columns: AdminColumn[]; hasHtml: boolean} | null {
+  const children = node?.children ?? [];
+  if (!children.length) return null;
+
+  const columns: AdminColumn[] = [];
+  let loose: MenuLink[] = [];
+  const flush = () => {
+    while (loose.length) {
+      const chunk = loose.slice(0, FLAT_COLUMN_SIZE);
+      loose = loose.slice(FLAT_COLUMN_SIZE);
+      columns.push({
+        key: `flat-${columns.length}`,
+        heading: columns.length === 0 ? node!.title : '',
+        links: chunk,
+        html: null,
+        className: null,
+      });
+    }
+  };
+
+  for (const child of children) {
+    if (child.html) {
+      flush();
+      columns.push({key: child.id, heading: '', links: [], html: child.html, className: child.className});
+      continue;
+    }
+    if (child.children.length) {
+      flush();
+      columns.push({
+        key: child.id,
+        heading: child.title,
+        links: child.children.filter((c) => c.url).map((c) => ({label: c.title, to: c.url!})),
+        html: null,
+        className: child.className,
+      });
+      continue;
+    }
+    if (child.url) loose.push({label: child.title, to: child.url});
+  }
+  flush();
+
+  if (!columns.length) return null;
+  return {columns, hasHtml: columns.some((c) => c.html)};
 }
 
 function Column({spec, onNav, accent}: {spec: ColumnSpec; onNav?: () => void; accent: 'pink' | 'blue' | 'cream'}) {

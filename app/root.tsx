@@ -4,6 +4,7 @@ import {getContext} from '~/lib/context';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {setAutoDiscounts} from '~/lib/active-discounts';
 import {fetchProductMarks} from '~/lib/product-marks.server';
+import {fetchMainMenu} from '~/lib/navigation.server';
 import {setProductMarks} from '~/lib/product-marks';
 import {fetchQuantityPackages} from '~/lib/quantity-packages.server';
 import {setQuantityPackages} from '~/lib/quantity-packages';
@@ -40,18 +41,21 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // and they read this module synchronously.
   // Labels and banners ride along for the same reason: the listing queries do
   // not return them, so without this the badges only ever appear on the PDP.
-  const [live, marks, packages, offers] = await Promise.all([
+  const [live, marks, packages, offers, adminMenu] = await Promise.all([
     fetchAutoDiscounts(env),
     fetchProductMarks(env),
     fetchQuantityPackages(env),
     fetchCartOffers(env),
+    // The header menu comes from Дизайн → Навигация. The Storefront API returns
+    // no menus for this store, so this is the only way the two can match.
+    fetchMainMenu(env),
   ]);
   setAutoDiscounts(live?.discounts, live?.handles);
   setProductMarks(marks);
   setQuantityPackages(packages);
   setCartOffers(offers);
 
-  return {shop, headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers};
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
