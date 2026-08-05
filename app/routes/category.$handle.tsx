@@ -20,6 +20,11 @@ import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
 import {CATEGORY_EXTRA_PRODUCTS} from '~/lib/category-extra-products';
+import {
+  SINGLES_FIRST_CATEGORIES,
+  fetchPackageHandles,
+  singlesFirst,
+} from '~/lib/singles-first.server';
 
 export const meta: Route.MetaFunction = ({data: d}) => {
   const col = d?.collection as any;
@@ -119,11 +124,22 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   let nodes = everyNode;
   let pageInfo = (result.products as any).pageInfo;
 
+  // Pearls (and any category added to the set) lead with the standalone
+  // products; the packages that contain them follow. Applied BEFORE paging so
+  // the singles are on page one, not scattered across pages.
+  const packageHandles = SINGLES_FIRST_CATEGORIES.has(params.handle)
+    ? await fetchPackageHandles(ctx.storefront)
+    : null;
+
   if (salesOrder) {
     const sales = await fetchBestSellers(ctx.env as Record<string, string | undefined>);
-    const slice = pageSlice(orderByRealSales(everyNode, sales), currentPage(url), PAGE_SIZE);
+    let ordered = orderByRealSales(everyNode, sales);
+    if (packageHandles) ordered = singlesFirst(ordered, packageHandles);
+    const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
     nodes = slice.nodes;
     pageInfo = {...(pageInfo ?? {}), hasNextPage: slice.hasNextPage, hasPreviousPage: slice.hasPreviousPage};
+  } else if (packageHandles) {
+    nodes = singlesFirst(everyNode, packageHandles);
   }
 
   const productsWithEnhancement = {

@@ -64,7 +64,9 @@ const FORMS: Form[] = [
     tagline: 'За орална хигиена',
     desc: 'Вкусни ванилови таблетки за смучене — за орална хигиена и подкрепа на децата.',
     who: 'Деца от 3+ години',
-    link: '/product/probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids',
+    // Client 2026-08-05: this card pointed at the Babies & Kids sachets — the
+    // same product as the card next to it. Chewable tablets are Bactology Tablets.
+    link: '/product/probiotic-tablets-in-precisely-balanced-combination-copy',
     accent: 'blue',
     icon: (
       <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
