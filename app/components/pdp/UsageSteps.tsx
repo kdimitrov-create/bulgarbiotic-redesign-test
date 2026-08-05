@@ -39,9 +39,12 @@ const DEFAULT_STEPS: Step[] = [
   },
   {
     num: '03',
-    title: 'Минимум 4 седмици',
+    // Client 2026-08-05: four weeks is not the correct claim — the brand
+    // communicates a minimum of three months everywhere else, and recommends
+    // taking it year-round.
+    title: 'Минимум 3 месеца',
     description:
-      'Първи видим ефект за 7-10 дни. За устойчив резултат — поне 4 седмици редовно. Безопасен за дълъг прием 2-3 месеца.',
+      'Първите усещания идват още през първите седмици, но за устойчив резултат приемай минимум 3 месеца. Формулата е безопасна за непрекъснат, дори целогодишен прием.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="5" width="18" height="16" rx="2" />

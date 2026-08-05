@@ -8,7 +8,7 @@ export function BottomCTAs() {
           <img src="/images/generated-v2/cta-labs.png" alt="Bactology Лаборатория" />
           <div className="bb-cta-content">
             <span className="bb-cta-tag">BACTOLOGY · Лаборатория</span>
-            <h3>Науката зад<br /><span className="accent">всеки flacon.</span></h3>
+            <h3>Науката зад<br /><span className="accent">Bactology.</span></h3>
             <p>Български щамове, тествани в нашата лаборатория с проверена преживяемост в стомашна среда.</p>
             <span className="bb-cta-btn">Прочети повече <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg></span>
           </div>
