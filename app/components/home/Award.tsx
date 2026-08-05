@@ -1,26 +1,120 @@
 import {Link} from 'react-router';
+import {useEffect, useState} from 'react';
 
 /**
- * BGolden Awards 2025 trophy section.
+ * The awards band — one slide per distinction, rotating in place.
  *
- * Real award: Bulgar Biotic won "Best Bulgarian Probiotic Brand 2025" at the
- * BGolden Awards ceremony on 9 December 2025 in Sofia. The awards are a joint
- * platform by Bulgarian editions of EVA and GRAZIA magazines.
+ * Client 2026-08-05: the field that held the BGolden banner becomes a slider,
+ * so a second (and later a third) award can share it without another section.
  *
- * Source: /article/65 — `bulgar-biotik-e-nay-dobriyat-balgarski-brand-za-probiotici-za-2025-g`
- * SEO: "Булгар Биотик получи престижното отличие „Най-добър български бранд
- * за пробиотици" на церемонията BGolden Awards 2025."
+ * The awards are real:
+ *   • BGolden Awards 2025 — "Най-добър български бранд за пробиотици",
+ *     9 December 2025, Sofia; a joint platform of EVA and GRAZIA.
+ *     Source: /article/bulgar-biotik-e-nay-dobriyat-balgarski-brand-za-probiotici-za-2025-g
+ *   • Forbes Business Awards — finalist, "Семейна компания на годината".
+ *
+ * ⚠️ The Forbes slide has no article on our site yet, so its button points at
+ * the media page. Swap `href` below once the client supplies the real target.
  *
  * Rendered between <Reviews /> and <PressStrip /> as a strong second-layer
  * trust signal. Dark surface gives visual breathing room against the cream
  * sections around it.
  */
+
+type Slide = {
+  key: string;
+  tag: string;
+  titleTop: string;
+  titleAccent: string;
+  body: React.ReactNode;
+  issuer: React.ReactNode;
+  meta: string;
+  href: string;
+  /** Either the drawn BGolden medallion or a supplied badge image. */
+  medal: 'bgolden' | {src: string; alt: string};
+};
+
+/** The merchant's own Forbes badge, the same file used as a product banner. */
+const FORBES_BADGE = 'https://bulgarbiotic.bg/cdn/img/products_banners/7/%21%21%21%D1%81.png';
+
+const SLIDES: Slide[] = [
+  {
+    key: 'bgolden',
+    tag: 'Награда · Декември 2025',
+    titleTop: 'Най-добър български бранд',
+    titleAccent: 'за пробиотици.',
+    body: (
+      <>
+        Получихме престижното отличие на церемонията <strong>BGolden Awards 2025</strong> — съвместна
+        платформа на списанията <em>EVA</em> и <em>GRAZIA</em>, която отличава най-изявените български
+        брандове в красотата, уелнеса и съвременния начин на живот.
+      </>
+    ),
+    issuer: (
+      <>
+        <span className="bb-award-issuer-name">EVA</span>
+        <span className="bb-award-issuer-x">×</span>
+        <span className="bb-award-issuer-name">GRAZIA</span>
+      </>
+    ),
+    meta: '9 декември 2025 · София',
+    href: '/article/bulgar-biotik-e-nay-dobriyat-balgarski-brand-za-probiotici-za-2025-g',
+    medal: 'bgolden',
+  },
+  {
+    key: 'forbes',
+    tag: 'Отличие · Forbes Business Awards',
+    titleTop: 'Семейна компания',
+    titleAccent: 'на годината.',
+    body: (
+      <>
+        Bulgar Biotic беше отличена като <strong>финалист</strong> в престижните{' '}
+        <em>Forbes Business Awards</em> в категория „Семейна компания на годината" — признание за
+        устойчивото развитие на семейния бизнес, иновациите и последователния ни стремеж да
+        създаваме висококачествени пробиотични продукти с български произход.
+      </>
+    ),
+    issuer: <span className="bb-award-issuer-name">FORBES</span>,
+    meta: 'Business Awards · 2026',
+    href: '/page/mediite-za-nas',
+    medal: {src: FORBES_BADGE, alt: 'Forbes Business Awards'},
+  },
+];
+
+const AUTOPLAY_MS = 7000;
+
 export function Award() {
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const count = SLIDES.length;
+
+  // Autoplay, unless there is nothing to rotate, the visitor is interacting
+  // with the band, or they asked the system for less motion.
+  useEffect(() => {
+    if (count < 2 || paused) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = setInterval(() => setIdx((i) => (i + 1) % count), AUTOPLAY_MS);
+    return () => clearInterval(timer);
+  }, [count, paused]);
+
+  const go = (next: number) => setIdx((next + count) % count);
+  const slide = SLIDES[idx];
+
   return (
-    <section className="bb-award reveal" aria-labelledby="bb-award-title">
-      <div className="bb-container bb-award-grid">
+    <section
+      className="bb-award reveal"
+      aria-labelledby="bb-award-title"
+      aria-roledescription="carousel"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      {/* `key` restarts the fade so a slide change reads as a change. */}
+      <div className="bb-container bb-award-grid" key={slide.key}>
         {/* Trophy badge */}
         <div className="bb-award-medal" aria-hidden="true">
+        {slide.medal === 'bgolden' ? (
           <svg viewBox="0 0 200 200" fill="none">
             {/* Outer ribbon */}
             <path d="M65 160 L40 195 L70 188 L78 170 Z" fill="#c4974f" />
@@ -52,37 +146,41 @@ export function Award() {
               </radialGradient>
             </defs>
           </svg>
+        ) : (
+          <img
+            className="bb-award-badge-img"
+            src={`${slide.medal.src}?width=440&height=440`}
+            alt=""
+            loading="lazy"
+            onError={(e) => {
+              // Arbitrary sizes can 404 on the CloudCart CDN — fall back to the
+              // untouched file rather than showing a broken image.
+              const el = e.currentTarget;
+              if (el.dataset.fellBack) return;
+              el.dataset.fellBack = '1';
+              el.src = (slide.medal as {src: string}).src;
+            }}
+          />
+        )}
         </div>
 
         <div className="bb-award-copy">
-          <span className="bb-award-tag">Награда · Декември 2025</span>
+          <span className="bb-award-tag">{slide.tag}</span>
           <h2 id="bb-award-title" className="bb-award-h2">
-            Най-добър български бранд<br />
-            <span className="bb-award-accent">за пробиотици.</span>
+            {slide.titleTop}<br />
+            <span className="bb-award-accent">{slide.titleAccent}</span>
           </h2>
-          <p className="bb-award-p">
-            Получихме престижното отличие на церемонията <strong>BGolden Awards 2025</strong> — съвместна
-            платформа на списанията <em>EVA</em> и <em>GRAZIA</em>, която отличава най-изявените български
-            брандове в красотата, уелнеса и съвременния начин на живот.
-          </p>
+          <p className="bb-award-p">{slide.body}</p>
 
           <div className="bb-award-actions">
             <div className="bb-award-meta">
-              <span className="bb-award-issuer">
-                <span className="bb-award-issuer-name">EVA</span>
-                <span className="bb-award-issuer-x">×</span>
-                <span className="bb-award-issuer-name">GRAZIA</span>
-              </span>
+              <span className="bb-award-issuer">{slide.issuer}</span>
               <span className="bb-award-dot" aria-hidden="true" />
-              <span>9 декември 2025 · София</span>
+              <span>{slide.meta}</span>
             </div>
 
-            <Link
-              to="/article/bulgar-biotik-e-nay-dobriyat-balgarski-brand-za-probiotici-za-2025-g"
-              className="bb-award-cta"
-              prefetch="intent"
-            >
-              Прочети как стана
+            <Link to={slide.href} className="bb-award-cta" prefetch="intent">
+              Разбери повече
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="5" y1="12" x2="19" y2="12" />
                 <polyline points="12 5 19 12 12 19" />
@@ -91,6 +189,40 @@ export function Award() {
           </div>
         </div>
       </div>
+
+      {count > 1 && (
+        <div className="bb-award-nav">
+          <button
+            type="button"
+            className="bb-award-arrow"
+            onClick={() => go(idx - 1)}
+            aria-label="Предишно отличие"
+          >
+            ‹
+          </button>
+          <div className="bb-award-dots" role="tablist" aria-label="Отличия">
+            {SLIDES.map((s, i) => (
+              <button
+                key={s.key}
+                type="button"
+                role="tab"
+                aria-selected={i === idx}
+                aria-label={s.titleTop}
+                className={`bb-award-dotbtn${i === idx ? ' on' : ''}`}
+                onClick={() => go(i)}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="bb-award-arrow"
+            onClick={() => go(idx + 1)}
+            aria-label="Следващо отличие"
+          >
+            ›
+          </button>
+        </div>
+      )}
 
       <style>{`
         .bb-award {
@@ -116,6 +248,17 @@ export function Award() {
           gap: 60px;
           align-items: center;
           padding: 0 36px;
+          /* Holds the taller of the two slides so switching does not make the
+             page jump under the reader. */
+          min-height: 260px;
+          animation: bb-award-fade .5s ease both;
+        }
+        @keyframes bb-award-fade {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: none; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .bb-award-grid { animation: none; }
         }
         @media (max-width: 880px) {
           .bb-award { padding: 64px 0; }
@@ -251,6 +394,49 @@ export function Award() {
           box-shadow: 0 10px 28px -8px rgba(244, 213, 133, 0.5);
         }
         .bb-award-cta svg { width: 14px; height: 14px; }
+
+        /* A supplied badge image stands in for the drawn medallion. */
+        .bb-award-badge-img {
+          width: 100%; height: 100%;
+          object-fit: contain;
+          display: block;
+        }
+
+        /* Slider controls — quiet gold, centred under the band. */
+        .bb-award-nav {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 14px;
+          margin-top: 34px;
+        }
+        .bb-award-arrow {
+          width: 34px; height: 34px;
+          display: inline-flex; align-items: center; justify-content: center;
+          border-radius: 999px;
+          border: 1px solid rgba(212, 175, 106, 0.35);
+          background: rgba(212, 175, 106, 0.10);
+          color: #f4d585;
+          font-size: 20px; line-height: 1;
+          cursor: pointer;
+          transition: background 0.2s, border-color 0.2s;
+        }
+        .bb-award-arrow:hover { background: rgba(212, 175, 106, 0.22); border-color: #f4d585; }
+        .bb-award-dots { display: inline-flex; align-items: center; gap: 8px; }
+        .bb-award-dotbtn {
+          width: 8px; height: 8px;
+          padding: 0;
+          border: 0;
+          border-radius: 999px;
+          background: rgba(250, 246, 236, 0.28);
+          cursor: pointer;
+          transition: background 0.2s, width 0.2s;
+        }
+        .bb-award-dotbtn.on { background: #d4af6a; width: 22px; }
+        @media (max-width: 880px) {
+          .bb-award-nav { margin-top: 26px; }
+        }
       `}</style>
     </section>
   );
