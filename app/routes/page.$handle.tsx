@@ -50,7 +50,10 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
     throw err;
   });
   if (!page) throw data('Страницата не е намерена', {status: 404});
-  return {page};
+  // Every downstream decision (custom layout, authored body, override lookup)
+  // keys off the handle, and the one the API returns is not always the one in
+  // the URL — pin the URL's, which is what those maps are written against.
+  return {page: {...page, handle: params.handle}};
 }
 
 export default function PageRoute() {
