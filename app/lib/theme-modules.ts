@@ -22,6 +22,30 @@ export interface ThemeModule {
 
 export type ThemeModules = Record<string, ThemeModule>;
 
+/**
+ * The only modules that travel to the browser.
+ *
+ * The store has ~52 of them and several still hold the classic theme's whole
+ * homepage — Bootstrap grids, long HTML, leftover artwork. Serialising the lot
+ * into every page added tens of kilobytes to每 request for content nothing on
+ * the page reads. The server keeps the full set in memory; this is the slice
+ * the client actually renders.
+ */
+export const CLIENT_MODULES = new Set<string>([
+  'htmlLine', // promo bar
+]);
+
+/** Trim the set down to what the browser needs before it is serialised. */
+export function forClient(all: ThemeModules | null | undefined): ThemeModules {
+  const out: ThemeModules = {};
+  if (!all) return out;
+  for (const mapping of CLIENT_MODULES) {
+    const mod = all[mapping];
+    if (mod) out[mapping] = mod;
+  }
+  return out;
+}
+
 let current: ThemeModules = {};
 
 /** Install the modules fetched by the server. An empty payload changes nothing. */

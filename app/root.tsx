@@ -6,7 +6,7 @@ import {setAutoDiscounts} from '~/lib/active-discounts';
 import {fetchProductMarks} from '~/lib/product-marks.server';
 import {fetchMainMenu} from '~/lib/navigation.server';
 import {fetchThemeModules} from '~/lib/theme-modules.server';
-import {setThemeModules} from '~/lib/theme-modules';
+import {setThemeModules, forClient} from '~/lib/theme-modules';
 import {setProductMarks} from '~/lib/product-marks';
 import {fetchQuantityPackages} from '~/lib/quantity-packages.server';
 import {setQuantityPackages} from '~/lib/quantity-packages';
@@ -61,7 +61,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setCartOffers(offers);
   setThemeModules(themeModules);
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules};
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules)};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
