@@ -17,19 +17,25 @@ const fmt = (n: number, c: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) +
   (c === 'EUR' ? ' €' : ' лв');
 
-export const meta: Route.MetaFunction = () =>
-  getSeoMeta({
+export const meta: Route.MetaFunction = ({data}) => {
+  // The description used to promise a fixed 35 %; it now says whatever the
+  // running campaigns actually give, and drops the claim when there is none.
+  const pct = (data as any)?.maxDiscountPercent ?? 0;
+  const savings = pct > 0 ? ` Спести до ${pct}% от любимите си продукти.` : '';
+  return getSeoMeta({
     title: 'Промоции | Bactology — Български пробиотици на топ цени',
     description:
-      'Активни промоции на Bactology пробиотици — пакетни оферти, отстъпки и сезонни кампании. Спести до 35% от любимите си продукти.',
+      'Активни промоции на Bactology пробиотици — пакетни оферти, отстъпки и сезонни кампании.' +
+      savings,
   });
+};
 
 /**
  * Curated promotions page — replaces the broken /collections/promotions link.
  *
  * Fetches all products with `onSale: true` from the Storefront API (CloudCart
  * exposes this via the standard ProductFilter). Hero highlights the current
- * MAY30 campaign + WELCOME10 first-order code (real discount ids 467 + 440).
+ * whatever campaigns are actually running (the hero figure is computed, not typed).
  * Each card shows a prominent discount % badge — sorted by biggest savings
  * first by default.
  */
@@ -129,11 +135,43 @@ export async function loader({context, request}: Route.LoaderArgs) {
       nodes,
       totalCount: nodes.length,
     },
+    maxDiscountPercent: headlinePercent(nodes),
   };
 }
 
+/**
+ * The "спести до X%" figure in the hero.
+ *
+ * Derived from the very prices the cards below print, through the same helper
+ * the badges use — so the headline can never promise a discount no product
+ * actually has. When the merchant switches a campaign off the products stop
+ * carrying a "was" price, this drops with them, and the hero simply stops
+ * making the claim (see the render).
+ *
+ * The rule percentages are only a fallback: `markPricing` leans on the shared
+ * catalogue marks, and this loader runs in parallel with root's, so on a cold
+ * worker the price pair can be missing for a beat.
+ */
+function headlinePercent(nodes: any[]): number {
+  let fromPrices = 0;
+  for (const product of nodes) {
+    const {price, compareAtPrice} = markPricing(product);
+    if (!price || !compareAtPrice) continue;
+    const pct = displayDiscountPercent(
+      null,
+      parseFloat(price.amount),
+      parseFloat(compareAtPrice.amount),
+    );
+    if (pct > fromPrices) fromPrices = pct;
+  }
+  if (fromPrices > 0) return fromPrices;
+
+  const fromRules = activeDiscounts().reduce((best, d) => Math.max(best, d.percent ?? 0), 0);
+  return Math.round(fromRules);
+}
+
 export default function PromotionsPage() {
-  const {products} = useLoaderData<typeof loader>();
+  const {products, maxDiscountPercent} = useLoaderData<typeof loader>();
   const totalCount = (products as any).totalCount ?? 0;
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -159,32 +197,22 @@ export default function PromotionsPage() {
           </div>
           <h1 className="bb-promo-hero-h1">
             Промоции на Bactology
-            <br />
-            <span className="bb-promo-hero-accent">— спести до 35%.</span>
+            {maxDiscountPercent > 0 && (
+              <>
+                <br />
+                <span className="bb-promo-hero-accent">
+                  — спести до {maxDiscountPercent}%.
+                </span>
+              </>
+            )}
           </h1>
           <p className="bb-promo-hero-sub">
             Сезонни оферти, пакетни отстъпки и кампании. Цените са вече намалени —
             никакъв код не е нужен.
           </p>
-
-          <div className="bb-promo-hero-codes">
-            <div className="bb-promo-hero-code">
-              <div className="bb-promo-hero-code-pct">−30%</div>
-              <div>
-                <div className="bb-promo-hero-code-name">Май кампания 2025</div>
-                <div className="bb-promo-hero-code-meta">Автоматично · до 30.06</div>
-              </div>
-            </div>
-            <div className="bb-promo-hero-code">
-              <div className="bb-promo-hero-code-pct">−10%</div>
-              <div>
-                <div className="bb-promo-hero-code-name">
-                  Първа поръчка · код <code>WELCOME10</code>
-                </div>
-                <div className="bb-promo-hero-code-meta">Без минимална сума</div>
-              </div>
-            </div>
-          </div>
+          {/* The two campaign chips that used to sit here named a fixed campaign
+              and a promo code. Removed 2026-08-06: they went stale the moment a
+              campaign changed, and nothing kept them honest. */}
         </div>
       </header>
 
