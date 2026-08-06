@@ -126,12 +126,28 @@ async function resolveHandles(
     if (row?.urlHandle) {
       out[`${type}:${id}`] = {
         handle: row.urlHandle,
-        image: row.imageUrl ?? null,
+        image: cardImage(row.imageUrl),
         blurb: stripHtml(row.shortDescription),
       };
     }
   }
   return out;
+}
+
+/**
+ * The admin hands back a 150 px thumbnail, which is soft in the mega-menu card.
+ * Ask the CDN for a size that survives a retina screen instead.
+ */
+function cardImage(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    parsed.searchParams.set('width', '400');
+    parsed.searchParams.set('height', '400');
+    return parsed.toString();
+  } catch {
+    return url;
+  }
 }
 
 /** The panel stores the short description as HTML; the card wants a sentence. */
