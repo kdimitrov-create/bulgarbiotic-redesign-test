@@ -1,6 +1,7 @@
-import {useEffect, useRef} from 'react';
+import {Fragment, useEffect, useRef} from 'react';
 import {Link} from 'react-router';
 import {entries, isOn, number, text} from '~/lib/builder-settings';
+import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
 
 /**
  * Renders CloudCart's page-builder tree into React markup.
@@ -38,6 +39,8 @@ type BuilderNode = {
 
 interface Props {
   design: BuilderNode | null | undefined;
+  /** Loader data for the marker-driven homepage sections. */
+  sections?: SectionData;
 }
 
 /** Blocks that are recognised but wait on data we do not load yet. */
@@ -188,7 +191,7 @@ function LinkOrAnchor({
   );
 }
 
-function renderBlock(block: BuilderNode, idx: number): React.ReactNode {
+function renderBlock(block: BuilderNode, idx: number, sections?: SectionData): React.ReactNode {
   const settings = block.settings ?? {};
   if (!isOn(settings.enabled, true)) return null;
 
@@ -214,6 +217,13 @@ function renderBlock(block: BuilderNode, idx: number): React.ReactNode {
     case 'code': {
       const html = text(settings.code) || text(settings.html);
       if (!html) return null;
+      // A block holding only `<!-- bb:name -->` is not markup to inject — it is
+      // the merchant placing one of the shop's own sections here.
+      const marker = readMarker(html);
+      if (marker) {
+        const node = renderMarker(marker, sections ?? {});
+        return node ? <Fragment key={idx}>{node}</Fragment> : null;
+      }
       return <CodeBlock key={idx} html={html} />;
     }
     case 'banner':
@@ -283,18 +293,18 @@ function renderBlock(block: BuilderNode, idx: number): React.ReactNode {
   }
 }
 
-function renderColumn(col: BuilderNode, idx: number): React.ReactNode {
+function renderColumn(col: BuilderNode, idx: number, sections?: SectionData): React.ReactNode {
   return (
     <div key={idx} className={`bb-bd-col ${colSpan(col.width)}`}>
-      {(col.children ?? []).map((block, i) => renderBlock(block, i))}
+      {(col.children ?? []).map((block, i) => renderBlock(block, i, sections))}
     </div>
   );
 }
 
-function renderRow(row: BuilderNode, idx: number): React.ReactNode {
+function renderRow(row: BuilderNode, idx: number, sections?: SectionData): React.ReactNode {
   return (
     <div key={idx} className="bb-bd-row" style={rowStyle(row)}>
-      {(row.children ?? []).map((col, i) => renderColumn(col, i))}
+      {(row.children ?? []).map((col, i) => renderColumn(col, i, sections))}
     </div>
   );
 }
@@ -325,7 +335,7 @@ export function parseBuilderDesign(body: string | null | undefined): BuilderNode
   }
 }
 
-export function BuilderDesignRenderer({design}: Props) {
+export function BuilderDesignRenderer({design, sections}: Props) {
   if (!design || !design.children) return null;
-  return <div className="bb-bd">{design.children.map((row, i) => renderRow(row, i))}</div>;
+  return <div className="bb-bd">{design.children.map((row, i) => renderRow(row, i, sections))}</div>;
 }

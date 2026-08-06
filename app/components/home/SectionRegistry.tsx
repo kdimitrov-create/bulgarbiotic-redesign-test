@@ -1,0 +1,111 @@
+import type {ReactNode} from 'react';
+import {Hero} from '~/components/home/Hero';
+import {TrustStrip} from '~/components/home/TrustStrip';
+import {Marquee} from '~/components/home/Marquee';
+import {FeaturedProducts} from '~/components/home/FeaturedProducts';
+import {Doverie} from '~/components/home/Doverie';
+import {DoctorsSection} from '~/components/home/DoctorsSection';
+import {BundleFeature} from '~/components/home/BundleFeature';
+import {ProductForms} from '~/components/home/ProductForms';
+import {CapsuleScience} from '~/components/home/CapsuleScience';
+import {Categories} from '~/components/home/Categories';
+import {ProbioticFinder} from '~/components/home/ProbioticFinder';
+import {Founder} from '~/components/home/Founder';
+import {Reviews} from '~/components/home/Reviews';
+import {Award} from '~/components/home/Award';
+import {PressStrip} from '~/components/home/PressStrip';
+import {BrandStory} from '~/components/home/BrandStory';
+import {Stories} from '~/components/home/Stories';
+import {BlogHighlights} from '~/components/home/BlogHighlights';
+import {FAQ} from '~/components/home/FAQ';
+import {BottomCTAs} from '~/components/home/BottomCTAs';
+
+/**
+ * The redesign's own homepage sections, addressable from the page builder.
+ *
+ * The merchant composes the homepage in Дизайн → Страници. Native widgets cover
+ * text, banners, buttons and video; for the sections built specially for this
+ * shop they drop a "Код" block containing one line:
+ *
+ *     <!-- bb:doctors -->
+ *
+ * That keeps the order, the presence and the generic content in the panel while
+ * the bespoke sections stay real components rather than being flattened into
+ * generic blocks.
+ *
+ * Data-hungry sections receive what the homepage loader already fetches, so a
+ * marker cannot ask for something the page has not loaded.
+ */
+
+export interface SectionData {
+  featuredProducts?: any[];
+  familyPack?: any;
+  homeReviews?: any[];
+  articles?: any[];
+}
+
+type Section = {
+  /** What the merchant types: `bb:hero`. */
+  marker: string;
+  /** Shown in the cheat sheet handed to the merchant. */
+  label: string;
+  render: (data: SectionData) => ReactNode;
+};
+
+export const HOME_SECTIONS: Section[] = [
+  {marker: 'hero', label: 'Кампаниен слайдер (горе)', render: () => <Hero />},
+  {marker: 'trust', label: 'Лента с гаранции', render: () => <TrustStrip />},
+  {marker: 'marquee', label: 'Бягаща лента с предимства', render: () => <Marquee />},
+  {
+    marker: 'featured',
+    label: 'Продукти на фокус (карусел)',
+    render: (d) => <FeaturedProducts products={d.featuredProducts ?? []} />,
+  },
+  {marker: 'doverie', label: 'Доверие — числата', render: () => <Doverie />},
+  {marker: 'doctors', label: 'Какво казва медицината (лекари)', render: () => <DoctorsSection />},
+  {
+    marker: 'bundle',
+    label: 'Пакет на месеца',
+    render: (d) => (d.familyPack ? <BundleFeature product={d.familyPack} /> : null),
+  },
+  {marker: 'forms', label: 'В какви форми се предлагат', render: () => <ProductForms />},
+  {marker: 'capsule', label: 'Анимацията на капсулата', render: () => <CapsuleScience />},
+  {marker: 'categories', label: 'Плочки с категории', render: () => <Categories />},
+  {marker: 'finder', label: 'Наръчник за избор (тест)', render: () => <ProbioticFinder />},
+  {marker: 'founder', label: 'Основателят', render: () => <Founder />},
+  {
+    marker: 'reviews',
+    label: 'Отзиви на клиенти',
+    render: (d) => <Reviews reviews={d.homeReviews ?? []} />,
+  },
+  {marker: 'awards', label: 'Награди (слайдер)', render: () => <Award />},
+  {marker: 'press', label: 'Медиите за нас', render: () => <PressStrip />},
+  {marker: 'brand', label: 'Българска традиция', render: () => <BrandStory />},
+  {marker: 'stories', label: 'Истории на клиенти', render: () => <Stories />},
+  {
+    marker: 'blog',
+    label: 'Статии от блога',
+    render: (d) => <BlogHighlights articles={d.articles ?? []} />,
+  },
+  {marker: 'faq', label: 'Често задавани въпроси', render: () => <FAQ />},
+  {marker: 'cta', label: 'Долни призиви (наука / наръчник)', render: () => <BottomCTAs />},
+];
+
+const BY_MARKER = new Map(HOME_SECTIONS.map((s) => [s.marker, s]));
+
+/** `<!-- bb:doctors -->` → the marker name, or null when the block is real HTML. */
+export function readMarker(html: string): string | null {
+  const match = html.match(/^\s*<!--\s*bb:([a-z0-9-]+)\s*-->\s*$/i);
+  return match ? match[1].toLowerCase() : null;
+}
+
+/** Render the section a marker names, or nothing when the name is unknown. */
+export function renderMarker(marker: string, data: SectionData): ReactNode {
+  const section = BY_MARKER.get(marker);
+  if (!section) return null;
+  return section.render(data);
+}
+
+export function knownMarker(marker: string): boolean {
+  return BY_MARKER.has(marker);
+}

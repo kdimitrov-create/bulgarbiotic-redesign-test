@@ -28,6 +28,11 @@ import {BlogHighlights} from '~/components/home/BlogHighlights';
 import {FAQ} from '~/components/home/FAQ';
 import {BottomCTAs} from '~/components/home/BottomCTAs';
 import {NewsletterPopup} from '~/components/overlays/NewsletterPopup';
+import {
+  BuilderDesignRenderer,
+  builderHasContent,
+  parseBuilderDesign,
+} from '~/components/BuilderDesignRenderer';
 
 export const meta: Route.MetaFunction = () =>
   getSeoMeta({
@@ -68,6 +73,13 @@ const BLOG_HIGHLIGHT_HANDLES: string[] = [
   'top-5-uprajneniya-za-korem-u-doma-za-stegnato-i-silno-tyalo',
   'roza-damascena-taynata-na-jenskata-krasota-balans-i-dalgoletie',
 ];
+
+/**
+ * When the merchant has built a homepage in Дизайн → Страници with the handle
+ * below, that page drives the homepage. Delete it, deactivate it or empty it and
+ * the coded homepage returns on the next request — no deploy, no rollback.
+ */
+const BUILDER_HOME_HANDLE = 'home';
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -143,11 +155,25 @@ export async function loader({context, request}: Route.LoaderArgs) {
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
     .slice(0, 6);
 
-  return {featuredProducts, familyPack, articles, homeReviews};
+  // Never let a missing builder page break the homepage: any failure here
+  // simply means the coded sections render, exactly as before.
+  const builderPage = await ctx.storefront
+    .getPage(BUILDER_HOME_HANDLE)
+    .catch(() => null);
+  const homeDesign = parseBuilderDesign((builderPage as any)?.body);
+
+  return {
+    featuredProducts,
+    familyPack,
+    articles,
+    homeReviews,
+    homeDesign: builderHasContent(homeDesign) ? homeDesign : null,
+  };
 }
 
 export default function Homepage() {
-  const {featuredProducts, familyPack, articles, homeReviews} = useLoaderData<typeof loader>();
+  const {featuredProducts, familyPack, articles, homeReviews, homeDesign} =
+    useLoaderData<typeof loader>();
 
   // Page-wide scroll progress + reveal-on-scroll observer + magnetic buttons
   useEffect(() => {
@@ -198,6 +224,20 @@ export default function Homepage() {
       cleanups.forEach((c) => c());
     };
   }, [featuredProducts]);
+
+  // The merchant's own composition wins when there is one; otherwise the page
+  // below is exactly what it has always been.
+  if (homeDesign) {
+    return (
+      <>
+        <BuilderDesignRenderer
+          design={homeDesign}
+          sections={{featuredProducts, familyPack, homeReviews, articles}}
+        />
+        <NewsletterPopup />
+      </>
+    );
+  }
 
   return (
     <>
