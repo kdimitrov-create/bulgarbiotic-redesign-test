@@ -59,6 +59,28 @@ const CAMPAIGNS: Campaign[] = [
   },
 ];
 
+
+/**
+ * Each top-level paragraph the merchant writes in the "Promo Bar" module is one
+ * rotating message — that is what the panel's editor produces per line, and it
+ * lets the admin-driven bar behave like the designed one instead of showing a
+ * single static sentence.
+ *
+ * Anything that is not a list of paragraphs is kept whole as a single message.
+ */
+function splitOwnSlides(html: string): string[] {
+  const raw = (html || '').trim();
+  if (!raw) return [];
+  // The lookahead keeps a <pre> block from being read as a paragraph.
+  const open = /<p(?=[\s>])[^>]*>/i;
+  const paragraphs = raw.match(/<p(?=[\s>])[^>]*>[\s\S]*?<\/p>/gi);
+  if (!paragraphs || paragraphs.length < 2) return [raw];
+  const slides = paragraphs
+    .map((p) => p.replace(open, '').replace(/<\/p>\s*$/i, '').trim())
+    .filter((p) => p.replace(/<[^>]+>/g, '').trim().length > 0);
+  return slides.length ? slides : [raw];
+}
+
 const STORAGE_KEY = 'bb-promo-bar-v1';
 const ROTATE_MS = 6000;
 
@@ -68,7 +90,9 @@ export function PromoBar() {
   // date window, and it replaces the designed campaigns entirely. Without it,
   // the three curated messages below keep rotating.
   const own = liveModule('htmlLine');
-  const ownHtml = typeof own?.settings?.text === 'string' ? own.settings.text.trim() : '';
+  const ownSlides = splitOwnSlides(
+    typeof own?.settings?.text === 'string' ? own.settings.text : '',
+  );
 
   // Default visible on SSR + first hydration tick — avoids layout shift for
   // the common case (user hasn't dismissed). Effect reads sessionStorage and
@@ -84,13 +108,14 @@ export function PromoBar() {
     }
   }, []);
 
+  const slideCount = ownSlides.length || CAMPAIGNS.length;
   useEffect(() => {
-    if (dismissed || CAMPAIGNS.length < 2) return;
+    if (dismissed || slideCount < 2) return;
     const t = setInterval(() => {
-      setIdx((i) => (i + 1) % CAMPAIGNS.length);
+      setIdx((i) => (i + 1) % slideCount);
     }, ROTATE_MS);
     return () => clearInterval(t);
-  }, [dismissed]);
+  }, [dismissed, slideCount]);
 
   function close() {
     setDismissed(true);
@@ -103,26 +128,32 @@ export function PromoBar() {
 
   if (dismissed) return null;
 
-  if (ownHtml) {
+  if (ownSlides.length) {
     const button = own?.settings?.button ?? {};
     const showButton =
       String(button.enabled ?? '').toLowerCase() === 'true' || button.enabled === true;
     return (
       <div className="bb-promo" role="region" aria-label="Активни кампании">
         <div className="bb-promo-track">
-          <div className="bb-promo-slide bb-promo-slide--on bb-promo-slide--own">
-            <span className="bb-promo-own" dangerouslySetInnerHTML={{__html: ownHtml}} />
-            {showButton && button.link && (
-              <a
-                className="bb-promo-cta bb-promo-cta--own"
-                href={button.link}
-                target={button.target || undefined}
-                rel={button.target === '_blank' ? 'noopener noreferrer' : undefined}
-              >
-                {button.text || 'Виж повече'}
-              </a>
-            )}
-          </div>
+          {ownSlides.map((html, i) => (
+            <div
+              key={i}
+              className={`bb-promo-slide bb-promo-slide--own${i === idx % ownSlides.length ? ' bb-promo-slide--on' : ''}`}
+              aria-hidden={i !== idx % ownSlides.length}
+            >
+              <span className="bb-promo-own" dangerouslySetInnerHTML={{__html: html}} />
+              {showButton && button.link && (
+                <a
+                  className="bb-promo-cta bb-promo-cta--own"
+                  href={button.link}
+                  target={button.target || undefined}
+                  rel={button.target === '_blank' ? 'noopener noreferrer' : undefined}
+                >
+                  {button.text || 'Виж повече'}
+                </a>
+              )}
+            </div>
+          ))}
         </div>
         <button type="button" className="bb-promo-close" onClick={close} aria-label="Затвори">
           ×
