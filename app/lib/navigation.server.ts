@@ -14,9 +14,10 @@
  */
 import type {NavMenu, NavNode} from './navigation';
 
-// 5 min: the merchant edits the menu and wants to see it, but every page render
-// reads this, so it cannot be zero.
-const CACHE_TTL_MS = 5 * 60 * 1000;
+// 30 s, same as the discount cache: the merchant edits the menu in the panel and
+// expects to see it on the next refresh, not in five minutes. Still not zero —
+// every page render reads this.
+const CACHE_TTL_MS = 30 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 
 const TREE_QUERY = `query MainMenu {

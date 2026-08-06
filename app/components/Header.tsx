@@ -28,12 +28,17 @@ export function Header({shop, menu, cart}: HeaderProps) {
   const blogIdx = baseItems.findIndex((i) => i.url === '/blog' || i.title.toLowerCase().includes('блог'));
   const newsletterNav = {title: 'Абонирай се за бюлетин', url: '/page/abomanmet-za-byuletin'};
   const eventsNav = {title: 'Събития', url: '/page/events'};
-  // Skip either injection once the merchant has such an entry in the admin menu —
-  // otherwise the same link shows up twice (2026-08-05).
-  const hasOwnNewsletter = baseItems.some((i) => i.title.toLowerCase().includes('абонирай'));
-  const hasOwnEvents = baseItems.some(
-    (i) => i.url === '/page/events' || i.title.toLowerCase().includes('събити'),
-  );
+  // Client 2026-08-06: when the merchant's own menu is driving the header, the
+  // header shows THAT and nothing else — an item appearing in the storefront
+  // with no matching row in the panel is exactly the confusion we are removing.
+  // These two are added only to the hardcoded fallback, i.e. on a store whose
+  // admin menu has not been built yet.
+  const usingFallback = !menu?.items?.length;
+  const hasOwnNewsletter =
+    !usingFallback || baseItems.some((i) => i.title.toLowerCase().includes('абонирай'));
+  const hasOwnEvents =
+    !usingFallback ||
+    baseItems.some((i) => i.url === '/page/events' || i.title.toLowerCase().includes('събити'));
   // "Събития" belongs BEFORE the newsletter pill. When the merchant's own menu
   // already carries the newsletter entry, inserting before "Блог" would drop
   // Събития on the wrong side of it — so aim at the newsletter when it exists.
