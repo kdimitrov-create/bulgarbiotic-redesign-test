@@ -34,15 +34,19 @@ export function Header({shop, menu, cart}: HeaderProps) {
   const hasOwnEvents = baseItems.some(
     (i) => i.url === '/page/events' || i.title.toLowerCase().includes('събити'),
   );
-  // Order matters: "Събития" sits between "Наука" and the newsletter pill.
+  // "Събития" belongs BEFORE the newsletter pill. When the merchant's own menu
+  // already carries the newsletter entry, inserting before "Блог" would drop
+  // Събития on the wrong side of it — so aim at the newsletter when it exists.
+  const newsletterIdx = baseItems.findIndex((i) => i.title.toLowerCase().includes('абонирай'));
+  const anchorIdx = newsletterIdx >= 0 ? newsletterIdx : blogIdx;
   const injected = [
     ...(hasOwnEvents ? [] : [eventsNav]),
     ...(hasOwnNewsletter ? [] : [newsletterNav]),
   ];
   const items = injected.length === 0
     ? baseItems
-    : blogIdx >= 0
-      ? [...baseItems.slice(0, blogIdx), ...injected, ...baseItems.slice(blogIdx)]
+    : anchorIdx >= 0
+      ? [...baseItems.slice(0, anchorIdx), ...injected, ...baseItems.slice(anchorIdx)]
       : [...baseItems, ...injected];
   const {open} = useAside();
   const headerRef = useRef<HTMLElement>(null);
@@ -360,7 +364,10 @@ export function Header({shop, menu, cart}: HeaderProps) {
         /* Left-edge burger is desktop-hidden; it lives in actions on desktop. */
         .bb-nav-toggle--left { display: none !important; grid-area: burger; }
         .bb-logo-link { grid-area: logo; }
-        .bb-nav { grid-area: nav; }
+        /* The nav is the part that gives way when the row runs out of room.
+           Before this, the logo's 1fr track was the one that collapsed, so a
+           long menu label from the admin panel shrank the logo to a stamp. */
+        .bb-nav { grid-area: nav; min-width: 0; }
         .bb-header-actions { grid-area: actions; }
         @media (max-width: 1100px) {
           /* Tablet + mobile: swap layout to burger-center-actions */
@@ -378,6 +385,11 @@ export function Header({shop, menu, cart}: HeaderProps) {
         .bb-logo-link { display: flex; align-items: center; }
         .bb-logo {
           height: 56px; width: auto;
+          /* Beats the global img{max-width:100%} reset: with a squeezed grid
+             track that rule was scaling the logo down instead of letting the
+             column keep its natural width. */
+          max-width: none;
+          flex-shrink: 0;
           transition: height 0.3s ease;
         }
         .bb-header.shrunk .bb-logo { height: 40px; }
