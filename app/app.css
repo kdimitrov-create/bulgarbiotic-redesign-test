@@ -4307,3 +4307,82 @@ img.pm-banner {
      percentage; only the pills need help at this size. */
   .pm-tag { padding: 4px 8px; font-size: 9px; }
 }
+
+/* ==========================================================================
+   Page builder (Дизайн → Страници)
+   The merchant composes the page in the panel; the look stays ours. Rows are a
+   12-column grid, exactly what the builder's column widths mean.
+   ========================================================================== */
+.bb-bd { display: flex; flex-direction: column; gap: 0; }
+.bb-bd-row {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .bb-bd-row { grid-template-columns: 1fr; gap: 18px; }
+  .bb-bd-col { grid-column: 1 / -1 !important; }
+}
+.bb-bd-col { grid-column: span 12; min-width: 0; }
+.bb-bd-col-1 { grid-column: span 1; }
+.bb-bd-col-2 { grid-column: span 2; }
+.bb-bd-col-3 { grid-column: span 3; }
+.bb-bd-col-4 { grid-column: span 4; }
+.bb-bd-col-5 { grid-column: span 5; }
+.bb-bd-col-6 { grid-column: span 6; }
+.bb-bd-col-7 { grid-column: span 7; }
+.bb-bd-col-8 { grid-column: span 8; }
+.bb-bd-col-9 { grid-column: span 9; }
+.bb-bd-col-10 { grid-column: span 10; }
+.bb-bd-col-11 { grid-column: span 11; }
+.bb-bd-col-12 { grid-column: span 12; }
+
+.bb-bd-title {
+  font-size: clamp(24px, 3.2vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--color-ink);
+  margin: 0 0 14px;
+}
+.bb-bd-text { margin-bottom: 8px; }
+.bb-bd-text img, .bb-bd-image, .bb-bd-banner-img { max-width: 100%; height: auto; display: block; }
+.bb-bd-image, .bb-bd-banner-img { border-radius: 14px; }
+
+.bb-bd-banners {
+  display: grid;
+  grid-template-columns: repeat(var(--bb-bd-per-row, 1), 1fr);
+  gap: 16px;
+  margin: 8px 0 18px;
+}
+.bb-bd-banners-title {
+  grid-column: 1 / -1;
+  font-size: 20px; font-weight: 800; color: var(--color-ink); margin: 0;
+}
+@media (max-width: 760px) { .bb-bd-banners { grid-template-columns: 1fr; } }
+.bb-bd-banner img { width: 100%; }
+
+.bb-bd-buttons { display: flex; flex-wrap: wrap; gap: 12px; margin: 14px 0 18px; }
+.bb-bd-text-center { justify-content: center; }
+.bb-bd-text-right { justify-content: flex-end; }
+.bb-bd-text-left { justify-content: flex-start; }
+.bb-bd-button {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 26px;
+  border-radius: 999px;
+  background: var(--color-brand-pink);
+  color: #fff;
+  font-size: 14px; font-weight: 800; letter-spacing: 0.2px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+}
+.bb-bd-button:hover { background: #c20d59; color: #fff; text-decoration: none; transform: translateY(-1px); }
+
+.bb-bd-separator { border: 0; border-top-style: solid; margin-left: auto; margin-right: auto; }
+
+.bb-bd-video, .bb-bd-video-el { margin: 14px 0 18px; }
+.bb-bd-video { position: relative; padding-top: 56.25%; border-radius: 16px; overflow: hidden; }
+.bb-bd-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.bb-bd-video-el { width: 100%; border-radius: 16px; display: block; }
+
+.bb-bd-code { margin: 8px 0; }

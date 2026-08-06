@@ -5,6 +5,11 @@ import {getSeoMeta} from '@cloudcart/nitro';
 import {RichText} from '@cloudcart/nitro-react';
 import {PageShell, PageBackLink} from '~/components/PageShell';
 import {
+  BuilderDesignRenderer,
+  builderHasContent,
+  parseBuilderDesign,
+} from '~/components/BuilderDesignRenderer';
+import {
   getPageContentOverride,
   PAGES_WITH_CUSTOM_LAYOUT,
   PAGES_WITH_AUTHORED_BODY,
@@ -108,6 +113,11 @@ const PAGES_WITH_OWN_HERO = new Set([
 function DefaultPage({page}: {page: any}) {
   const body = (page.body || '').trim();
   const override = getPageContentOverride(page.handle);
+  // A page built in the panel's Page Builder returns its tree here instead of
+  // HTML. Until 2026-08-06 that fell through to "съдържанието е в подготовка",
+  // which is what made every admin-created page look empty.
+  const design = parseBuilderDesign(body);
+  const hasDesign = builderHasContent(design);
   // Normally the merchant's CMS body wins and the override is only a fallback.
   // For a handful of pages the client dictated the exact copy, so there the
   // override comes first — see PAGES_WITH_AUTHORED_BODY.
@@ -126,6 +136,8 @@ function DefaultPage({page}: {page: any}) {
     >
       {hasRealHtml ? (
         <RichText data={page.body} />
+      ) : hasDesign && !authored ? (
+        <BuilderDesignRenderer design={design} />
       ) : override ? (
         override()
       ) : (
