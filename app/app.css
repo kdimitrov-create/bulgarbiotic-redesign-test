@@ -4386,3 +4386,14 @@ img.pm-banner {
 .bb-bd-video-el { width: 100%; border-radius: 16px; display: block; }
 
 .bb-bd-code { margin: 8px 0; }
+
+/* Promo bar driven by the merchant's own „Promo Bar" module: their HTML sits
+   inside our bar, so headings and paragraphs must not add vertical space. */
+.bb-promo-slide--own { gap: 12px; }
+.bb-promo-own { display: inline; }
+.bb-promo-own p,
+.bb-promo-own h1, .bb-promo-own h2, .bb-promo-own h3 {
+  display: inline; margin: 0; font-size: inherit; font-weight: inherit; line-height: inherit;
+}
+.bb-promo-own a { color: inherit; text-decoration: underline; }
+.bb-promo-cta--own { white-space: nowrap; }

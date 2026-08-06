@@ -1,6 +1,7 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
+import {liveModule} from '~/lib/theme-modules';
 
 const EUR_TO_BGN = 1.95583;
 const SHIP_THRESHOLD_BGN_FMT = new Intl.NumberFormat('bg-BG', {
@@ -62,6 +63,13 @@ const STORAGE_KEY = 'bb-promo-bar-v1';
 const ROTATE_MS = 6000;
 
 export function PromoBar() {
+  // The merchant's own bar wins when they have switched it on in
+  // Дизайн → Модули → "Promo Bar": it carries HTML, an optional button and a
+  // date window, and it replaces the designed campaigns entirely. Without it,
+  // the three curated messages below keep rotating.
+  const own = liveModule('htmlLine');
+  const ownHtml = typeof own?.settings?.text === 'string' ? own.settings.text.trim() : '';
+
   // Default visible on SSR + first hydration tick — avoids layout shift for
   // the common case (user hasn't dismissed). Effect reads sessionStorage and
   // may hide it on the next paint if previously dismissed this session.
@@ -94,6 +102,34 @@ export function PromoBar() {
   }
 
   if (dismissed) return null;
+
+  if (ownHtml) {
+    const button = own?.settings?.button ?? {};
+    const showButton =
+      String(button.enabled ?? '').toLowerCase() === 'true' || button.enabled === true;
+    return (
+      <div className="bb-promo" role="region" aria-label="Активни кампании">
+        <div className="bb-promo-track">
+          <div className="bb-promo-slide bb-promo-slide--on bb-promo-slide--own">
+            <span className="bb-promo-own" dangerouslySetInnerHTML={{__html: ownHtml}} />
+            {showButton && button.link && (
+              <a
+                className="bb-promo-cta bb-promo-cta--own"
+                href={button.link}
+                target={button.target || undefined}
+                rel={button.target === '_blank' ? 'noopener noreferrer' : undefined}
+              >
+                {button.text || 'Виж повече'}
+              </a>
+            )}
+          </div>
+        </div>
+        <button type="button" className="bb-promo-close" onClick={close} aria-label="Затвори">
+          ×
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bb-promo" role="region" aria-label="Активни кампании">
