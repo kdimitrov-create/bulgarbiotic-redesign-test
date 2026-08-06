@@ -273,10 +273,25 @@ export function markTags(product: any): MarkTag[] {
   return tags;
 }
 
+/**
+ * Banners the client does not want stamped on product photos (2026-08-06).
+ *
+ * "Forbes" says the same thing as the labelled pill in the buy box, and on the
+ * photo it is a small dark square nobody can read. Matched by the banner NAME
+ * from the admin panel, so re-uploading the image does not bring it back.
+ *
+ * ⚠️ This is a code-side veto only because the Product Banners app is not
+ * exposed to the Admin GraphQL API ("app is not installed"), so it cannot be
+ * switched off through the panel programmatically. Removing the banner in
+ * Продукти → Банери is the cleaner fix; then this set can go.
+ */
+const HIDDEN_BANNERS = new Set(['forbes']);
+
 /** The image banners grouped by the corner the merchant picked. */
 export function markBanners(product: any): Record<MarkCorner, ProductBanner[]> {
   const out: Record<MarkCorner, ProductBanner[]> = {tl: [], tr: [], bl: [], br: []};
   for (const banner of marksFor(product).banners) {
+    if (HIDDEN_BANNERS.has((banner.name ?? '').trim().toLowerCase())) continue;
     const corner = (String(banner.position || 'bl').toLowerCase() as MarkCorner);
     (out[corner] ?? out.bl).push(banner);
   }

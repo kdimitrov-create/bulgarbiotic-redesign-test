@@ -85,6 +85,22 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
       </div>
       {isOnSale && savings > 0 && (
         <div className="bb-pdp-savings">
+          {/* Was the 💸 emoji, which renders in each platform's own cartoon
+              style and clashed with the monoline icons around it. */}
+          <svg
+            className="bb-pdp-savings-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="2" y="6" width="20" height="12" rx="2.5" />
+            <circle cx="12" cy="12" r="3" />
+            <path d="M5.5 9.5v5M18.5 9.5v5" />
+          </svg>
           Спестяваш <strong>{fmtBg(savings, 'EUR')}</strong>{' '}
           <span className="bb-pdp-savings-bgn">({fmtBg(savings * EUR_TO_BGN, 'BGN')})</span>
         </div>
