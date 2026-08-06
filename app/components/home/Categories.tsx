@@ -23,7 +23,7 @@ const TILES: Tile[] = [
   {key: 'kids',      title: 'За деца',     accent: 'деца', desc: 'Smart Start + перли с шоколад.',                                          img: '/images/generated-v2/c-kids.png',          link: '/category/probiotik-za-deca'},
   {key: 'pregnancy', title: 'За бременни',                desc: 'Специализиран пакет за бременност и кърмене.',                            img: '/images/generated/cat-pregnancy.png',      link: '/page/probiotik-za-bremenni'},
   {key: 'pearls',    title: 'Перли',                       desc: 'С натурален или млечен шоколад.',                                          img: '/images/generated-v2/c-pearls.png',        link: '/category/perli'},
-  {key: 'beauty',    title: 'За отслабване', accent: 'отслабване', desc: 'Грижа за микробиома и метаболизма в борбата с излишните килограми.', img: '/images/ugc-stills/ugc-1-femin-bathroom.png', link: '/category/probiotik-za-otslabvane'},
+  {key: 'beauty',    title: 'За отслабване', accent: 'отслабване', desc: 'Грижа за микробиома и метаболизма в борбата с излишните килограми.', img: '/images/categories/weight-loss-600900.png', link: '/category/probiotik-za-otslabvane'},
   {key: 'pets',      title: 'За домашни любимци',           desc: 'Bactology Pets — кучета и котки.',                                       img: '/images/generated-v2/c-pets.png',          link: '/product/bactology-pets'},
   {key: 'bundles',   title: 'Пакети',                       desc: 'Family Pack, Travel Pack и още комплекти с отстъпка.',                   img: '/images/generated-v2/c-bundles.png',       link: '/category/packages'},
 ];
