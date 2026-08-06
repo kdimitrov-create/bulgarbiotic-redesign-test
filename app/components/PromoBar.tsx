@@ -128,44 +128,36 @@ export function PromoBar() {
 
   if (dismissed) return null;
 
-  if (ownSlides.length) {
-    const button = own?.settings?.button ?? {};
-    const showButton =
-      String(button.enabled ?? '').toLowerCase() === 'true' || button.enabled === true;
-    return (
-      <div className="bb-promo" role="region" aria-label="Активни кампании">
-        <div className="bb-promo-track">
-          {ownSlides.map((html, i) => (
-            <div
-              key={i}
-              className={`bb-promo-slide bb-promo-slide--own${i === idx % ownSlides.length ? ' bb-promo-slide--on' : ''}`}
-              aria-hidden={i !== idx % ownSlides.length}
-            >
-              <span className="bb-promo-own" dangerouslySetInnerHTML={{__html: html}} />
-              {showButton && button.link && (
-                <a
-                  className="bb-promo-cta bb-promo-cta--own"
-                  href={button.link}
-                  target={button.target || undefined}
-                  rel={button.target === '_blank' ? 'noopener noreferrer' : undefined}
-                >
-                  {button.text || 'Виж повече'}
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-        <button type="button" className="bb-promo-close" onClick={close} aria-label="Затвори">
-          ×
-        </button>
-      </div>
-    );
-  }
+  const button = own?.settings?.button ?? {};
+  const showButton =
+    ownSlides.length > 0 &&
+    (String(button.enabled ?? '').toLowerCase() === 'true' || button.enabled === true) &&
+    Boolean(button.link);
 
   return (
     <div className="bb-promo" role="region" aria-label="Активни кампании">
       <div className="bb-promo-track">
-        {CAMPAIGNS.map((camp, i) => (
+        {ownSlides.map((html, i) => (
+          <div
+            key={`own-${i}`}
+            className={`bb-promo-slide bb-promo-slide--own${i === idx % ownSlides.length ? ' bb-promo-slide--on' : ''}`}
+            aria-hidden={i !== idx % ownSlides.length}
+          >
+            <span className="bb-promo-own" dangerouslySetInnerHTML={{__html: html}} />
+            {showButton && (
+              <a
+                className="bb-promo-cta bb-promo-cta--own"
+                href={button.link}
+                target={button.target || undefined}
+                rel={button.target === '_blank' ? 'noopener noreferrer' : undefined}
+              >
+                {button.text || 'Виж повече'}
+              </a>
+            )}
+          </div>
+        ))}
+        {ownSlides.length === 0 &&
+          CAMPAIGNS.map((camp, i) => (
           <div
             key={camp.id}
             className={`bb-promo-slide${i === idx ? ' bb-promo-slide--on' : ''}`}
