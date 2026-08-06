@@ -201,7 +201,7 @@ export default function PromotionsPage() {
               <>
                 <br />
                 <span className="bb-promo-hero-accent">
-                  — спести до {maxDiscountPercent}%.
+                  спести до {maxDiscountPercent}%.
                 </span>
               </>
             )}
