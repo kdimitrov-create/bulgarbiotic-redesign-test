@@ -83,12 +83,20 @@ export async function fetchMainMenu(
   }
 }
 
+/** What one batched lookup gives back for a linked entity. */
+interface Target {
+  handle: string;
+  /** Products only — used by the "Препоръчано" card. */
+  image?: string | null;
+  blurb?: string | null;
+}
+
 /** One request that turns every (type, id) pair in the tree into a url handle. */
 async function resolveHandles(
   origin: string,
   pat: string,
   roots: RawItem[],
-): Promise<Record<string, string>> {
+): Promise<Record<string, Target>> {
   const wanted = new Map<string, {type: string; id: string}>();
   const walk = (items: RawItem[]) => {
     for (const item of items) {
@@ -104,19 +112,41 @@ async function resolveHandles(
 
   const fields = [...wanted.values()].map(({type, id}) => {
     const r = RESOLVERS[type];
-    return `${r.alias}${id}: ${r.query}(id: "${id}") { urlHandle }`;
+    // A product also gives up its photo and short description, so the featured
+    // card can be authored entirely in the panel: pick the product, and its own
+    // admin content fills the card.
+    const extra = type === 'product' ? ' imageUrl shortDescription' : '';
+    return `${r.alias}${id}: ${r.query}(id: "${id}") { urlHandle${extra} }`;
   });
   const data = await gql(origin, pat, `query MenuTargets { ${fields.join(' ')} }`, {});
 
-  const out: Record<string, string> = {};
+  const out: Record<string, Target> = {};
   for (const {type, id} of wanted.values()) {
-    const handle = data?.[`${RESOLVERS[type].alias}${id}`]?.urlHandle;
-    if (handle) out[`${type}:${id}`] = handle;
+    const row = data?.[`${RESOLVERS[type].alias}${id}`];
+    if (row?.urlHandle) {
+      out[`${type}:${id}`] = {
+        handle: row.urlHandle,
+        image: row.imageUrl ?? null,
+        blurb: stripHtml(row.shortDescription),
+      };
+    }
   }
   return out;
 }
 
-function toNode(item: RawItem, handles: Record<string, string>): NavNode | null {
+/** The panel stores the short description as HTML; the card wants a sentence. */
+function stripHtml(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const text = value
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return text || null;
+}
+
+function toNode(item: RawItem, handles: Record<string, Target>): NavNode | null {
   if (!item?.name) return null;
   const children = (item.children ?? [])
     .slice()
@@ -126,11 +156,11 @@ function toNode(item: RawItem, handles: Record<string, string>): NavNode | null 
 
   const type = item.linkType ?? item.type ?? '';
   const resolver = RESOLVERS[type];
-  const handle = item.linkId ? handles[`${type}:${item.linkId}`] : undefined;
+  const target = item.linkId ? handles[`${type}:${item.linkId}`] : undefined;
 
   // A group has no target of its own — point it at its first child so the
   // header link still goes somewhere sensible when clicked.
-  const ownUrl = resolver && handle ? resolver.path(handle) : item.url || null;
+  const ownUrl = resolver && target ? resolver.path(target.handle) : item.url || null;
   const url = ownUrl ?? children.find((c) => c.url)?.url ?? null;
 
   return {
@@ -142,6 +172,8 @@ function toNode(item: RawItem, handles: Record<string, string>): NavNode | null 
     // blocks are authored without a redeploy.
     html: item.widgetText || null,
     className: item.class || null,
+    image: target?.image ?? null,
+    blurb: target?.blurb ?? null,
     children,
   };
 }

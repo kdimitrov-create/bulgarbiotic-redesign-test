@@ -21,7 +21,29 @@ export interface NavNode {
   html: string | null;
   /** CSS class the merchant typed in the panel, passed through untouched. */
   className: string | null;
+  /** The linked product's own photo — only resolved for product links. */
+  image: string | null;
+  /** The linked product's short description, as written in the admin. */
+  blurb: string | null;
   children: NavNode[];
+}
+
+/**
+ * Classes the merchant can type in the panel to give an item a special job in
+ * the mega-menu. Anything else is an ordinary link or column.
+ */
+export const NAV_ROLE = {
+  /** A product link that becomes the "Препоръчано" card. */
+  featured: 'featured',
+  /** A group whose children become the row of buttons under the panel. */
+  footer: 'footer',
+} as const;
+
+/** Does this item carry the given role class? */
+export function hasRole(node: NavNode | null | undefined, role: string): boolean {
+  return (node?.className ?? '')
+    .split(/\s+/)
+    .some((c) => c.trim().toLowerCase() === role);
 }
 
 export interface NavMenu {

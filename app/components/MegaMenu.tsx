@@ -1,6 +1,7 @@
 import {Link} from 'react-router';
 import type {ReactNode} from 'react';
 import type {NavNode} from '~/lib/navigation';
+import {NAV_ROLE, hasRole} from '~/lib/navigation';
 
 /**
  * Premium 4-column mega-menu inspired by seed.com / Mejuri / Glossier patterns.
@@ -99,7 +100,16 @@ const ACCENTS = ['pink', 'blue', 'cream'] as const;
 const FLAT_COLUMN_SIZE = 6;
 
 export function MegaMenu({open, onNav, node}: Props) {
-  const fromAdmin = buildColumns(node);
+  // Two children of "Продукти" have a job of their own, marked by the class the
+  // merchant types in the panel: one becomes the "Препоръчано" card, one becomes
+  // the row of buttons underneath. Everything else is a column.
+  const roleChildren = node?.children ?? [];
+  const featuredNode = roleChildren.find((c) => hasRole(c, NAV_ROLE.featured)) ?? null;
+  const footerNode = roleChildren.find((c) => hasRole(c, NAV_ROLE.footer)) ?? null;
+  const columnNode = node
+    ? {...node, children: roleChildren.filter((c) => c !== featuredNode && c !== footerNode)}
+    : node;
+  const fromAdmin = buildColumns(columnNode);
 
   return (
     <div
@@ -127,18 +137,36 @@ export function MegaMenu({open, onNav, node}: Props) {
                 />
               ),
             )}
-            {!fromAdmin.hasHtml && <Featured onNav={onNav} />}
+            {!fromAdmin.hasHtml && <Featured onNav={onNav} node={featuredNode} />}
           </>
         ) : (
           <>
             <Column spec={COLUMN_GOAL} onNav={onNav} accent="pink" />
             <Column spec={COLUMN_AUDIENCE} onNav={onNav} accent="blue" />
             <Column spec={COLUMN_FORM} onNav={onNav} accent="cream" />
-            <Featured onNav={onNav} />
+            <Featured onNav={onNav} node={featuredNode} />
           </>
         )}
       </div>
 
+      <Foot onNav={onNav} node={footerNode} />
+    </div>
+  );
+}
+
+/**
+ * The row of buttons under the panel.
+ *
+ * Driven by a group the merchant marks with class `footer`: each of its
+ * children becomes a button, the first one styled as the primary. An item whose
+ * url is an anchor (`#bb-finder-fab`) stays a plain link so it can reach the
+ * on-page finder. Without such a group the four designed buttons remain.
+ */
+function Foot({onNav, node}: {onNav?: () => void; node: NavNode | null}) {
+  const links = (node?.children ?? []).filter((c) => c.url);
+
+  if (!links.length) {
+    return (
       <div className="bb-megamenu-foot">
         <Link to="/category/all-products" className="bb-megamenu-foot-link bb-megamenu-foot-link--primary" onClick={onNav} prefetch="intent">
           Виж всички продукти
@@ -158,6 +186,28 @@ export function MegaMenu({open, onNav, node}: Props) {
           <Arrow />
         </a>
       </div>
+    );
+  }
+
+  return (
+    <div className="bb-megamenu-foot">
+      {links.map((link, i) => {
+        const cls =
+          'bb-megamenu-foot-link' +
+          (i === 0 ? ' bb-megamenu-foot-link--primary' : '') +
+          (link.url!.startsWith('#') ? ' bb-megamenu-foot-link--ghost' : '');
+        return link.url!.startsWith('#') ? (
+          <a key={link.id} href={link.url!} className={cls} onClick={onNav}>
+            {link.title}
+            <Arrow />
+          </a>
+        ) : (
+          <Link key={link.id} to={link.url!} className={cls} onClick={onNav} prefetch="intent">
+            {link.title}
+            <Arrow />
+          </Link>
+        );
+      })}
     </div>
   );
 }
@@ -244,18 +294,33 @@ function Column({spec, onNav, accent}: {spec: ColumnSpec; onNav?: () => void; ac
   );
 }
 
-function Featured({onNav}: {onNav?: () => void}) {
+/**
+ * The "Препоръчано" card.
+ *
+ * When the merchant marks a product child with class `featured`, everything on
+ * the card comes from the panel: the heading is the group name they typed, the
+ * product is the one they picked, and the photo and sentence are that product's
+ * own `imageUrl` and short description (client chose this over inventing extra
+ * fields, 2026-08-06). Without such a child the curated card stays.
+ */
+function Featured({onNav, node}: {onNav?: () => void; node?: NavNode | null}) {
+  const heading = node?.title || 'Препоръчано';
+  const to = node?.url ?? `/product/${FEATURED_PRODUCT.handle}`;
+  const image = node?.image ?? FEATURED_PRODUCT.image;
+  const title = node ? node.title : FEATURED_PRODUCT.title;
+  const blurb = node ? node.blurb : FEATURED_PRODUCT.blurb;
+
   return (
     <div className="bb-megamenu-col bb-megamenu-feat">
-      <h3 className="bb-megamenu-col-h">Препоръчано</h3>
-      <Link to={`/product/${FEATURED_PRODUCT.handle}`} onClick={onNav} prefetch="intent" className="bb-megamenu-feat-card">
+      <h3 className="bb-megamenu-col-h">{node ? 'Препоръчано' : heading}</h3>
+      <Link to={to} onClick={onNav} prefetch="intent" className="bb-megamenu-feat-card">
         <div className="bb-megamenu-feat-img">
-          <img src={FEATURED_PRODUCT.image} alt={FEATURED_PRODUCT.title} loading="lazy" />
-          <span className="bb-megamenu-feat-tag">{FEATURED_PRODUCT.tag}</span>
+          {image && <img src={image} alt={title} loading="lazy" />}
+          {!node && <span className="bb-megamenu-feat-tag">{FEATURED_PRODUCT.tag}</span>}
         </div>
         <div className="bb-megamenu-feat-body">
-          <div className="bb-megamenu-feat-title">{FEATURED_PRODUCT.title}</div>
-          <p className="bb-megamenu-feat-blurb">{FEATURED_PRODUCT.blurb}</p>
+          <div className="bb-megamenu-feat-title">{title}</div>
+          {blurb && <p className="bb-megamenu-feat-blurb">{blurb}</p>}
           <span className="bb-megamenu-feat-cta">
             Виж продукта
             <Arrow />
