@@ -109,3 +109,27 @@ export function renderMarker(marker: string, data: SectionData): ReactNode {
 export function knownMarker(marker: string): boolean {
   return BY_MARKER.has(marker);
 }
+
+/**
+ * The marker that hands the homepage back to the coded design.
+ *
+ * A second way out that needs no admin token: drop a Код block containing
+ * `<!-- bb:off -->` anywhere on the builder homepage and the shop renders the
+ * designed sections instead. Remove it and the composition returns.
+ */
+export const OFF_MARKER = 'off';
+
+export function designTurnedOff(design: any): boolean {
+  let off = false;
+  const walk = (node: any) => {
+    if (off || !node || typeof node !== 'object') return;
+    const code = node?.settings?.code ?? node?.settings?.html;
+    if (typeof code === 'string' && readMarker(code) === OFF_MARKER) {
+      off = true;
+      return;
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(design);
+  return off;
+}
