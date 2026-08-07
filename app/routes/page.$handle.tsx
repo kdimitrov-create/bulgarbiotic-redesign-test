@@ -14,8 +14,10 @@ import {
   builderHasContent,
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
-import {BUILDER_HOME_HANDLE} from '~/components/home/SectionRegistry';
+import {BUILDER_HOME_HANDLE, designComposesHome} from '~/components/home/SectionRegistry';
 import {designPlacesPage} from '~/components/PageSectionRegistry';
+import {fetchHomeSectionData} from '~/lib/home-data.server';
+import {useHomeMotion} from '~/lib/use-home-motion';
 import {
   getPageContentOverride,
   PAGES_WITH_CUSTOM_LAYOUT,
@@ -86,6 +88,11 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
       )
     : EMPTY_BUILDER_DATA;
 
+  // A page that places homepage sections is a draft of the homepage; it needs
+  // the same data the homepage loader fetches, or every marker renders empty.
+  const composesHome = designComposesHome(design);
+  const sections = composesHome ? await fetchHomeSectionData(ctx).catch(() => ({})) : {};
+
   // Every downstream decision (custom layout, authored body, override lookup)
   // keys off the handle, and the one the API returns is not always the one in
   // the URL — pin the URL's, which is what those maps are written against.
@@ -93,12 +100,32 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
     page: {...page, handle: params.handle},
     builderData,
     movedToBuilder: designPlacesPage(design, params.handle),
+    composesHome,
+    sections,
   };
 }
 
 export default function PageRoute() {
-  const {page, builderData, movedToBuilder} = useLoaderData<typeof loader>();
+  const {page, builderData, movedToBuilder, composesHome, sections} =
+    useLoaderData<typeof loader>();
   const handle = page.handle;
+
+  // Homepage sections animate on scroll; the hook has to be called on every
+  // render, so it sits above the branches.
+  useHomeMotion(handle);
+
+  // A draft of the homepage, built in the panel. It renders like the homepage —
+  // no shell, no title, no breadcrumbs — so what is seen here is what goes live
+  // when it is switched in.
+  if (composesHome) {
+    return (
+      <BuilderDesignRenderer
+        design={parseBuilderDesign(page.body)}
+        sections={sections as any}
+        data={builderData}
+      />
+    );
+  }
 
   // A page the merchant has moved into the builder is composed there — even the
   // three that have a custom layout of their own. Without this check those

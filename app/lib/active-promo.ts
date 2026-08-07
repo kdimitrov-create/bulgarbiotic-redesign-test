@@ -145,13 +145,15 @@ export function synthDiscount(
   product: {handle?: string; id?: string; discount?: unknown; variants?: {nodes?: Array<{compareAtPrice?: unknown}>}},
   basePrice: {amount: string; currencyCode?: string} | null | undefined,
 ): {
-  // DISABLED — see discountPctFor above.
-  return null;
   salePrice: {amount: string; currencyCode?: string};
   msrpPrice: {amount: string; currencyCode?: string};
   percent: number;
   label: string;
 } | null {
+  // DISABLED — see discountPctFor above. (This line had landed inside the
+  // return type, where it was a syntax error rather than a kill switch; the
+  // campaign was off anyway because discountPctFor returns 0.)
+  return null;
   if (!basePrice) return null;
   // Always defer to real CloudCart-provided discount if present.
   if ((product as any).discount?.msrpPrice) return null;

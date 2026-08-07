@@ -1,4 +1,5 @@
 import {number} from './builder-settings';
+import {enhanceProducts} from '~/lib/product-images';
 
 /**
  * Loading what the page-builder's data blocks ask for.
@@ -84,24 +85,36 @@ export async function fetchBuilderData(
   ]);
 
   const productsById: Record<string, any> = {};
-  for (const product of picked.filter(Boolean)) {
-    const id = String(product?.id ?? '').match(/Product\/(\d+)/)?.[1];
+  // Same image treatment the homepage gives its own products, so a showcase
+  // assembled in the panel cannot end up with different photos.
+  for (const product of enhanceProducts(picked.filter(Boolean) as any)) {
+    const id = String((product as any)?.id ?? '').match(/Product\/(\d+)/)?.[1];
     if (id) productsById[id] = product;
   }
 
   return {
     productsById,
-    productPool: normaliseList(pool),
+    productPool: enhanceProducts(normaliseList(pool) as any),
     articles: normaliseList(articles),
   };
 }
 
+// Every money field carries its currency: `Money` throws without one, and a
+// single missing `currencyCode` on a struck-through price took the whole page
+// down with a 500 (2026-08-07).
 const PRODUCT_FIELDS = `
-  id handle title
+  id handle title availableForSale
   featuredImage { url altText width height }
   priceRange { minVariantPrice { amount currencyCode } }
   compareAtPriceRange { minVariantPrice { amount currencyCode } }
-  variants(first: 1) { nodes { id availableForSale price { amount currencyCode } compareAtPrice { amount } } }
+  variants(first: 1) {
+    nodes {
+      id availableForSale
+      price { amount currencyCode }
+      compareAtPrice { amount currencyCode }
+    }
+  }
+  discount { msrpPrice { amount currencyCode } }
   labels { name color textColor }
   reviewSummary { averageRating totalCount }
 `;

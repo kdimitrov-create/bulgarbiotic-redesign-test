@@ -42,7 +42,9 @@ export function carouselSlides(settings: Record<string, any>): Array<{
       return {
         src,
         mobile: resolveStorage(slide.src_mobile) || undefined,
-        link: slide.link || slide.url || undefined,
+        // The panel writes a slide's link as `link_value`; `link`/`url` are what
+        // a hand-written block uses.
+        link: slide.link || slide.url || slide.link_value || undefined,
         alt: slide.alt || slide.caption || text(settings.text) || '',
       };
     })

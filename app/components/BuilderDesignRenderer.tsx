@@ -4,6 +4,8 @@ import {entries, isOn, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
 import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
+import {BannerSlider} from '~/components/home/HeroBannerSlider';
+import {ProductRail} from '~/components/home/ProductRail';
 import {
   carouselSlides,
   showcaseProducts,
@@ -23,14 +25,14 @@ import {
  *   Column = { children: Block[], width?: '1'..'12' }
  *   Block  = { map: 'text' | 'banner' | …, settings: {…} }
  *
- * Covered here are the blocks that need no extra data — together they are ~95 %
- * of everything the store actually uses (measured across all 43 pages):
+ * Blocks that need nothing but their own settings:
  *
- *   text · banner · button · code · title · video · separator
+ *   text · title · banner · button · code · image · video · separator
  *
- * The product and blog blocks (`product-showcase`, `showcase`,
- * `bundle-products`, `carousel`, `recent-articles`) need catalogue data loaded
- * alongside the page; they render nothing for now rather than something wrong.
+ * Blocks that need catalogue data (`product-showcase`, `bundle-products`,
+ * `carousel`, `recent-articles`) get it from the loader via `builder-data`; a
+ * block whose products have gone missing renders nothing rather than an empty
+ * frame.
  *
  * An unknown block is skipped silently — a new widget in the panel must never
  * blank out a page.
@@ -256,7 +258,12 @@ function LinkOrAnchor({
 }
 
 
-/** A product showcase: the products the merchant picked, in our card design. */
+/**
+ * A product showcase: the products the merchant picked, in our card design.
+ *
+ * "Слайдер" in the widget's settings switches between the homepage rail and a
+ * plain grid — the same toggle the panel already shows.
+ */
 function Showcase({block, data}: {block: BuilderNode; data: BuilderData}) {
   const settings = block.settings ?? {};
   const products = showcaseProducts(settings, data);
@@ -267,41 +274,34 @@ function Showcase({block, data}: {block: BuilderNode; data: BuilderData}) {
   return (
     <div className="bb-bd-showcase">
       {title && <h2 className="bb-bd-showcase-title">{title}</h2>}
-      <div
-        className="bb-bd-showcase-grid"
-        style={{'--bb-bd-per-row': perRow} as React.CSSProperties}
-      >
-        {products.map((p: any) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </div>
+      {isOn(settings.enable_slider) ? (
+        <ProductRail products={products} limit={products.length} />
+      ) : (
+        <div
+          className="bb-bd-showcase-grid"
+          style={{'--bb-bd-per-row': perRow} as React.CSSProperties}
+        >
+          {products.map((p: any) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-/** An image slider. Mobile gets its own file when the merchant uploaded one. */
+/**
+ * An image slider — the shop's own hero slider, driven by the slides the
+ * merchant uploaded. Mobile gets its own file when they uploaded one.
+ */
 function Carousel({block}: {block: BuilderNode}) {
-  const settings = block.settings ?? {};
-  const slides = carouselSlides(settings);
+  const slides = carouselSlides(block.settings ?? {}).map((slide) => ({
+    desktop: slide.src,
+    mobile: slide.mobile,
+    link: slide.link,
+  }));
   if (!slides.length) return null;
-
-  return (
-    <div className="bb-bd-carousel">
-      {slides.map((slide, i) => {
-        const picture = (
-          <picture>
-            {slide.mobile && <source media="(max-width: 767px)" srcSet={slide.mobile} />}
-            <img src={slide.src} alt={slide.alt ?? ''} loading={i === 0 ? 'eager' : 'lazy'} />
-          </picture>
-        );
-        return (
-          <div className="bb-bd-slide" key={i}>
-            {slide.link ? <LinkOrAnchor href={slide.link}>{picture}</LinkOrAnchor> : picture}
-          </div>
-        );
-      })}
-    </div>
-  );
+  return <BannerSlider slides={slides} />;
 }
 
 /** Recent blog articles. */

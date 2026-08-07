@@ -4476,3 +4476,71 @@ img.pm-banner {
 .bb-bd-vbottom { align-items: end; }
 @media (max-width: 767px) { .bb-bd-desktop-only { display: none; } }
 @media (min-width: 768px) { .bb-bd-mobile-only { display: none; } }
+
+/* ==========================================================================
+   Начална страница, съставена в конструктора
+   The merchant owns the content of these rows — banners, products, copy — and
+   sets the class on each one in the panel ("Клас на реда"). The classes below
+   carry only the layout the design needs, so refilling a row cannot break it.
+   ========================================================================== */
+
+/* Hero: the achievement stats are a sibling of the slider, so the column is
+   what they position against. */
+.bb-row-hero > .bb-bd-col { position: relative; }
+
+/* The row paints its background edge to edge while its content stays inside
+   the shop's container — the same result as a `.bb-container` nested in a
+   full-width section, without a wrapper element the panel cannot produce.
+   The inset repeats what the coded sections add up to: 36px of container plus
+   36px of the section's own padding, centred inside 1380px. */
+.bb-row-head,
+.bb-row-rail { --bb-row-gutter: max(0px, (100% - 1380px) / 2); }
+.bb-row-head {
+  align-items: end;
+  column-gap: 50px;
+  padding-left: calc(72px + var(--bb-row-gutter));
+  padding-right: calc(72px + var(--bb-row-gutter));
+}
+.bb-row-head > .bb-bd-col > *:last-child { margin-bottom: 0; }
+@media (max-width: 880px) { .bb-row-head { row-gap: 24px; } }
+@media (max-width: 720px) { .bb-row-head { padding-left: 40px; padding-right: 40px; } }
+
+/* The rail brings 36px of its own, so the row supplies only the container. */
+.bb-row-rail {
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+@media (max-width: 720px) { .bb-row-rail { padding-left: 20px; padding-right: 20px; } }
+
+/* Our own heading classes have to survive being typed into a Текст block:
+   `.bb-prose h2` would otherwise outrank `.section-h2`. */
+.bb-prose h2.section-h2 {
+  font-family: inherit;
+  font-size: clamp(36px, 4.8vw, 60px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -1.6px;
+  color: var(--color-ink);
+  margin: 0;
+}
+.bb-prose h2.section-h2 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-brand-pink);
+}
+.bb-prose .section-tag { margin-bottom: 18px; }
+.bb-prose .bb-section-sub {
+  font-size: 15px;
+  color: rgba(10, 37, 64, 0.78);
+  line-height: 1.7;
+  max-width: 380px;
+  margin: 0 0 18px;
+}
+
+/* A title typed into the showcase widget lines up with the cards below it. */
+.bb-row-rail .bb-bd-showcase-title {
+  padding: 0 36px;
+  margin-bottom: 28px;
+}
+@media (max-width: 600px) { .bb-row-rail .bb-bd-showcase-title { padding: 0 16px; } }

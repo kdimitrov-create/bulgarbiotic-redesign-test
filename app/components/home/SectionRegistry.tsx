@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {Hero} from '~/components/home/Hero';
+import {HeroStats} from '~/components/home/HeroBannerSlider';
 import {TrustStrip} from '~/components/home/TrustStrip';
 import {Marquee} from '~/components/home/Marquee';
 import {FeaturedProducts} from '~/components/home/FeaturedProducts';
@@ -60,6 +61,12 @@ type Section = {
 
 export const HOME_SECTIONS: Section[] = [
   {marker: 'hero', label: 'Кампаниен слайдер (горе)', render: () => <Hero />},
+  {
+    marker: 'stats',
+    // Sits inside the hero row, on top of the "Карусел" widget.
+    label: 'Числата върху банера (110k+ клиенти…)',
+    render: () => <HeroStats />,
+  },
   {marker: 'trust', label: 'Лента с гаранции', render: () => <TrustStrip />},
   {marker: 'marquee', label: 'Бягаща лента с предимства', render: () => <Marquee />},
   {
@@ -119,6 +126,33 @@ export function renderMarker(marker: string, data: SectionData): ReactNode {
 
 export function knownMarker(marker: string): boolean {
   return BY_MARKER.has(marker);
+}
+
+/**
+ * Does this design place homepage sections?
+ *
+ * A composition of the homepage is built as an ordinary page so it can be
+ * reworked and looked at before it is switched in. At its own address it must
+ * render like the homepage — edge to edge, no page title, no breadcrumbs — and
+ * the route needs the homepage's data behind the markers. This is how the route
+ * recognises one.
+ */
+export function designComposesHome(design: any): boolean {
+  let found = false;
+  const walk = (node: any) => {
+    if (found || !node || typeof node !== 'object') return;
+    const code = node?.settings?.code ?? node?.settings?.html;
+    if (typeof code === 'string') {
+      const marker = readMarker(code);
+      if (marker && BY_MARKER.has(marker)) {
+        found = true;
+        return;
+      }
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(design);
+  return found;
 }
 
 /**
