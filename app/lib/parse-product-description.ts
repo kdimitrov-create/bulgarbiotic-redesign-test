@@ -201,7 +201,49 @@ function extractBenefits(html: string): {cleanedHtml: string; benefits: string[]
     },
   );
 
-  return {cleanedHtml, benefits};
+  // Some of the authored texts write the same list as a checklist <ul> instead
+  // of emoji-led lines. Both are the product's key benefits and both belong in
+  // the callout, or the same product loses its strip just because its copy was
+  // typed differently.
+  const withList = extractCheckList(cleanedHtml, benefits, seen);
+
+  return {cleanedHtml: dropOrphanBenefitsHeading(withList, benefits), benefits};
+}
+
+/** `<ul class="bb-desc-check">` — the authored equivalent of the emoji lines. */
+function extractCheckList(html: string, benefits: string[], seen: Set<string>): string {
+  return html.replace(
+    /<ul[^>]*class="[^"]*bb-desc-check[^"]*"[^>]*>([\s\S]*?)<\/ul>/gi,
+    (match, inner: string) => {
+      const items = [...inner.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
+        .map((m) => stripTags(m[1]).trim())
+        .filter((t) => t.length > 8 && t.length < 280 && !seen.has(t.toLowerCase()));
+      if (!items.length) return match;
+      for (const item of items) {
+        benefits.push(item);
+        seen.add(item.toLowerCase());
+      }
+      return '';
+    },
+  );
+}
+
+/**
+ * A heading whose whole list has just been lifted into the benefits strip is
+ * left standing over nothing. The authored descriptions write the list under
+ * „Основни ползи", so after the lift the body showed that heading followed by
+ * the next section.
+ */
+function dropOrphanBenefitsHeading(html: string, benefits: string[]): string {
+  if (!benefits.length) return html;
+  return html.replace(
+    /<h[1-6][^>]*>\s*(?:<[^>]+>\s*)*Основни\s+ползи[\s\S]{0,20}?<\/h[1-6]>/gi,
+    (heading, offset: number) => {
+      // Only when nothing of the list survived right below it.
+      const after = html.slice(offset + heading.length, offset + heading.length + 400);
+      return BULLET_PREFIX.test(stripTags(after)) ? heading : '';
+    },
+  );
 }
 
 /** Remove orphan inline <style> tags that target medical-research-* classes. */
