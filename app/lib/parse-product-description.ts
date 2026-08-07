@@ -45,8 +45,11 @@ export function parseProductDescription(html: string): ParsedDescription {
     return {before: '', after: '', studies: [], benefits: []};
   }
 
+  // ─── Step 0: Drop the bullet list the classic theme still needs ──────
+  const trimmed = dropLegacyBenefits(html);
+
   // ─── Step 1: Extract emoji-bullet "benefits" paragraphs ──────────────
-  const {cleanedHtml, benefits} = extractBenefits(html);
+  const {cleanedHtml, benefits} = extractBenefits(trimmed);
 
   // ─── Step 2: Slice out medical-research-section ──────────────────────
   const sectionStart = cleanedHtml.search(/<div[^>]*class="[^"]*medical-research-section[^"]*"/i);
@@ -243,6 +246,22 @@ function dropOrphanBenefitsHeading(html: string, benefits: string[]): string {
       const after = html.slice(offset + heading.length, offset + heading.length + 400);
       return BULLET_PREFIX.test(stripTags(after)) ? heading : '';
     },
+  );
+}
+
+/**
+ * The old bullet list, kept in the description for the classic theme only.
+ *
+ * When the authored copy moved into the panel (2026-08-07) the store was still
+ * being served by the classic theme, which has no benefits strip and would
+ * simply have lost those lines. They stay in the description wrapped in
+ * `bb-legacy-benefits`; the redesign builds its strip from the authored text
+ * instead, so showing them too would list the same benefits twice.
+ */
+function dropLegacyBenefits(html: string): string {
+  return html.replace(
+    /<div[^>]*class="[^"]*bb-legacy-benefits[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
+    '',
   );
 }
 
