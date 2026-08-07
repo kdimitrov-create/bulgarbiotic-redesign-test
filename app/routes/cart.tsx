@@ -12,6 +12,12 @@ export async function loader({context, request}: Route.LoaderArgs) {
   return {cart};
 }
 
+/** Did the line we just asked for actually land in the cart we got back? */
+function hasLine(cart: CartData | null | undefined, merchandiseId: string): boolean {
+  const nodes = (cart as any)?.lines?.nodes ?? [];
+  return nodes.some((line: any) => line?.merchandise?.id === merchandiseId);
+}
+
 export async function action({request, context}: Route.ActionArgs) {
   const ctx = await getContext(context, request);
   const fd = await request.formData();
@@ -38,9 +44,19 @@ export async function action({request, context}: Route.ActionArgs) {
           errors = [{message: 'Продуктовият вариант не е намерен'}];
           break;
         }
-        const result = await ctx.cart.addLines([{merchandiseId, quantity: Number(fd.get('quantity') || 1)}]);
-        cart = result.cart;
-        errors = result.userErrors;
+        const lines = [{merchandiseId, quantity: Number(fd.get('quantity') || 1)}];
+        let result = await ctx.cart.addLines(lines).catch(() => null);
+        // Once an order is placed, the cart id in the session belongs to that
+        // order and CloudCart will not take new lines into it. Nothing errors:
+        // the add simply has no effect, so every button on the site looked dead
+        // for a customer who had already bought once (client 2026-08-07). When
+        // the line did not land, drop the finished cart and add to a fresh one.
+        if (!hasLine(result?.cart, merchandiseId)) {
+          ctx.session.unset('cartId');
+          result = await ctx.cart.addLines(lines).catch(() => null);
+        }
+        cart = result?.cart ?? (await ctx.cart.get());
+        errors = result?.userErrors ?? [{message: 'Продуктът не можа да бъде добавен'}];
         break;
       }
       case 'UPDATE_CART': {
