@@ -15,6 +15,7 @@ import {
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
 import {BUILDER_HOME_HANDLE} from '~/components/home/SectionRegistry';
+import {designPlacesPage} from '~/components/PageSectionRegistry';
 import {
   getPageContentOverride,
   PAGES_WITH_CUSTOM_LAYOUT,
@@ -152,6 +153,10 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
   // When the override component provides its own hero, render the shell
   // barebones (just breadcrumbs + content, full width).
   const useBarebones = override && PAGES_WITH_OWN_HERO.has(page.handle);
+  // The merchant has moved this page into the builder when its design places
+  // the page's own section. Then the builder drives it — with the designed
+  // content still inside, plus whatever they added around it.
+  const movedToBuilder = hasDesign && designPlacesPage(design, page.handle);
 
   return (
     <PageShell
@@ -160,7 +165,9 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
       breadcrumbs={[]}
       variant={useBarebones ? 'barebones' : 'narrow'}
     >
-      {hasRealHtml ? (
+      {movedToBuilder ? (
+        <BuilderDesignRenderer design={design} data={builderData} />
+      ) : hasRealHtml ? (
         <RichText data={page.body} />
       ) : override ? (
         // A page we designed by hand beats the builder tree. Several of these

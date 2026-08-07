@@ -46,3 +46,28 @@ export function renderPageSection(handle: string): ReactNode {
 export function knownPageSection(handle: string): boolean {
   return KNOWN.has(handle);
 }
+
+/**
+ * Has this page been moved into the builder?
+ *
+ * The signal is the page placing ITS OWN designed section: a Код block holding
+ * `bb:page:<its own handle>`. That makes the move an explicit choice per page —
+ * a page nobody has touched keeps rendering exactly as it always did, and
+ * deleting the marker in the panel hands it straight back.
+ */
+export function designPlacesPage(design: any, handle: string): boolean {
+  if (!design || !handle) return false;
+  const needle = `bb:page:${handle}`.toLowerCase();
+  let found = false;
+  const walk = (node: any) => {
+    if (found || !node || typeof node !== 'object') return;
+    const code = node?.settings?.code ?? node?.settings?.html;
+    if (typeof code === 'string' && code.toLowerCase().includes(needle)) {
+      found = true;
+      return;
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(design);
+  return found;
+}
