@@ -1,0 +1,2788 @@
+{
+ "kosa-koja-i-nokti": {
+  "id": "29",
+  "builderDesign": {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "carousel",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "full_width": "yes",
+          "autoplay": "yes",
+          "interval": "5000",
+          "caption": "no",
+          "controls": "no",
+          "indicators": "yes",
+          "pause": "yes",
+          "cycle": "no",
+          "slides": {
+           "1": {
+            "img_type": "internal",
+            "img_type_mobile": "external",
+            "src": "https://cdncloudcart.com/26377/files/image/big_bannerbig_banner_2.jpg",
+            "src_mobile": "https://cdncloudcart.com/26377/files/image/mobile_bannermobile_banners.jpg",
+            "link_type": "product",
+            "link_value": "58",
+            "caption": "",
+            "html": "",
+            "from": "",
+            "to": "",
+            "link_caption": "",
+            "whole_link": "1",
+            "sorting": "0",
+            "horizontal_position": "left",
+            "vertical_position": "top",
+            "target": "_self"
+           }
+          },
+          "is_homepage_slider": "no",
+          "slides_per_view": "1",
+          "animate": "no",
+          "wrap": "false"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "0",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "full_width": "1",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 24pt;\"><strong><span style=\"font-size: 18pt;\">Активна формула за здрава и блестяща коса и нокти</span></strong></span></h2>\n<p><span style=\"font-size: 11pt; color: #333333;\"><br />Комплексът от витамини и микроелементи стимулира клетките на епидермиса и съдейства за подобряване на външния вид на косата, ноктите и кожата. Тези хранителни вещества са изключително ценни и повлияват благоприятно целия организъм.</span></p>\n<p><span style=\"font-size: 11pt; color: #333333;\"><i class=\"far fa-capsules\" style=\"color: #e50363;\"></i> Биотин<br /><i class=\"fas fa-flask-potion\" style=\"color: #e50363;\"></i> Витамин А, С, Е, D3, B-комплекс&nbsp;<br /><i class=\"fas fa-dna\" style=\"color: #e50363;\"></i> Желязо<br /><i class=\"fas fa-vial\" style=\"color: #e50363;\"></i> Силиций</span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 32px;\"><span style=\"font-size: 18pt;\">Действие</span><br /><br /></span></h2>\n<p><strong>С цел профилактика:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за укрепване и подхранване на косата и ноктите;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за предотвратяване на косопад и оплешивяване.<br /><br /><strong>Като съпътстващо лечение:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако косата ви е загубила своята еластичност и блясък;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако ноктите ви лесно се чупят;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако страдате от косопад.</p>\n<p><span style=\"font-size: 11pt; color: #333333;\"></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/product-1-644a552789c0f.png",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "button",
+         "settings": {
+          "enabled": "1",
+          "color": "",
+          "target": "0",
+          "position": "text-left",
+          "full_width": "",
+          "text": "КУПИ СЕГА",
+          "link": "https://bulgarbiotic.bg/product/aktivna-formula-za-zdrava-i-blestyashta-kosa-i-nokti-bactology",
+          "size": "",
+          "attributes": ""
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "5",
+      "margin_top": "0",
+      "padding_bottom": "40",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "mobile-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 18pt;\">Aктивна формула за сияйна и еластична кожа без бръчки<br /><br /></span></h2>\n<p>Aктивна формула за сияйна и еластична кожа без бръчки &ndash; Bactology съчетава синергичното действие на няколко съставки.</p>\n<p><span style=\"font-size: 11pt; color: #333333;\"><i class=\"far fa-capsules\" style=\"color: #e50363;\"></i> Витамин А, С, Е, D<br /><i class=\"fas fa-flask-potion\" style=\"color: #e50363;\"></i> Колаген и хиалуронова киселина&nbsp;<br /><i class=\"fas fa-dna\" style=\"color: #e50363;\"></i> Биотин<br /><i class=\"fas fa-vial\" style=\"color: #e50363;\"></i> Коензим Q10</span></p>\n<p><span style=\"font-size: 11pt; color: #333333;\"></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 32px;\"><span style=\"font-size: 18pt;\">Действие</span><br /><br /></span></h2>\n<p><strong>С цел профилактика:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за запазване на младежкия вид на кожата и забавяне на стареенето;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за поддържане на еластична, гладка и сияйна кожа;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за предотвратяване на появата на целулит и стрии.<br /><br /><strong>Като съпътстващо лечение:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако имате нараняване, изгаряне, ухапване;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако страдате от кожни проблеми и раздразнения.</p>\n<p><span style=\"font-size: 11pt; color: #333333;\"></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/product-2-644a553b4c2fe.jpg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "button",
+         "settings": {
+          "enabled": "1",
+          "color": "",
+          "target": "0",
+          "position": "text-left",
+          "full_width": "",
+          "text": "КУПИ СЕГА",
+          "link": "https://bulgarbiotic.bg/product/aktivna-formula-za-siyayna-i-elastichna-koja-bez-brachki-bactology",
+          "size": "",
+          "attributes": ""
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#fcf8f7",
+      "padding_top": "40",
+      "margin_top": "0",
+      "padding_bottom": "60",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "mobile-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 24pt;\"><strong>Активна формула за здрава и блестяща коса и нокти<br /><br /></strong></span></h2>\n<p><span style=\"font-size: 11pt; color: #333333;\">Комплексът от витамини и микроелементи стимулира клетките на епидермиса и съдейства за подобряване на външния вид на косата, ноктите и кожата. Тези хранителни вещества са изключително ценни и повлияват благоприятно целия организъм.</span></p>\n<p><span style=\"font-size: 11pt; color: #333333;\"><i class=\"far fa-capsules\" style=\"color: #e50363;\"></i> Биотин<br /><i class=\"fas fa-flask-potion\" style=\"color: #e50363;\"></i> Витамин А, С, Е, D3, B-комплекс&nbsp;<br /><i class=\"fas fa-dna\" style=\"color: #e50363;\"></i> Желязо<br /><i class=\"fas fa-vial\" style=\"color: #e50363;\"></i> Силиций</span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/hair-2-64491906964c0.jpg",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "100",
+      "margin_top": "0",
+      "padding_bottom": "100",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "desktop-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/product-1-644a552789c0f.png\" width=\"551\" height=\"551\" /></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "separator",
+         "settings": {
+          "enabled": "1",
+          "style": "solid",
+          "position": "center",
+          "color": "#ffffff",
+          "height": "1",
+          "width": "100",
+          "margin_top": "0",
+          "margin_bottom": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 32px;\">Действие<br /><br /></span></h2>\n<p><strong>С цел профилактика:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за укрепване и подхранване на косата и ноктите;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за предотвратяване на косопад и оплешивяване.<br /><br /><strong>Като съпътстващо лечение:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако косата ви е загубила своята еластичност и блясък;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако ноктите ви лесно се чупят;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако страдате от косопад.</p>\n<p><span style=\"font-size: 11pt; color: #333333;\"></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "button",
+         "settings": {
+          "enabled": "1",
+          "color": "",
+          "target": "0",
+          "position": "text-left",
+          "full_width": "",
+          "text": "КУПИ СЕГА",
+          "link": "https://bulgarbiotic.bg/product/aktivna-formula-za-zdrava-i-blestyashta-kosa-i-nokti-bactology",
+          "size": "",
+          "attributes": ""
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#ffffff",
+      "padding_top": "80",
+      "margin_top": "0",
+      "padding_bottom": "40",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "desktop-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "padding_bottom": "30",
+      "margin_top": "0",
+      "margin_bottom": "0"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#fcf8f7",
+      "padding_top": "15",
+      "margin_top": "0",
+      "padding_bottom": "15",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "desktop-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 24pt;\">Aктивна формула за сияйна и еластична кожа без бръчки<br /><br /></span></h2>\n<p>Aктивна формула за сияйна и еластична кожа без бръчки &ndash; Bactology съчетава синергичното действие на няколко съставки.</p>\n<p><span style=\"font-size: 11pt; color: #333333;\"><i class=\"far fa-capsules\" style=\"color: #e50363;\"></i> Витамин А, С, Е, D<br /><i class=\"fas fa-flask-potion\" style=\"color: #e50363;\"></i> Колаген и хиалуронова киселина&nbsp;<br /><i class=\"fas fa-dna\" style=\"color: #e50363;\"></i> Биотин<br /><i class=\"fas fa-vial\" style=\"color: #e50363;\"></i> Коензим Q10</span></p>\n<p><span style=\"font-size: 11pt; color: #333333;\"></span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/face-2-pink-64492715e4254.jpg",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "140",
+      "margin_top": "0",
+      "padding_bottom": "80",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "desktop-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "separator",
+         "settings": {
+          "enabled": "1",
+          "style": "solid",
+          "position": "center",
+          "color": "#fcf8f7",
+          "height": "1",
+          "width": "100",
+          "margin_top": "0",
+          "margin_bottom": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"font-size: 32px;\">Действие<br /><br /></span></h2>\n<p><strong>С цел профилактика:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за запазване на младежкия вид на кожата и забавяне на стареенето;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за поддържане на еластична, гладка и сияйна кожа;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> за предотвратяване на появата на целулит и стрии.<br /><br /><strong>Като съпътстващо лечение:</strong><br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако имате нараняване, изгаряне, ухапване;<br /><i class=\"fas fa-caret-right\" style=\"color: #e50363;\"></i> ако страдате от кожни проблеми и раздразнения.</p>\n<p><span style=\"font-size: 11pt; color: #333333;\"></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "button",
+         "settings": {
+          "enabled": "1",
+          "color": "",
+          "target": "0",
+          "position": "text-left",
+          "full_width": "",
+          "text": "КУПИ СЕГА",
+          "link": "https://bulgarbiotic.bg/product/aktivna-formula-za-siyayna-i-elastichna-koja-bez-brachki-bactology",
+          "size": "",
+          "attributes": ""
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/product-2-644a553b4c2fe.jpg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#fcf8f7",
+      "padding_top": "80",
+      "margin_top": "0",
+      "padding_bottom": "80",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "desktop-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 36pt; color: #fed4e6;\" class=\"marquee\"><strong>BACTOLOGY ПРОДУКТИ ЗА КОСА, КОЖА И НОКТИ &bull; ЗДРАВА И БЛЕСТЯЩА КОСА &bull; СИЯЙНА И ЕЛАСТИЧНА КОЖА &bull; ВИСОКОКАЧЕСТВЕНИ ПРОДУКТИ ЗА КРАСОРА И ЗДРАВЕ &bull; ВЪЗПОЛЗВАЙТЕ СЕГА И ЗАКУПЕТЕ ПРОДУКТИ ЗА КОЖА, КОСА И НОКТИ &bull; </strong></span></p>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#e50464",
+      "padding_top": "5",
+      "margin_top": "0",
+      "padding_bottom": "5",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "desktop-only"
+     }
+    }
+   ],
+   "options": {
+    "enable_header": "1",
+    "enable_footer": "1"
+   }
+  }
+ },
+ "naukata-zad-bulgar-biotic": {
+  "id": "69",
+  "builderDesign": {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h1>Науката зад <br /><span style=\"color: #e3166c;\">Bulgar</span> <span style=\"color: #0267a0;\">Biotic</span></h1>\n<p><span style=\"font-size: 28px;\"><strong><span style=\"color: #e3166c;\">Защо този бранд?</span> Защо да му вярвам?</strong></span></p>\n<p>Bulgar Biotic не е просто марка пробиотици.</p>\n<p>Това е ангажимент към наука, качество и българска традиция, създаден с грижа за дългосрочното здраве.</p>\n<p><a class=\"_button scroll-to-next-row\">Научи повече</a></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/1-6973367bac6ff.png",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_header science_page_general",
+      "vertical_align_class": "_vmiddle",
+      "show_mobile_or_desktop": null
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h1><span style=\"color: #0267a0;\">Наука, традиция и иновации</span> <br /><span style=\"color: #e3166c;\"> в полза на здравето</span></h1>\n<p>В Bulgar Biotic съчетаваме дългогодишната българска традиция в разработените продукти със съвременни научни подходи и строг контрол на качеството.</p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div class=\"traditions_boxes\">\n<div class=\"traditions_box\"><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/flag.svg\" width=\"43\" height=\"43\" />\n<h3>Традиция &amp; Наука</h3>\n<p>В Bulgar Biotic комбинираме българската традиция с модерни научни подходи и строг контрол на качеството.</p>\n</div>\n<div class=\"traditions_box\"><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/science-report.svg\" width=\"43\" height=\"43\" />\n<h3>Лабораторни анализи</h3>\n<p>Лабораторията извършва детайлни микробиологични и биохимични изследвания за ефективност, чистота и стабилност на пробиотичните продукти.</p>\n</div>\n<div class=\"traditions_box\"><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/chemical.svg\" width=\"43\" height=\"43\" />\n<h3>Производствен Контрол</h3>\n<p>Всички процеси, хигиена и материали се следят по европейски стандарти и вътрешни протоколи за надеждност и безопасност.</p>\n</div>\n</div>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div class=\"hide_text\">\n<p>В Bulgar Biotic съчетаваме дългогодишната българска традиция в разработените продукти със съвременни научни подходи и строг контрол на качеството. Всеки наш продукт е резултат от прецизно подбрани щамове, контролирани производствени процеси и научно обосновани формули &mdash; с фокус върху ефективност, безопасност и реални ползи за организма.</p>\n<p>Лабораторната ни дейност се основава на висок стандарт на прецизност и контрол. Нашият екип от висококвалифицирани специалисти разполага с модерно оборудване и експертиза за извършване на широк спектър от лабораторни анализи. Всички методи и изследвания се провеждат в съответствие с приложимите европейски регламенти, национално законодателство и вътрешни технологични стандарти. Натрупаният опит и професионалните знания гарантират надеждността и точността на резултатите.</p>\n<p>Основната дейност на нашата лаборатория е насочена към извършване на задълбочени микробиологични анализи на пробиотични щамове, суровини и помощни материали, използвани в производството. Изследват се активността, чистотата и стабилността на пробиотичните култури на различни етапи от процеса. Паралелно с това се осъществява строг контрол върху хигиената на персонала, оборудването, работните повърхности, както и върху качеството на въздуха и водата в производствените, складовите и контролирани зони. В лабораторията се прилага пълна проследимост на всяка проба &ndash; от нейното постъпване за анализ до документирането и предоставянето на окончателните резултати.</p>\n<p>За гарантиране на високото качество в пробиотичната лаборатория се извършват биохимични анализи на суровини и пробиотични щамове, както и постоянен контрол на ключови показатели по време на производствения процес. Паралелно се следи ефективността на миещите и дезинфекционните средства, използвани за оборудването и контролираните производствени зони.</p>\n</div>\n<p></p>\n<p class=\"text-aligncenter\"><a class=\"_button\">Прочети още</a></p>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_traditions science_page_general",
+      "vertical_align_class": "_vtop",
+      "show_mobile_or_desktop": null
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h1><span style=\"color: #0267a0;\">Как разработваме</span> <span color=\"#e3166c\" style=\"color: #e3166c;\">нашите пробиотици</span></h1>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div class=\"traditions_boxes\">\n<div class=\"traditions_box\">\n<h3><b>1</b></h3>\n<h4><b> Подбор на щамове</b></h4>\n<p>Всеки продукт съдържа Lactobacillus bulgaricus &ndash; емблематичен български пробиотичен щам, признат за ролята си в поддържането на чревния баланс и имунната функция. Комбинираме го с допълнителни щамове и активни вещества според конкретната нужда.</p>\n</div>\n<div class=\"traditions_box\">\n<h3>2</h3>\n<h4><b>Формулиране</b></h4>\n<p>Формулите се разработват на база: научни публикации, клинични проучвания, синергия между щамове и стабилност и преживяемост до червата.</p>\n</div>\n<div class=\"traditions_box\">\n<h3><b>3</b></h3>\n<h4><b> Контрол и тестване</b></h4>\n<p>Всяка партида се тества за чистота, активност и стабилност на пробиотичните култури. Преминава през: микробиологичен анализ, проверка за чистота и активност, контрол на CFU до края на срока на годност.</p>\n</div>\n<div class=\"traditions_box\">\n<h3><b>4</b></h3>\n<h4><b> Стабилност и ефективност</b></h4>\n<p><span>Използваме технологии, които подпомагат преживяемостта на бактериите до момента на прием.</span></p>\n</div>\n</div>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_how science_page_general",
+      "vertical_align_class": "_vtop",
+      "show_mobile_or_desktop": null
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h1><span style=\"font-size: 36px;\"><span style=\"color: #0267a0;\">Lactobacillus bulgaricus &ndash;</span> <span style=\"color: #e3166c;\">в основата на всеки продукт</span></span></h1>\n<p><span style=\"font-size: 28px;\"><strong>Защо Lactobacillus bulgaricus?</strong></span></p>\n<p>Lactobacillus bulgaricus е уникален пробиотичен щам с български произход, използван и изследван повече от 100 години.</p>\n<p>Ние го поставяме в основата на всеки наш продукт, защото:</p>\n<ul>\n<li>е естествен за човешкия микробиом</li>\n<li>подпомага храносмилането и усвояването на хранителни вещества</li>\n<li>подкрепя имунната система</li>\n<li>действа в синергия с други пробиотични щамове</li>\n</ul>\n<p>Това е основата, върху която надграждаме всички наши формули.</p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/5-697351d8d692c.png",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_bacteria science_page_general",
+      "vertical_align_class": "_vmiddle",
+      "show_mobile_or_desktop": null
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h1><span style=\"font-size: 36px;\"><b><span style=\"color: #0267a0;\">Съставки и формули &ndash;</span> <span style=\"color: #e3166c;\">прозрачност без компромис</span></b></span></h1>\n<p><span style=\"font-size: 28px;\"><strong>Какво съдържат нашите продукти</strong></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>Производството на Bulgar Biotic отговаря на международни стандарти за качество и безопасност.</p>\n<p>Прилагаме добри производствени практики и системи за контрол, които осигуряват:</p>\n<ul>\n<li>постоянство на формулите</li>\n<li>безопасност за крайния потребител</li>\n<li>проследимост на всяка партида</li>\n</ul>\n<p></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/2-69735e6ee1746.png",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_contain science_page_general",
+      "vertical_align_class": "_vmiddle",
+      "show_mobile_or_desktop": null,
+      "reverse_column_order": "yes"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2><span style=\"color: #e3166c; font-size: 36px;\"><span style=\"color: #0267a0;\">Сертификати и</span> <span style=\"color: #0267a0;\">стандарти</span> за качество</span></h2>\n<p>Производството на Bulgar Biotic отговаря на международни стандарти за качество и безопасност.</p>\n<p>Прилагаме добри производствени практики и системи за контрол, които осигуряват:</p>\n<ul>\n<li>постоянство на формулите</li>\n<li>безопасност за крайния потребител</li>\n<li>проследимост на всяка партида</li>\n</ul>"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/logos_certificates_cut-6973603ebc2e1.webp",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/4-697370cc15321.png",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_cert science_page_general",
+      "vertical_align_class": "_vmiddle",
+      "show_mobile_or_desktop": null
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h1><span style=\"font-size: 36px;\"><b><span style=\"color: #0267a0;\">Клинични и научни</span> <span style=\"color: #e3166c;\">изследвания</span></b></span></h1>\n<p><span style=\"font-size: 28px;\"><b>Научна основа и доказателства</b></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>Пробиотичните щамове, които използваме, са обект на множество научни и клинични изследвания, свързани с:</p>\n<ul>\n<li>чревно здраве</li>\n<li>имунна функция</li>\n<li>метаболитен баланс</li>\n<li>възстановяване след стрес и натоварване</li>\n</ul>\n<p>Ние следим актуалните научни данни и ги прилагаме при разработването на нашите продукти.</p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/modern-neutral-freebie-lead-magnet-mockup-instagram-post.png",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_studies science_page_general",
+      "vertical_align_class": "_vmiddle",
+      "show_mobile_or_desktop": null,
+      "reverse_column_order": "yes"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2 class=\"text-aligncenter\"><span style=\"font-size: 36px;\"><span style=\"color: #0267a0;\">Клинични изследвания за щамовете,</span> <br /><span style=\"color: #e3166c;\">използвани във всички продукти на Bactology&nbsp;</span></span></h2>"
+         }
+        },
+        {
+         "id": "",
+         "map": "code",
+         "settings": {
+          "enabled": 1,
+          "code": "<!-- Medical Research Section - Unified with same image sizes --><!-- Background color: #fce3ed -->\n<style>\n.medical-research-section {\n    padding: 20px;\n    margin: 40px 0;\n}\n\n.medical-research-container {\n    max-width: 1400px;\n    margin: 0 auto;\n}\n\n.medical-research-title {\n    text-align: center;\n    margin-bottom: 15px;\n}\n\n.medical-research-title h2 {\n    font-size: 36px;\n    font-weight: bold;\n    color: #2c3e50;\n    margin: 0;\n    text-transform: uppercase;\n    letter-spacing: 1px;\n}\n\n.medical-research-subtitle {\n    text-align: center;\n    margin-bottom: 50px;\n}\n\n.medical-research-subtitle p {\n    font-size: 18px;\n    color: #555;\n    margin: 0;\n    font-weight: 300;\n}\n\n.medical-research-grid {\n    display: grid;\n    grid-template-columns: repeat(8, 1fr);\n    gap: 20px;\n    margin-top: 40px;\n}\n\n.section-spacer {\n    margin-top: 80px;\n}\n\n.medical-research-item {\n    position: relative;\n    overflow: hidden;\n    border-radius: 8px;\n    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);\n    transition: all 0.3s ease;\n    background: white;\n}\n\n.medical-research-item:hover {\n    transform: translateY(-10px);\n    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);\n}\n\n.medical-research-item a {\n    display: block;\n    text-decoration: none;\n    position: relative;\n}\n\n.medical-research-item img {\n    width: 100%;\n    height: auto;\n    display: block;\n    transition: transform 0.3s ease;\n}\n\n.medical-research-item:hover img {\n    transform: scale(1.05);\n}\n\n.medical-research-item::after {\n    content: \"📄 Виж\";\n    position: absolute;\n    bottom: 0;\n    left: 0;\n    right: 0;\n    background: rgba(0, 0, 0, 0.8);\n    color: white;\n    padding: 8px;\n    text-align: center;\n    font-size: 12px;\n    font-weight: 600;\n    transform: translateY(100%);\n    transition: transform 0.3s ease;\n}\n\n.medical-research-item:hover::after {\n    transform: translateY(0);\n}\n\n/* Responsive Design */\n@media (max-width: 1400px) {\n    .medical-research-grid {\n        grid-template-columns: repeat(8, 1fr);\n        gap: 15px;\n    }\n}\n\n@media (max-width: 1024px) {\n    .medical-research-grid {\n        grid-template-columns: repeat(4, 1fr);\n        gap: 20px;\n    }\n    \n    .medical-research-title h2 {\n        font-size: 32px;\n    }\n}\n\n@media (max-width: 768px) {\n    .medical-research-section {\n        padding: 40px 15px;\n    }\n    \n    .medical-research-grid {\n        grid-template-columns: repeat(2, 1fr);\n        gap: 15px;\n    }\n    \n    .medical-research-title h2 {\n        font-size: 28px;\n    }\n    \n    .medical-research-subtitle p {\n        font-size: 16px;\n    }\n    \n    .section-spacer {\n        margin-top: 60px;\n    }\n}\n\n@media (max-width: 480px) {\n    .medical-research-grid {\n        grid-template-columns: repeat(2, 1fr);\n        gap: 10px;\n    }\n    \n    .medical-research-title h2 {\n        font-size: 24px;\n    }\n    \n    .medical-research-subtitle p {\n        font-size: 14px;\n    }\n    \n    .section-spacer {\n        margin-top: 40px;\n    }\n}\n</style>\n<!-- UNIFIED SECTION with both research areas -->\n<div class=\"medical-research-section\">\n<div class=\"medical-research-container\">\n<!-- Research Grid 1 (8 images in one row) -->\n<div class=\"medical-research-grid\"><!-- ITEM 1 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-vitamin-d.pdf?1769008002\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-vitamin-d.png?1769008003\" alt=\"Research Item 1\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 2 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-streptococcus-thermophilus.pdf?1769007999\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-streptococcus-thermophilus.png?1769008000\" alt=\"Research Item 2\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 3 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-lactobacillus-rhamnosus.pdf?1769007989\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-lactobacillus-rhamnosus.png?1769007990\" alt=\"Research Item 3\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 4 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-lactobacillus-casei.pdf?1769007976\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-lactobacillus-casei.png?1769007979\" alt=\"Research Item 4\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 5 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-lactobacillus-bulgaricus.pdf?1769007971\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-lactobacillus-bulgaricus.png?1769007973\" alt=\"Research Item 5\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 6 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-lactobacillus-acidophilus.pdf?1769007954\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-lactobacillus-acidophilus.png?1769007958\" alt=\"Research Item 6\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 7 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-bifidobacterium-infantis.pdf?1769007943\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-bifidobacterium-infantis.png?1769007943\" alt=\"Research Item 7\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 8 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-bifidobacterium-breve.pdf?1769007937\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-bifidobacterium-breve.png?1769007938\" alt=\"Research Item 8\" data-spaced=\"true\"><br></a></div>\n<!-- ITEM 9 -->\n<div class=\"medical-research-item\"><a href=\"https://cdncloudcart.com/26377/files/doc/babies-stevia.pdf?1769007992\" target=\"_blank\" rel=\"noopener\"> <img src=\"https://cdncloudcart.com/26377/files/image/babies-stevia.png?1769007993\" alt=\"Research Item 9\" data-spaced=\"true\"><br></a></div>\n</div>\n</div>\n</div>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_files science_page_general",
+      "vertical_align_class": "_vtop",
+      "show_mobile_or_desktop": null
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2 class=\"text-aligncenter\"><span style=\"font-size: 36px;\"><b><span style=\"color: #0267a0;\">Мнението на</span> <span style=\"color: #e3166c;\">лекари и учени</span></b></span></h2>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div class=\"quotes\">\n<p><em>&bdquo;Връзката между чревните бактерии и мозъка е двупосочна и изключително мощна &ndash; промени в микробиома могат да променят начина, по който тялото и умът функционират.&ldquo;</em></p>\n<p><em>&bdquo;Чревният микробиом е ключов регулатор на имунната система, метаболизма и мозъчната функция &ndash; неговият баланс е фундаментален за цялостното здраве.&ldquo;</em></p>\n<div class=\"quote\">\n<div>\n<p><em><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/ea_mayer.jpeg\" width=\"100\" height=\"100\" /></em></p>\n</div>\n<div>\n<p>проф. Ерман Майер, гастроентеролог и невролог с 35-годишен опит в изследването на клиничните и невробиологични аспекти на взаимодействието между храносмилателната и нервната система.</p>\n</div>\n</div>\n<br /> <a class=\"_button\" href=\"https://www.youtube.com/watch?v=CLdEOW9tWnw\" target=\"_blank\" rel=\"noopener\">Гледай видео</a></div>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div class=\"quotes\">\n<p><i>&bdquo;Червата не са просто орган за храносмилане &ndash; те са интелигентна система, която влияе върху имунитета, настроението и цялостното ни здраве.&ldquo;</i></p>\n<p><i>&bdquo;Когато подкрепяме полезните бактерии в червата, ние подпомагаме естествените механизми на тялото за защита, баланс и възстановяване.&ldquo; </i></p>\n<div class=\"quote\">\n<div>\n<p><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/giulia_enders_2015.jpg\" width=\"100\" height=\"100\" /></p>\n</div>\n<div>\n<p>Джулия Ендерс, учен и автор на книгата &ldquo;Черво с чар&rdquo;</p>\n</div>\n</div>\n<br /> <a class=\"_button\" href=\"https://www.youtube.com/watch?v=BJ-C99FwRHQ\" target=\"_blank\" rel=\"noopener\">Гледай видео</a></div>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "transparent",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "science_page_quotes science_page_general",
+      "vertical_align_class": "_vtop",
+      "show_mobile_or_desktop": null
+     }
+    }
+   ],
+   "options": {
+    "enable_header": "1",
+    "enable_footer": "1"
+   }
+  }
+ },
+ "probiotik-za-bremenni": {
+  "id": "44",
+  "builderDesign": {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "title",
+         "settings": {
+          "enabled": "1",
+          "title": "Пробиотик за бременни - Пакет",
+          "tag": "h1"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "padding_bottom": "30",
+      "margin_top": "0",
+      "margin_bottom": "0"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/1-6685034b64127.png",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b>Пътуване към майчинството: здравето и хармонията са на първо място</b></span></p>\n<p><span style=\"font-size: 12pt;\"><b>Пакет &ldquo;Бременност&rdquo;</b></span></p>\n<p></p>\n<p><span style=\"font-weight: 400; font-size: 12pt;\">В &bdquo;Пакет Бременност&ldquo; обединихме сили с природата, за да ви предложим безопасна и ефективна подкрепа в този прекрасен, но изпълнен с предизвикателства период. Защото здравето и благополучието на всяка майка са на първо място, и заслужавате да преживеете бременността си в пълна хармония и спокойствие.</span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "button",
+         "settings": {
+          "enabled": "1",
+          "color": "",
+          "target": "0",
+          "position": "text-left",
+          "full_width": "",
+          "text": "Купи пакет Бременност",
+          "link": "https://bulgarbiotic.bg/product/probiotik-za-bremenni-paket",
+          "size": "",
+          "attributes": ""
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "padding_bottom": "30",
+      "margin_top": "0",
+      "margin_bottom": "0"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b>Bactology Femin: Здраве на вагиналната микрофлора</b></span></p>\n<p></p>\n<p><span style=\"font-weight: 400; font-size: 12pt;\">Поддържането на здравословна вагинална микрофлора и правилно PH /киселинност/ по време на бременността е критично, не само за здравето на майката, но и за предаването на полезни микроорганизми към бебето и формирането на неговия микробиом.</span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-41.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "300",
+      "margin_top": "0",
+      "padding_bottom": "300",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b><i>Действие</i></b></span></p>\n<p></p>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Предотвратява развитието на гъбички и вагинални инфекции</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Минимизира риска от инфекции и последващата нужда от антибиотици</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Регулира хормоналните нива в организма</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Спомага за запазването на здравословната микрофлора</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Детоксикира и изчиства от излишни течности</span></li>\n</ul>\n<p></p>\n<p><span style=\"font-size: 12pt;\"><i><span style=\"font-weight: 400;\">По време на бременност препоръчваме прием на 1 капсула пробиотик Femin на ден - сутрин, след храна.</span></i></span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-42.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "150",
+      "margin_top": "0",
+      "padding_bottom": "150",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b>Bactology Gastro Balance: Поддържане на храносмилателното здраве</b></span></p>\n<p></p>\n<p><span style=\"font-weight: 400; font-size: 12pt;\">Много дами, по време на бременността си, се сблъскват с неприятните симптоми на запека. Това състояние не е никак безобидно. Освен че причинява дискомфорт, задържането на токсини в организма, е вредно, както за майката, така и за бебето.&nbsp;</span></p>\n<p></p>\n<p><span style=\"font-weight: 400; font-size: 12pt;\">По време на бременност не могат да се приемат почти никакви лекарства или лаксативи. Най-доброто решение е дамите да се доверяват на естествени продукти.&nbsp;</span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-43.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "200",
+      "margin_top": "0",
+      "padding_bottom": "200",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b><i>Действие:</i></b></span></p>\n<p></p>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Осигурява естествено облекчение&nbsp;</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Подобрява метаболизма</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Редовният му прием гарантира по-доброто усвояване на хранителните вещества, което е от съществено значение за развитието на плода</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Комбинира пробиотик + пребиотик</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Укрепва защитните функции на организма</span></li>\n</ul>\n<p></p>\n<p><span style=\"font-size: 12pt;\"><i><span style=\"font-weight: 400;\">По време на бременност препоръчваме прием на 1 капсула пробиотик Gastro Balance на ден - вечер, след последното хранене.</span></i></span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-44.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "150",
+      "margin_top": "0",
+      "padding_bottom": "150",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b>&nbsp;Bactology Beauty Hair &amp; Nails: За бъдещи майки с блясък</b></span></p>\n<p></p>\n<p><span style=\"font-weight: 400; font-size: 12pt;\">По време на бременността тялото на жената претърпява много промени, включително и в начина, по който се обработват и усвояват хранителните вещества, витамините и минералите, които са важни за организма като цяло, но са съществени и за поддържането на здрава коса и нокти. В състава на Bactology Beauty Hair &amp; Nails влизат витамини и микроелементи, подпомагащи здравето на особено уязвимите по време на бременностна коса и нокти.</span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-45.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "200",
+      "margin_top": "0",
+      "padding_bottom": "200",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b><i>Действие:&nbsp;</i></b></span></p>\n<p></p>\n<ul>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Укрепва косата и ноктите</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Осигурява антиоксидантна защита</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Подпомага енергийните нива</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Подкрепя имунитета</span></li>\n<li style=\"font-weight: 400;\" aria-level=\"1\"><span style=\"font-weight: 400; font-size: 12pt;\">Подобрява самочувствието</span></li>\n</ul>\n<p></p>\n<p><span style=\"font-size: 12pt;\"><i><span style=\"font-weight: 400;\">По време на бременност препоръчваме прием на 1 капсула пробиотик Beauty Hair &amp; Nails на ден - сутрин, след храна.</span></i></span></p>\n<p></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-40-6685030ec47de.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "150",
+      "margin_top": "0",
+      "padding_bottom": "150",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "",
+      "vertical_align_class": "_vtop",
+      "show_mobile_or_desktop": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><span style=\"font-size: 12pt;\"><b>Програма за прием на пробиотици от пакет &ldquo;Бременност&rdquo;</b></span></p>\n<p><span style=\"font-size: 12pt;\">&nbsp;</span></p>\n<p><span style=\"font-size: 12pt;\"><b>Сутрин - след хранене: 1 капсула Femin + 1 капсула Beauty Hair &amp; Nails</b></span></p>\n<p><span style=\"font-size: 12pt;\"><b>Вечер - след последното хранене за деня: 1 капсула Gastro Balance</b></span></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "button",
+         "settings": {
+          "enabled": "1",
+          "color": "",
+          "target": "1",
+          "position": "text-left",
+          "full_width": "",
+          "text": "Купи пакет Бременност",
+          "link": "https://bulgarbiotic.bg/product/probiotik-za-bremenni-paket",
+          "size": "",
+          "attributes": ""
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/untitled-design-49.png",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "275",
+      "margin_top": "0",
+      "padding_bottom": "275",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "",
+      "vertical_align_class": "_vtop",
+      "show_mobile_or_desktop": ""
+     }
+    }
+   ],
+   "options": {
+    "enable_header": "1",
+    "enable_footer": "1"
+   }
+  }
+ },
+ "probiotik-ot-bactology": {
+  "id": "37",
+  "builderDesign": {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "carousel",
+         "settings": {
+          "enabled": true,
+          "default_content": true,
+          "amount": 5,
+          "full_width": "yes",
+          "autoplay": "yes",
+          "interval": "5000",
+          "caption": "no",
+          "controls": "yes",
+          "indicators": "yes",
+          "pause": "yes",
+          "cycle": "yes",
+          "slides": {
+           "1": {
+            "img_type": "internal",
+            "img_type_mobile": "internal",
+            "src": "{storage_url}26377/files/image/site-desktop-1.png",
+            "src_mobile": "{storage_url}26377/files/image/7baf3ec7-03fe-490f-bbf2-ce75f0bbe7ca.png",
+            "link_type": "external",
+            "link_value": "https://bulgarbiotic.bg/category/all-products",
+            "caption": null,
+            "html": null,
+            "from": "2026-03-09T22:24:25+02:00",
+            "to": "2026-08-09T22:24:21+03:00",
+            "link_caption": null,
+            "whole_link": true,
+            "sorting": "0",
+            "horizontal_position": "left",
+            "vertical_position": "top",
+            "target": "_self"
+           },
+           "2": {
+            "img_type": "internal",
+            "img_type_mobile": "internal",
+            "src": "{storage_url}26377/files/image/desktopksks.png",
+            "src_mobile": "{storage_url}26377/files/image/a3e1f7bf-e9ac-43ca-9757-3cdebf6e4b93.png",
+            "link_type": "product",
+            "link_value": 67,
+            "caption": null,
+            "html": null,
+            "from": "2026-04-02T22:25:15+03:00",
+            "to": "2026-08-28T22:25:12+03:00",
+            "link_caption": null,
+            "whole_link": true,
+            "sorting": "1",
+            "horizontal_position": "left",
+            "vertical_position": "top",
+            "target": "_self"
+           },
+           "3": {
+            "img_type": "internal",
+            "img_type_mobile": "internal",
+            "src": "{storage_url}26377/files/image/853a794b-cb62-47f1-9598-6539e7c93105.png",
+            "src_mobile": "{storage_url}26377/files/image/6b0460c8-31a8-4fae-87b9-17edbc7a6a26.png",
+            "link_type": "product",
+            "link_value": 37,
+            "caption": null,
+            "html": null,
+            "from": "2026-04-07T11:49:43+03:00",
+            "to": "2026-08-09T11:49:41+03:00",
+            "link_caption": null,
+            "whole_link": true,
+            "sorting": "2",
+            "horizontal_position": "left",
+            "vertical_position": "top",
+            "target": "_self"
+           },
+           "4": {
+            "img_type": "internal",
+            "img_type_mobile": "internal",
+            "src": "{storage_url}26377/files/image/17d8f089-eb9c-425f-a016-8413a307cbf4.png",
+            "src_mobile": "{storage_url}26377/files/image/c84cb9ae-7d62-4057-955e-20a6024bda9d.png",
+            "link_type": "product",
+            "link_value": 62,
+            "caption": null,
+            "html": null,
+            "from": "2026-03-02T09:29:48+02:00",
+            "to": "2026-08-09T09:29:58+03:00",
+            "link_caption": null,
+            "whole_link": true,
+            "sorting": "3",
+            "horizontal_position": "left",
+            "vertical_position": "top",
+            "target": "_self"
+           },
+           "5": {
+            "img_type": "internal",
+            "img_type_mobile": "internal",
+            "src": "{storage_url}26377/files/image/popopopopsodpsoadpospfodspgkikkif.png",
+            "src_mobile": "{storage_url}26377/files/image/7ba62aa0-7cba-49aa-9228-3ac8aa1c38b5.png",
+            "link_type": "product",
+            "link_value": 61,
+            "caption": null,
+            "html": null,
+            "from": "2026-03-25T16:29:20+02:00",
+            "to": "2026-07-31T16:29:19+03:00",
+            "link_caption": null,
+            "whole_link": true,
+            "sorting": "4",
+            "horizontal_position": "left",
+            "vertical_position": "top",
+            "target": "_self"
+           }
+          },
+          "is_homepage_slider": "no",
+          "slides_per_view": "1",
+          "animate": "no",
+          "wrap": "true"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "0",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "full_width": "1",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "product-showcase",
+         "settings": {
+          "enabled": "1",
+          "enable_slider": "1",
+          "title": "ПРЕПОРЪЧАНИ ПРОДУКТИ",
+          "products": "15",
+          "per_page": "9",
+          "order_by": "id",
+          "order_direction": "desc",
+          "new": "both",
+          "sale": "both",
+          "filter": "product",
+          "filter_value": [
+           "67",
+           "59",
+           "82",
+           "62",
+           "37",
+           "103",
+           "13",
+           "14"
+          ],
+          "color": "",
+          "icon": "",
+          "per_row": "5",
+          "type": "all",
+          "space_between": "0",
+          "space_between_mobile": "0",
+          "arrows_position": "center",
+          "featured": "both",
+          "icon_data": null
+         }
+        },
+        {
+         "id": "",
+         "map": "product-showcase",
+         "settings": {
+          "enabled": "1",
+          "enable_slider": "1",
+          "title": null,
+          "products": "15",
+          "per_page": "9",
+          "order_by": "id",
+          "order_direction": "desc",
+          "new": "both",
+          "sale": "both",
+          "filter": "product",
+          "filter_value": [
+           "80",
+           "75",
+           "61",
+           "81",
+           "90",
+           "58",
+           "57",
+           "60",
+           "39",
+           "119",
+           "79",
+           "68"
+          ],
+          "color": "",
+          "icon": "",
+          "per_row": "5",
+          "type": "all",
+          "space_between": "0",
+          "space_between_mobile": "0",
+          "arrows_position": "center",
+          "featured": "both",
+          "icon_data": null
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/klkk.png",
+            "link_type": null,
+            "link_value": null,
+            "caption": null,
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2 class=\"text-aligncenter\"><span style=\"color: #000000;\">За Bulgar Biotic и Bactology</span></h2>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p class=\"text-aligncenter\"><span style=\"color: #333333;\">Устремени към повишаване качеството на живот, ние сме тук, за да Ви вдъхновим!</span><br /><span style=\"color: #333333;\">Екипът ни е съставен от хора, обединени от обща страст &ndash; пълноценно здраве. И така, влагайки в работата си много любов, енергия и лично отношение, успяхме да създадем щастието отвътре навън.</span><br /><span style=\"color: #333333;\">За да Ви предложим висококачествените пробиотици Bactojoy, ние съчетаваме дълбоките традиции за извличане на най-ценните за здравето природни съставки с най-съвременните технологии за производство. Всичко това се случва с помощта на водещи учени и технолози, провеждащи постоянни интензивни научни иновационни изследвания.</span><br /><span style=\"color: #333333;\">Нашата цел е да утвърдим още един по-хубав път към себе си, който да случва онова, за което винаги сме мечтали &ndash; красиво, здраво, хармонично, балансирано тяло, благдарение на нашия <a href=\"https://bulgarbiotic.bg/category/all-products\" title=\"Пробиотик на Топ цена\">пробиотик</a>!</span></p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-1-65043ac364391.png",
+            "link_type": "page",
+            "link_value": "8",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "internal",
+      "src": "https://cdncloudcart.com/26377/files/image/gardient-copy-6508100a584b9.jpg",
+      "background_position_x": "center",
+      "background_attachment": "scroll",
+      "background_position_y": "center",
+      "background_size": "cover",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "120",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "example-class mobile-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/icons-01-651d2a6a6ecb7.svg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/icons-02-651d2a6d41470.svg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/icons-03-651d2a6f2483f.svg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/icons-04-651d2a72ead86.svg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "_grid-row-services"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text-carousel",
+         "settings": {
+          "enabled": "1",
+          "text": "",
+          "default_content": "1",
+          "amount": "4",
+          "full_width": "yes",
+          "autoplay": "yes",
+          "interval": "5000",
+          "caption": "no",
+          "controls": "no",
+          "indicators": "no",
+          "pause": "yes",
+          "cycle": "yes",
+          "slides": {
+           "1": {
+            "img_type": "external",
+            "img_type_mobile": "external",
+            "src": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "src_mobile": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "html": "<p><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/artboard-1-65080b37751b5.png\" class=\"aligncenter\" /></p>\n<p class=\"text-aligncenter\"><span>Като всяка жена се опитвам да балансирам доста неща наведнъж, постоянно бързам за някъде, времето все не ми стига. Но откакто съм майка, осъзнах, че пълноценното време и грижа за мен са изключително важни. Затова си имам продуктите на Bactology, които са уникални помощници при поддръжката на красотата, както отвътре, така и отвън!</span></p>\n<p class=\"text-aligncenter\"><span>- Мария Иванова <br />(<span style=\"color: #e3166c;\">@beglam.girl</span>)</span></p>",
+            "from": "",
+            "to": "",
+            "sorting": "0"
+           },
+           "2": {
+            "img_type": "external",
+            "img_type_mobile": "external",
+            "src": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "src_mobile": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "html": "<p><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/artboard-1-copy.png\" class=\"aligncenter\" /></p>\n<p class=\"text-aligncenter\"><span>Това, което кара нас жените да сме още по-щастливи, е хубавият външен вид. Блестяща коса, здрави нокти, хубава кожа. Е, аз открих своята лесна рецепта. Взимам ежедневно по две капсули от бюти серията на Bactology. Така съм спокойна, че съм си набавила всички необходими микроелементи и витамини всеки ден.</span></p>\n<p class=\"text-aligncenter\"><span>- Благомира Василева <br />(<span style=\"color: #e3166c;\">@blagomira.springlady</span>)</span></p>",
+            "from": "",
+            "to": "",
+            "sorting": "0"
+           },
+           "3": {
+            "img_type": "external",
+            "img_type_mobile": "external",
+            "src": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "src_mobile": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "html": "<p><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/artboard-1-copy-2.png\" class=\"aligncenter\" /></p>\n<p class=\"text-aligncenter\"><span>Открих най-лесния начин да поддържам красив и сияен вид само с две капсули. Хранителните добавки за красота на Bactology промениха моите представи, има всичко необходимо в тях. Косата и ноктите ми са здрави и блестящи, а кожата винаги хидратиранаа, така виждам и много по-добър ефект от козметичните си продукти.</span></p>\n<p class=\"text-aligncenter\"><span>- Мария Бойчева <br />(<span style=\"color: #e3166c;\">@mariya_boycheva</span>)</span></p>",
+            "from": "",
+            "to": "",
+            "sorting": "0"
+           },
+           "4": {
+            "img_type": "external",
+            "img_type_mobile": "external",
+            "src": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "src_mobile": "https://cdncloudcart.com/assets/site/img/widgets/extra/carousel/default.png",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "html": "<p><img alt=\"\" src=\"https://cdncloudcart.com/26377/files/image/artboard-1-copy-3-6504256863e43.png\" class=\"aligncenter\" /></p>\n<p class=\"text-aligncenter\"><span>Реших, че е крайно време да се погрижа за външния си вид. Точно навреме открих новите добавки на Bactology за женска красота и здраве. Изключително доволна съм, че така лесно, само с две капсули на ден мога да си гарантирам, че съм приела всички нужни съставки, за да се радвам на сияйна и еластична кожа и блестящи и здрави коса и нокти.</span></p>\n<p class=\"text-aligncenter\"><span>- Цвети Евтимова<br />(<span style=\"color: #e3166c;\">@fabmamaworld</span>)</span></p>",
+            "from": "",
+            "to": "",
+            "sorting": "0"
+           }
+          },
+          "slides_per_view": "4",
+          "space_between": "0",
+          "wrap": "true"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#f8f8f8",
+      "padding_top": "45",
+      "margin_top": "0",
+      "padding_bottom": "45",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "bezpading beige"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "recent-articles",
+         "settings": {
+          "enabled": "1",
+          "per_row": "3",
+          "count": "3",
+          "title": null,
+          "category_id": "0",
+          "order_by": "created_at",
+          "order_direction": "desc"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "60",
+      "margin_top": "0",
+      "padding_bottom": "60",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>&nbsp; &nbsp;</p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>&nbsp; &nbsp;</p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h2>Нашите доволни клиенти</h2>"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-1.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-2.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-3.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>&nbsp; &nbsp;</p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>&nbsp; &nbsp;</p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-4.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>Благодарим за доверието!</p>"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-5.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "1",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-6.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#f8f8f8",
+      "padding_top": "15",
+      "margin_top": "0",
+      "padding_bottom": "45",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "example-class desktop-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h3 class=\"text-aligncenter\">Нашите доволни клиенти</h3>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p class=\"text-aligncenter\">Благодарим за доверието!</p>"
+         }
+        }
+       ],
+       "width": "3"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "6",
+          "per_row": "3",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-1.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           },
+           "2": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-2.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           },
+           "3": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-3.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           },
+           "4": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-4.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           },
+           "5": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-5.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           },
+           "6": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/artboard-6.jpg",
+            "link_type": "external",
+            "link_value": "https://www.instagram.com/bulgarbiotic/",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "3"
+      }
+     ],
+     "options": {
+      "type": "color",
+      "color": "#f8f8f8",
+      "padding_top": "30",
+      "margin_top": "0",
+      "padding_bottom": "30",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": "example-class mobile-only"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<h3><strong>Наука в основата на всеки Bactology пробиотичен продукт</strong></h3>\n<p>Част от продуктите от линията Bactology са разработени с фокус върху Lactobacillus bulgaricus &mdash; добре познат пробиотичен щам с български произход, който е обект на научни изследвания от края на XIX и началото на XX век. В зависимост от конкретната формула, продуктите комбинират различни клинично изследвани пробиотични щамове, подбрани така, че да действат синергично и да подпомагат специфичните нужди на организма.</p>\n<p><strong>Bactology Gastro Balance</strong> е пробиотична формула с висока концентрация от<strong> 50&nbsp;милиарда активни бактерии</strong>, създадена да подпомага баланса на чревната микрофлора и нормалното храносмилане, както и да допринася за комфорта при подуване и газове.</p>\n<p><strong>Bactology Anti Stress</strong> включва комбинация от 9 пробиотични щама &mdash; <em>L. bulgaricus, L. acidophilus, L. plantarum, L. helveticus, L. rhamnosus, Streptococcus thermophilus, Bifidobacterium bifidum, B. infantis и B. longum</em> &mdash; в съчетание с екстракт от жълт кантарион, предназначена да подпомага баланса на организма и нормалната функция на нервната система.</p>\n<p><strong>Bactology Femin</strong> е пробиотична формула, създадена с фокус върху женското здраве, обогатена с екстракт от роза Дамасцена, която подпомага поддържането на нормален микробиален баланс и общия комфорт на женския организъм.</p>\n<p><strong>Bactology Babies &amp; Kids</strong> е специално разработена пробиотична формула за деца, съдържаща 7 пробиотични щама и витамин D3 в удобна саше форма, подходяща за ежедневен прием и съобразена с нуждите на най-малките.</p>\n<p>&nbsp;Част от продуктите могат да съдържат пребиотици като арабиногалактан от лиственица &mdash; съставка, която подпомага развитието на полезните бактерии в чревната микрофлора. Производството и контролът на качеството се извършват съгласно утвърдени стандарти за безопасност и стабилност на продукта.</p>\n<p>През 2021 г. Bactology е удостоен с наградата <strong>&bdquo;Фарма Бранд на годината\"</strong> , а през 2025 г. Булгар Биотик е определен за най-добрият български бранд за пробиотици <em>на церемонията BGolden Awards 2025.</em></p>\n<p><a href=\"https://bulgarbiotic.bg/page/naukata-zad-bulgar-biotic\">Виж пълната научна документация &rarr;</a></p>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p><strong>Пробиотикът</strong> представлява живи микроорганизми, които приети в достатъчно количество носят полза за здравето на организма (СЗО, 2002). Bactology е българска гама пробиотични продукти, разработена върху <em>Lactobacillus bulgaricus</em> &ndash; щам с над 120 години научна история и доказан произход от българското кисело мляко. Серията включва 9 специализирани формули с натурални живи бактерии за жени, мъже, деца и бебета, в удобни форми като капсули, сашета, таблетки за смучене и шоколадови перли. Концентрацията достига 50 милиарда живи микроорганизми в доза.</p>\n<h3>Какво представляват пробиотиците и как влияят на организма?</h3>\n<p>Пробиотиците са полезни бактерии, които укрепват чревната микрофлора и подпомагат храносмилането. Червата съдържат над 1 000 различни видове бактерии &ndash; баланс между тях влияе върху имунната система, теглото и общото здраве. Когато приемаме пробиотични хранителни добавки, ние стимулираме растежа на полезните бактерии в стомаха, дебелото черво и тънките черва. Това благоприятно повлиява храносмилането, усвояването на храната и естественият детоксикационен процес на организма.</p>\n<p>Учените установяват, че редовният прием на пробиотици помага за: повишаване на имунитета, нормализиране на чревната флора след антибиотично лечение, контрол върху киселините в стомаха, превенция на инфекции и подпомагане при отслабване. Пробиотичните щамове в нашите продукти са комбинация от клинично изследвани култури, които работят синергично за максимален ефект.</p>\n<h2>В какви форми се предлагат пробиотиците Bactology?</h2>\n<p>Различните форми отговарят на различни нужди и възрасти:</p>\n<ul>\n<li><strong>Капсули</strong> &ndash; класическата форма за възрастни, удобна за ежедневен прием. <a href=\"https://bulgarbiotic.bg/product/bactology-probiotik-za-jeni-femin\">Femin за жени</a> и <a href=\"https://bulgarbiotic.bg/product/bactology-probiotik-za-podut-korem-i-gazove-gastro-balance\">Gastro Balance</a> се предлагат в по 30 капсули.</li>\n<li><strong>Сашета</strong> &ndash; подходящи за бебета, деца и подрастващи. <a href=\"https://bulgarbiotic.bg/product/probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids\">Babies &amp; Kids</a> съдържа 7 щама и витамин D3 в удобна форма за разтваряне.</li>\n<li><strong>Таблетки за смучене</strong> &ndash; с приятен вкус, за здрави зъби и венци.</li>\n<li><strong>Пробиотични перли с шоколад</strong> &ndash; натурални вкусни добавки, подходящи за деца. Предлагаме и диетични варианти без захар.</li>\n</ul>\n<p>Пробиотиците Bactology се комбинират често с <strong>пребиотик</strong> &ndash; фибри, които хранят полезните бактерии. Тази комбинация се нарича синбиотик и дава най-добър ефект върху състоянието на чревната микрофлора. Някои наши продукти съдържат арабиногалактан от лиственица като пребиотици, а други &ndash; добавените екстракти от роза Дамасцена и жълт кантарион.</p>\n<h2>Защо да изберете пробиотик Bulgar Biotic?</h2>\n<p>Bulgar Biotic е <strong>отличена с &bdquo;Най-добър български бранд за пробиотици\"</strong> на BGolden Awards 2025 и с наградата &bdquo;Фарма Бранд на годината\" (2021). За разлика от вносните пробиотици prolact и други марки в аптеките, нашите хранителни добавки се произвеждат изцяло в България с местни щамове и съдържат значително по-висока концентрация живи бактерии на изгодни и ниски цени.</p>\n<p>Поръчваш онлайн директно от производителя &ndash; без надценка от посредник. Промоции и топ оферти за пакети, които предпазват семейния бюджет, са активни всеки месец. Beauty серията комбинира пробиотиците с козметика отвътре &ndash; здравословни добавки за коса, кожа и нокти.</p>\n<h2>Кой пробиотик е подходящ за теб?</h2>\n<ul>\n<li><a href=\"https://bulgarbiotic.bg/product/bactology-probiotik-za-jeni-femin\"><strong>Пробиотик за жени</strong></a> &ndash; Femin с роза Дамасцена за интимно здраве</li>\n<li><a href=\"https://bulgarbiotic.bg/product/bactology-probiotik-za-podut-korem-i-gazove-gastro-balance\"><strong>За подут корем и газове</strong></a> &ndash; Gastro Balance, 50 млрд. бактерии</li>\n<li><a href=\"https://bulgarbiotic.bg/product/probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids\"><strong>За бебе и деца</strong></a> &ndash; Babies &amp; Kids сашета</li>\n<li><a href=\"https://bulgarbiotic.bg/category/probiotik-za-otslabvane\"><strong>За отслабване</strong></a> &ndash; пакети за метаболизъм и плосък корем</li>\n<li><a href=\"https://bulgarbiotic.bg/product/bactology-anti-stress\"><strong>При стрес</strong></a> &ndash; Anti Stress с 9 щама и жълт кантарион</li>\n<li><a href=\"https://bulgarbiotic.bg/page/probiotik-za-bremenni\"><strong>За бременни</strong></a> &ndash; безопасна формула по време на бременност и кърмене</li>\n</ul>\n<h2>Често задавани въпроси за пробиотиците</h2>\n<p><strong>Кога се пие пробиотик &ndash; преди или след храна?</strong><br /> Пробиотикът се приема ежедневно сутрин на гладно или 30 минути преди хранене. Това осигурява максимална преживяемост на живите бактерии в киселата среда на стомаха.</p>\n<p><strong>Колко време се пие пробиотик?</strong><br /> Препоръчителният курс е минимум 30 дни. При хронични оплаквания &ndash; 2 до 3 месеца. За поддръжка на имунната система специалистите съветват 2-3 курса годишно.</p>\n<p><strong>Може ли пробиотик с антибиотик?</strong><br /> Да. Приемай пробиотика 2 часа след антибиотика и продължи курса още 7-14 дни след края на лечението, за да възстановиш чревната флора. <a href=\"https://bulgarbiotic.bg/article/koga-se-pie-probiotik-predi-ili-sled-antibiotika\">Прочети повече &rarr;</a></p>\n<p><strong>Има ли странични ефекти?</strong><br /> Пробиотичните продукти Bactology са натурални и подходящи за дълъг прием. В първите 2-3 дни е възможно леко подуване, докато микрофлората се адаптира &ndash; това е нормално влияние и преминава бързо.</p>\n<script type=\"application/ld+json\">// <![CDATA[\n{\n  \"@context\": \"https://schema.org\",\n  \"@graph\": [\n    {\n      \"@type\": \"Organization\",\n      \"@id\": \"https://bulgarbiotic.bg/#organization\",\n      \"name\": \"Bulgar Biotic\",\n      \"alternateName\": [\"Булгар Биотик\", \"Bactology\"],\n      \"url\": \"https://bulgarbiotic.bg\",\n      \"logo\": {\n        \"@type\": \"ImageObject\",\n        \"url\": \"https://bulgarbiotic.bg/cdn/img/logo/1/1.svg\",\n        \"width\": 200,\n        \"height\": 80\n      },\n      \"image\": \"https://bulgarbiotic.bg/cdn/img/logo/1/1.svg\",\n      \"description\": \"Българска компания за производство на пробиотици под марката Bactology, разработени върху Lactobacillus bulgaricus. Носител на наградата Най-добър български бранд за пробиотици на BGolden Awards 2025 и Фарма Бранд на годината 2021.\",\n      \"slogan\": \"Българско качество, доказано от науката\",\n      \"email\": \"bulgarbiotic.eu@gmail.com\",\n      \"telephone\": \"+359882754163\",\n      \"address\": {\n        \"@type\": \"PostalAddress\",\n        \"addressCountry\": \"BG\",\n        \"addressLocality\": \"София\"\n      },\n      \"areaServed\": {\n        \"@type\": \"Country\",\n        \"name\": \"Bulgaria\"\n      },\n      \"knowsAbout\": [\n        \"пробиотици\",\n        \"Lactobacillus bulgaricus\",\n        \"чревна микрофлора\",\n        \"пробиотични щамове\",\n        \"хранителни добавки\",\n        \"детско здраве\",\n        \"женско здраве\",\n        \"храносмилане\",\n        \"имунна система\",\n        \"пребиотици\"\n      ],\n      \"award\": [\n        \"Най-добър български бранд за пробиотици – BGolden Awards 2025\",\n        \"Фарма Бранд на годината 2021\"\n      ],\n      \"brand\": {\n        \"@type\": \"Brand\",\n        \"name\": \"Bactology\",\n        \"logo\": \"https://bulgarbiotic.bg/cdn/img/logo/1/1.svg\"\n      },\n      \"sameAs\": [\n        \"https://www.facebook.com/bulgarbiotic-113388757186618\",\n        \"https://www.instagram.com/bulgarbiotic/\"\n      ],\n      \"contactPoint\": [\n        {\n          \"@type\": \"ContactPoint\",\n          \"telephone\": \"+359882754163\",\n          \"email\": \"bulgarbiotic.eu@gmail.com\",\n          \"contactType\": \"customer service\",\n          \"availableLanguage\": [\"Bulgarian\", \"bg\"],\n          \"areaServed\": \"BG\",\n          \"hoursAvailable\": {\n            \"@type\": \"OpeningHoursSpecification\",\n            \"dayOfWeek\": [\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\"],\n            \"opens\": \"09:00\",\n            \"closes\": \"18:00\"\n          }\n        }\n      ]\n    },\n    {\n      \"@type\": \"WebSite\",\n      \"@id\": \"https://bulgarbiotic.bg/#website\",\n      \"url\": \"https://bulgarbiotic.bg\",\n      \"name\": \"Bulgar Biotic – Пробиотик от Bactology\",\n      \"description\": \"Официален онлайн магазин на пробиотици Bactology – българско качество на топ цена.\",\n      \"inLanguage\": \"bg-BG\",\n      \"publisher\": {\n        \"@id\": \"https://bulgarbiotic.bg/#organization\"\n      },\n      \"potentialAction\": {\n        \"@type\": \"SearchAction\",\n        \"target\": {\n          \"@type\": \"EntryPoint\",\n          \"urlTemplate\": \"https://bulgarbiotic.bg/search?query={search_term_string}\"\n        },\n        \"query-input\": \"required name=search_term_string\"\n      }\n    },\n    {\n      \"@type\": \"WebPage\",\n      \"@id\": \"https://bulgarbiotic.bg/#webpage\",\n      \"url\": \"https://bulgarbiotic.bg\",\n      \"name\": \"Пробиотик от Bactology на Топ цена – Булгар Биотик\",\n      \"description\": \"Пробиотик от Bactology – българско качество, доказано от науката. 9 специализирани формули с Lactobacillus bulgaricus за жени, мъже, деца и бебета. Концентрация до 50 милиарда живи бактерии.\",\n      \"isPartOf\": {\n        \"@id\": \"https://bulgarbiotic.bg/#website\"\n      },\n      \"about\": {\n        \"@id\": \"https://bulgarbiotic.bg/#organization\"\n      },\n      \"primaryImageOfPage\": {\n        \"@type\": \"ImageObject\",\n        \"url\": \"https://bulgarbiotic.bg/cdn/img/logo/1/1.svg\"\n      },\n      \"inLanguage\": \"bg-BG\",\n      \"mainEntity\": {\n        \"@id\": \"https://bulgarbiotic.bg/#faq\"\n      }\n    },\n    {\n      \"@type\": \"FAQPage\",\n      \"@id\": \"https://bulgarbiotic.bg/#faq\",\n      \"mainEntity\": [\n        {\n          \"@type\": \"Question\",\n          \"name\": \"Кога се пие пробиотик – преди или след храна?\",\n          \"acceptedAnswer\": {\n            \"@type\": \"Answer\",\n            \"text\": \"Пробиотикът се приема ежедневно сутрин на гладно или 30 минути преди хранене. Това осигурява максимална преживяемост на живите бактерии в киселата среда на стомаха.\"\n          }\n        },\n        {\n          \"@type\": \"Question\",\n          \"name\": \"Колко време се пие пробиотик?\",\n          \"acceptedAnswer\": {\n            \"@type\": \"Answer\",\n            \"text\": \"Препоръчителният курс е минимум 30 дни. При хронични оплаквания – 2 до 3 месеца. За поддръжка на имунната система специалистите съветват 2-3 курса годишно.\"\n          }\n        },\n        {\n          \"@type\": \"Question\",\n          \"name\": \"Може ли пробиотик с антибиотик?\",\n          \"acceptedAnswer\": {\n            \"@type\": \"Answer\",\n            \"text\": \"Да. Пробиотикът се приема 2 часа след антибиотика, а курсът продължава още 7-14 дни след края на лечението, за да се възстанови чревната флора.\"\n          }\n        },\n        {\n          \"@type\": \"Question\",\n          \"name\": \"Има ли странични ефекти от пробиотиците Bactology?\",\n          \"acceptedAnswer\": {\n            \"@type\": \"Answer\",\n            \"text\": \"Пробиотичните продукти Bactology са натурални и подходящи за дълъг прием. В първите 2-3 дни е възможно леко подуване, докато микрофлората се адаптира – това е нормално явление и преминава бързо.\"\n          }\n        }\n      ]\n    },\n    {\n      \"@type\": \"Store\",\n      \"@id\": \"https://bulgarbiotic.bg/#store\",\n      \"name\": \"Bulgar Biotic – Онлайн магазин за пробиотици\",\n      \"url\": \"https://bulgarbiotic.bg\",\n      \"image\": \"https://bulgarbiotic.bg/cdn/img/logo/1/1.svg\",\n      \"priceRange\": \"16€ – 75€\",\n      \"currenciesAccepted\": \"EUR, BGN\",\n      \"paymentAccepted\": \"Наложен платеж, Кредитна карта, Дебитна карта\",\n      \"parentOrganization\": {\n        \"@id\": \"https://bulgarbiotic.bg/#organization\"\n      },\n      \"address\": {\n        \"@type\": \"PostalAddress\",\n        \"addressCountry\": \"BG\",\n        \"addressLocality\": \"София\"\n      }\n    },\n    {\n      \"@type\": \"ItemList\",\n      \"@id\": \"https://bulgarbiotic.bg/#productlist\",\n      \"name\": \"Пробиотици Bactology – основни продукти\",\n      \"numberOfItems\": 6,\n      \"itemListElement\": [\n        {\n          \"@type\": \"ListItem\",\n          \"position\": 1,\n          \"url\": \"https://bulgarbiotic.bg/product/bactology-probiotik-za-jeni-femin\",\n          \"name\": \"Bactology Femin – пробиотик за жени\"\n        },\n        {\n          \"@type\": \"ListItem\",\n          \"position\": 2,\n          \"url\": \"https://bulgarbiotic.bg/product/bactology-probiotik-za-podut-korem-i-gazove-gastro-balance\",\n          \"name\": \"Bactology Gastro Balance – пробиотик за подут корем и газове\"\n        },\n        {\n          \"@type\": \"ListItem\",\n          \"position\": 3,\n          \"url\": \"https://bulgarbiotic.bg/product/probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids\",\n          \"name\": \"Bactology Babies and Kids – пробиотик за бебета и деца\"\n        },\n        {\n          \"@type\": \"ListItem\",\n          \"position\": 4,\n          \"url\": \"https://bulgarbiotic.bg/category/probiotik-za-otslabvane\",\n          \"name\": \"Пробиотик за отслабване\"\n        },\n        {\n          \"@type\": \"ListItem\",\n          \"position\": 5,\n          \"url\": \"https://bulgarbiotic.bg/product/bactology-anti-stress\",\n          \"name\": \"Bactology Anti Stress – пробиотик при стрес\"\n        },\n        {\n          \"@type\": \"ListItem\",\n          \"position\": 6,\n          \"url\": \"https://bulgarbiotic.bg/product/smart-start-paket-za-silen-imunitet\",\n          \"name\": \"Smart Start – пакет за силен имунитет\"\n        }\n      ]\n    }\n  ]\n}\n// ]]></script>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "padding_bottom": "30",
+      "margin_top": "0",
+      "margin_bottom": "0"
+     }
+    }
+   ],
+   "options": {
+    "enable_header": "1",
+    "enable_footer": "1"
+   }
+  }
+ },
+ "chesto-zadavani-vaprosi": {
+  "id": "34",
+  "builderDesign": null
+ },
+ "abomanmet-za-byuletin": {
+  "id": "71",
+  "builderDesign": {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div id=\"newsletter-form-top\" style=\"position:relative;top:-80px;height:0;\"></div>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "0",
+      "padding_bottom": "0",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div style=\"text-align: center; max-width: 780px; margin: 0 auto; padding: 24px 16px 0;\">\n<div style=\"display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(90deg,#FF5050,#ec4899); color: #fff; padding: 8px 20px; border-radius: 999px; font-weight: bold; font-size: 13px; letter-spacing: 0.6px; margin-bottom: 18px; box-shadow: 0 6px 18px rgba(236,72,153,0.3);\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><rect x=\"3\" y=\"8\" width=\"18\" height=\"4\" rx=\"1\"></rect><path d=\"M12 8v13\"></path><path d=\"M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7\"></path><path d=\"M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5\"></path></svg> <span>ЕКСКЛУЗИВНО ЗА АБОНАТИ</span></div>\n<h1 style=\"font-size: 44px; line-height: 1.1; font-weight: 800; color: #303c4a; margin: 0 0 14px;\">Абонирай се за имейл бюлетина ни!</h1>\n<p style=\"font-size: 19px; line-height: 1.5; color: #4b5563; margin: 0 auto 8px; max-width: 620px;\">Абонирай се за бюлетина на <strong>Bulgar&nbsp;Biotic</strong> и ще получаваш най-актуалните ни промоционални предложения и статии с полезно съдържание!</p>\n</div>"
+         }
+        },
+        {
+         "id": "",
+         "map": "cc_form",
+         "settings": {
+          "enabled": "1",
+          "form_id": "69a0303de2c07d350e0d535a"
+         }
+        },
+        {
+         "id": "",
+         "map": "code",
+         "settings": {
+          "enabled": "1",
+          "code": "<script type=\"text/javascript\" class=\"cc-embedded-form-69a0303de2c07d350e0d535a\">\n    \"use strict\";\n    ! function(r, o) {\n        window.CcForm_69a0303de2c07d350e0d535a = function (e) {\n            if (e && e.widgets && e.widgets.length) {\n                var o = document,\n                    r = window,\n                    t = o.getElementsByTagName(\"script\")[0],\n                    d = o.createElement(\"link\"),\n                    s = o.createElement('script');\n\n                d.setAttribute('type', 'text/css');\n                d.href = e.script.css;\n                d.rel = 'stylesheet';\n                d.async = !0;\n\n                t.parentNode.insertBefore(s, t);\n                t.parentNode.insertBefore(d, t);\n\n                s.src = e.script.js;\n                s.async = !0;\n                s.onload = function() {\n                    setTimeout(function() {\n                        r.CcCam.start && r.CcCam.start(e, o);\n                    }, 50);\n                }\n            }\n\n            delete window.CcForm_69a0303de2c07d350e0d535a;\n        }\n\n        var e = o.createElement(\"script\");\n        e.type = \"text/javascript\";\n        e.async = true;\n        e.src = \"https://bulgarbiotic.bg/subscribers/forms/embed/69a0303de2c07d350e0d535a\";\n        var t = o.getElementsByTagName(\"script\")[0];\n        t.parentNode.insertBefore(e, t);\n    }(window, document);\n</script>"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "\n<div style=\"margin:14px auto 0;max-width:1000px;padding:0 12px;\">\n  <div style=\"display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;\">\n    <div style=\"display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #f3e8e8;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.04);font-size:13px;font-weight:600;color:#374151;white-space:nowrap;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#10b981\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"/><path d=\"m9 12 2 2 4-4\"/></svg><span>Без спам</span></div>\n    <div style=\"display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #f3e8e8;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.04);font-size:13px;font-weight:600;color:#374151;white-space:nowrap;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#3b82f6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M14 4.1 12 6\"/><path d=\"m5.1 8-2.9-.8\"/><path d=\"m6 12-1.9 2\"/><path d=\"M7.2 2.2 8 5.1\"/><path d=\"M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z\"/></svg><span>Откажи се с 1 клик</span></div>\n    <div style=\"display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #f3e8e8;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.04);font-size:13px;font-weight:600;color:#374151;white-space:nowrap;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#8b5cf6\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\" ry=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 10 0v4\"/></svg><span>Данните ти са защитени</span></div>\n    <div style=\"display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#fff;border:1px solid #f3e8e8;border-radius:999px;box-shadow:0 2px 6px rgba(0,0,0,0.04);font-size:13px;font-weight:600;color:#374151;white-space:nowrap;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5050\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 1 0 0-8c-2 0-4 1.33-6 4Z\"/></svg><span>Безплатно завинаги</span></div>\n  </div>\n</div>\n"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "10",
+      "padding_bottom": "10",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "\n<div style=\"max-width:1100px;margin:0 auto;padding:0 16px;\">\n  <div style=\"text-align:center;margin-bottom:36px;\">\n    <h2 style=\"font-size:34px;font-weight:800;color:#303C4A;margin:0 0 10px;\">Какво печелиш като абонат</h2>\n    <p style=\"font-size:17px;color:#6b7280;margin:0;max-width:560px;margin-left:auto;margin-right:auto;\">\n      Бюлетинът ни не е поредният имейл &mdash; той е реален бонус към грижата за здравето ти.\n    </p>\n  </div>\n\n  <div style=\"display:flex;flex-wrap:wrap;gap:18px;justify-content:center;\">\n    \n    <div style=\"flex:1 1 230px;max-width:260px;background:#fff;border:1px solid #f3e8e8;border-radius:16px;padding:26px 22px;box-shadow:0 4px 14px rgba(0,0,0,0.04);text-align:center;\">\n      <div style=\"display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:#FF505015;border-radius:14px;margin-bottom:12px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5050\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/></svg></div>\n      <h3 style=\"font-size:18px;font-weight:700;color:#303C4A;margin:0 0 8px;\">Персонализирани оферти</h3>\n      <p style=\"font-size:14px;color:#4b5563;margin:0;line-height:1.5;\">Промоции, съобразени с продуктите, които те интересуват — без излишен шум.</p>\n    </div>\n    \n    <div style=\"flex:1 1 230px;max-width:260px;background:#fff;border:1px solid #f3e8e8;border-radius:16px;padding:26px 22px;box-shadow:0 4px 14px rgba(0,0,0,0.04);text-align:center;\">\n      <div style=\"display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:#f59e0b15;border-radius:14px;margin-bottom:12px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#f59e0b\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/></svg></div>\n      <h3 style=\"font-size:18px;font-weight:700;color:#303C4A;margin:0 0 8px;\">Ексклузивни намаления</h3>\n      <p style=\"font-size:14px;color:#4b5563;margin:0;line-height:1.5;\">Достъп до намаления, които не показваме никъде другаде — само за абонатите.</p>\n    </div>\n    \n    <div style=\"flex:1 1 230px;max-width:260px;background:#fff;border:1px solid #f3e8e8;border-radius:16px;padding:26px 22px;box-shadow:0 4px 14px rgba(0,0,0,0.04);text-align:center;\">\n      <div style=\"display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:#8b5cf615;border-radius:14px;margin-bottom:12px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#8b5cf6\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z\"/><path d=\"M20 3v4\"/><path d=\"M22 5h-4\"/><path d=\"M4 17v2\"/><path d=\"M5 18H3\"/></svg></div>\n      <h3 style=\"font-size:18px;font-weight:700;color:#303C4A;margin:0 0 8px;\">Нови продукти първи</h3>\n      <p style=\"font-size:14px;color:#4b5563;margin:0;line-height:1.5;\">Научаваш за новостите ни преди да станат хит — и често на по-добра цена.</p>\n    </div>\n    \n    <div style=\"flex:1 1 230px;max-width:260px;background:#fff;border:1px solid #f3e8e8;border-radius:16px;padding:26px 22px;box-shadow:0 4px 14px rgba(0,0,0,0.04);text-align:center;\">\n      <div style=\"display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;background:#3b82f615;border-radius:14px;margin-bottom:12px;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"28\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#3b82f6\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M12 7v14\"/><path d=\"M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z\"/></svg></div>\n      <h3 style=\"font-size:18px;font-weight:700;color:#303C4A;margin:0 0 8px;\">Здравно съдържание</h3>\n      <p style=\"font-size:14px;color:#4b5563;margin:0;line-height:1.5;\">Практични съвети и науката зад пробиотиците — от експертите на Bactology.</p>\n    </div>\n  </div>\n</div>\n"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "40",
+      "padding_bottom": "40",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": 1,
+          "text": "<div style=\"max-width: 880px; margin: 0 auto; padding: 0 16px;\">\n<div style=\"background: linear-gradient(135deg,#fff5f5 0%,#fef2f2 100%); border-radius: 24px; padding: 40px 32px; border: 1px solid #fee2e2;\">\n<div style=\"text-align: center; margin-bottom: 28px;\">\n<div style=\"display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: #fff; border-radius: 16px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(255,80,80,0.15);\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"28\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5050\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><rect width=\"20\" height=\"16\" x=\"2\" y=\"4\" rx=\"2\"></rect><path d=\"m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7\"></path></svg></div>\n<h2 style=\"font-size: 30px; font-weight: 800; color: #303c4a; margin: 0 0 8px;\">Какво ще намериш в имейлите ни</h2>\n<p style=\"font-size: 16px; color: #6b7280; margin: 0;\">Кратко, полезно, никога досадно.</p>\n</div>\n<div style=\"display: flex; flex-direction: column; gap: 14px; max-width: 620px; margin: 0 auto;\">\n<div style=\"display: flex; gap: 14px; align-items: flex-start; background: #fff; padding: 18px 20px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);\">\n<div style=\"display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #FF505015; border-radius: 11px; flex-shrink: 0;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5050\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><rect x=\"3\" y=\"8\" width=\"18\" height=\"4\" rx=\"1\"></rect><path d=\"M12 8v13\"></path><path d=\"M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7\"></path><path d=\"M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5\"></path></svg></div>\n<div><strong style=\"color: #303c4a; font-size: 16px; display: block; margin-bottom: 4px;\">Специални кодове за отстъпка</strong></div>\n</div>\n<div style=\"display: flex; gap: 14px; align-items: flex-start; background: #fff; padding: 18px 20px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);\">\n<div style=\"display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #f59e0b15; border-radius: 11px; flex-shrink: 0;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#f59e0b\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\"></path><path d=\"M12 22V12\"></path><path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\"></path><path d=\"m7.5 4.27 9 5.15\"></path></svg></div>\n<div><strong style=\"color: #303c4a; font-size: 16px; display: block; margin-bottom: 4px;\">Месечен бюлетин с топ оферти</strong>\n<p style=\"color: #4b5563; font-size: 14px; margin: 0; line-height: 1.5;\">Подбрани намаления и нови продукти &mdash; веднъж месечно.</p>\n</div>\n</div>\n<div style=\"display: flex; gap: 14px; align-items: flex-start; background: #fff; padding: 18px 20px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);\">\n<div style=\"display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #eab30815; border-radius: 11px; flex-shrink: 0;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#eab308\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><path d=\"M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z\"></path></svg></div>\n<div><strong style=\"color: #303c4a; font-size: 16px; display: block; margin-bottom: 4px;\">Flash оферти за абонати</strong>\n<p style=\"color: #4b5563; font-size: 14px; margin: 0; line-height: 1.5;\">Случайни кратки промоции &mdash; само за хората от списъка ни.</p>\n</div>\n</div>\n<div style=\"display: flex; gap: 14px; align-items: flex-start; background: #fff; padding: 18px 20px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);\">\n<div style=\"display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #10b98115; border-radius: 11px; flex-shrink: 0;\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"22\" height=\"22\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#10b981\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><path d=\"m10 16 1.5 1.5\"></path><path d=\"m14 8-1.5-1.5\"></path><path d=\"M15 2c-1.798 1.998-2.518 3.995-2.807 5.993\"></path><path d=\"m16.5 10.5 1 1\"></path><path d=\"m17 6-2.891-2.891\"></path><path d=\"M2 15c6.667-6 13.333 0 20-6\"></path><path d=\"m20 9 .891.891\"></path><path d=\"M3.109 14.109 4 15\"></path><path d=\"m6.5 12.5 1 1\"></path><path d=\"m7 18 2.891 2.891\"></path><path d=\"M9 22c1.798-1.998 2.518-3.995 2.807-5.993\"></path></svg></div>\n<div><strong style=\"color: #303c4a; font-size: 16px; display: block; margin-bottom: 4px;\">Полезно здравно съдържание</strong>\n<p style=\"color: #4b5563; font-size: 14px; margin: 0; line-height: 1.5;\">Какво правят пробиотиците за теб &mdash; от учените зад Bactology.</p>\n</div>\n</div>\n</div>\n</div>\n</div>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "20",
+      "padding_bottom": "40",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "\n<div style=\"max-width:880px;margin:0 auto;padding:0 16px;text-align:center;\">\n  <div style=\"display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;background:#fff5f5;border-radius:18px;margin-bottom:16px;box-shadow:0 4px 12px rgba(255,80,80,0.12);\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"30\" height=\"30\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5050\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"m11 17 2 2a1 1 0 1 0 3-3\"/><path d=\"m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4\"/><path d=\"m21 3 1 11h-2\"/><path d=\"M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3\"/><path d=\"M3 4h8\"/></svg></div>\n  <h2 style=\"font-size:32px;font-weight:800;color:#303C4A;margin:0 0 16px;\">Защо да се довериш на Bulgar Biotic</h2>\n  <p style=\"font-size:17px;color:#4b5563;line-height:1.6;margin:0 0 20px;\">\n    Подбираме всеки продукт с внимание към качеството, състава и ефективността. Работим с една ясна мисия &mdash; <strong>да направим грижата за здравето по-достъпна, разбираема и ефективна.</strong>\n  </p>\n  <p style=\"font-size:17px;color:#4b5563;line-height:1.6;margin:0 0 28px;\">\n    С бюлетина ни винаги ще си една крачка напред &mdash; и в информацията, и в офертите.\n  </p>\n\n  <div style=\"display:flex;flex-wrap:wrap;justify-content:center;gap:32px;margin-top:28px;\">\n    <div style=\"text-align:center;\">\n      <div style=\"font-size:36px;font-weight:800;color:#FF5050;\">10+</div>\n      <div style=\"font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;\">години опит</div>\n    </div>\n    <div style=\"text-align:center;\">\n      <div style=\"font-size:36px;font-weight:800;color:#FF5050;\">100%</div>\n      <div style=\"font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;\">българско качество</div>\n    </div>\n    <div style=\"text-align:center;\">\n      <div style=\"font-size:36px;font-weight:800;color:#FF5050;\">256K+</div>\n      <div style=\"font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;\">изпратени поръчки</div>\n    </div>\n  </div>\n</div>\n"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "20",
+      "padding_bottom": "40",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<div style=\"max-width: 780px; margin: 0 auto; padding: 0 16px;\">\n<div style=\"text-align: center; margin-bottom: 30px;\">\n<div style=\"display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: #fff5f5; border-radius: 16px; margin-bottom: 14px; box-shadow: 0 4px 12px rgba(255,80,80,0.12);\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"28\" height=\"28\" viewbox=\"0 0 24 24\" fill=\"none\" stroke=\"#FF5050\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink: 0; display: inline-block; vertical-align: middle;\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\"></path><path d=\"M12 17h.01\"></path></svg></div>\n<h2 style=\"font-size: 30px; font-weight: 800; color: #303c4a; margin: 0 0 8px;\">Често задавани въпроси</h2>\n<p style=\"font-size: 16px; color: #6b7280; margin: 0;\">Сигурни сме, че ще ти спестим няколко колебания.</p>\n</div>\n<div style=\"display: flex; flex-direction: column; gap: 14px;\">\n<div style=\"background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 22px;\"><strong style=\"color: #303c4a; font-size: 17px; display: block; margin-bottom: 6px;\">Колко често ще получавам имейли?</strong>\n<p style=\"color: #4b5563; font-size: 15px; margin: 0; line-height: 1.6;\">Обикновено няколко пъти месечно. При специални оферти може да получиш до 4-5 имейла в рамките на месеца.</p>\n</div>\n<div style=\"background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 22px;\"><strong style=\"color: #303c4a; font-size: 17px; display: block; margin-bottom: 6px;\">Как работи кодът за -10%?</strong>\n<p style=\"color: #4b5563; font-size: 15px; margin: 0; line-height: 1.6;\">След потвърждаване на абонамента ти изпращаме еднократен код. Валиден е за всички продукти &mdash; <strong>включително вече намалените</strong> &mdash; и може да се използва на финалната стъпка от поръчката.</p>\n</div>\n<div style=\"background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 22px;\"><strong style=\"color: #303c4a; font-size: 17px; display: block; margin-bottom: 6px;\">Как мога да се отпиша?</strong>\n<p style=\"color: #4b5563; font-size: 15px; margin: 0; line-height: 1.6;\">С един клик &mdash; долу в края на всеки имейл има бутон &bdquo;Отписване\". Без въпроси, без задържане.</p>\n</div>\n<div style=\"background: #fff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 20px 22px;\"><strong style=\"color: #303c4a; font-size: 17px; display: block; margin-bottom: 6px;\">Какво правите с моя имейл?</strong>\n<p style=\"color: #4b5563; font-size: 15px; margin: 0; line-height: 1.6;\">Използваме го <strong>само</strong> за да ти пращаме бюлетина и офертите ни. Не го продаваме, не го споделяме с никого. Управляваме данните според GDPR.</p>\n</div>\n</div>\n</div>"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "20",
+      "padding_bottom": "40",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "\n<div style=\"max-width:780px;margin:0 auto;padding:0 16px;text-align:center;\">\n  <div style=\"background:linear-gradient(135deg,#303C4A 0%,#1f2937 100%);border-radius:24px;padding:48px 32px;color:#fff;\">\n    <h2 style=\"font-size:32px;font-weight:800;margin:0 0 12px;color:#fff;\">Готов/а си за -10%?</h2>\n    <p style=\"font-size:17px;color:#cbd5e1;margin:0 0 26px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.5;\">\n      Върни се горе, попълни имейла си и получи кода още днес. Едно поле &mdash; една отстъпка &mdash; и куп предимства напред.\n    </p>\n    <a href=\"#newsletter-form-top\" style=\"display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#FF5050 0%,#ec4899 50%,#a855f7 100%);color:#fff;padding:14px 34px;border-radius:999px;font-weight:700;font-size:16px;text-decoration:none;box-shadow:0 8px 24px rgba(236,72,153,0.4);\">\n      <svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#ffffff\" stroke-width=\"2.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"m5 12 7-7 7 7\"/><path d=\"M12 19V5\"/></svg>\n      <span>Абонирай се сега</span>\n    </a>\n\n    <div style=\"margin-top:32px;padding-top:24px;border-top:1px solid rgba(255,255,255,0.1);\">\n      <p style=\"color:#9ca3af;font-size:14px;margin:0 0 14px;\">Междувременно разгледай:</p>\n      <div style=\"display:flex;flex-wrap:wrap;justify-content:center;gap:14px;\">\n        <a href=\"https://bulgarbiotic.bg/selection/sale\" style=\"display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);color:#fff;padding:10px 22px;border-radius:999px;text-decoration:none;font-size:15px;border:1px solid rgba(255,255,255,0.15);\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z\"/><circle cx=\"7.5\" cy=\"7.5\" r=\".5\" fill=\"currentColor\"/></svg><span>Промо предложения</span></a>\n        <a href=\"https://bulgarbiotic.bg/category/all-products\" style=\"display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);color:#fff;padding:10px 22px;border-radius:999px;text-decoration:none;font-size:15px;border:1px solid rgba(255,255,255,0.15);\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#fff\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex-shrink:0;display:inline-block;vertical-align:middle;\"><path d=\"M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z\"/><path d=\"M12 22V12\"/><path d=\"m3.3 7 7.703 4.734a2 2 0 0 0 1.994 0L20.7 7\"/><path d=\"m7.5 4.27 9 5.15\"/></svg><span>Всички продукти</span></a>\n      </div>\n    </div>\n  </div>\n</div>\n"
+         }
+        }
+       ],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "20",
+      "padding_bottom": "50",
+      "margin_top": "0",
+      "margin_bottom": "0",
+      "padding_side": "0",
+      "margin_side": "0",
+      "class_name": ""
+     }
+    }
+   ],
+   "options": {
+    "enable_header": "1",
+    "enable_footer": "1"
+   }
+  }
+ },
+ "about-us": {
+  "id": "8",
+  "builderDesign": null
+ },
+ "events": {
+  "id": "12",
+  "builderDesign": {
+   "children": [
+    {
+     "children": [
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": 1,
+          "default_content": true,
+          "amount": 2,
+          "per_row": "1",
+          "title": null,
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "{storage_url}26377/files/image/viber_image_2022-02-23_07-17-31-906.jpg",
+            "link_type": "external",
+            "link_value": "https://pik.bg/%D0%B1%D1%8A%D0%BB%D0%B3%D0%B0%D1%80%D1%81%D0%BA%D0%B0-%D1%84%D0%B8%D1%80%D0%BC%D0%B0-%D0%B2%D0%BF%D0%B5%D1%87%D0%B0%D1%82%D0%BB%D0%B8-%D0%B3%D0%B5%D1%80%D0%BC%D0%B0%D0%BD%D1%86%D0%B8%D1%82%D0%B5-%D1%81-%D0%BF%D1%80%D0%BE%D0%B1%D0%B8%D0%BE%D1%82%D0%B8%D1%86%D0%B8-%D1%81-%D1%88%D0%BE%D0%BA%D0%BE%D0%BB%D0%B0%D0%B4-news1083602.html",
+            "caption": "",
+            "target": "_blank"
+           },
+           "2": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "{storage_url}26377/files/image/viber_image_2022-02-23_07-18-32-163.jpg",
+            "link_type": "external",
+            "link_value": "https://pik.bg/%D1%83%D1%81%D0%BF%D0%B5%D1%85-%D0%BD%D0%BE%D0%B2%D0%BE-%D0%BE%D1%82%D0%BA%D1%80%D0%B8%D1%82%D0%B8%D0%B5-%D0%BD%D0%B0-%D0%B1%D1%8A%D0%BB%D0%B3%D0%B0%D1%80%D0%B8-%D0%B8%D0%B7%D0%BC%D0%B8%D1%81%D0%BB%D0%B8%D1%85%D0%B0-%D1%88%D0%BE%D0%BA%D0%BE%D0%BB%D0%B0%D0%B4%D0%BE%D0%B2-%D0%BF%D1%80%D0%BE%D0%B1%D0%B8%D0%BE%D1%82%D0%B8%D0%BA-news901324.html",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": 0,
+          "enable_gallery": 0
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "2",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/viber_image_2022-02-23_07-20-49-009.jpg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_self"
+           },
+           "2": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/viber_image_2022-02-23_07-25-23-860.jpg",
+            "link_type": "",
+            "link_value": "",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "banner",
+         "settings": {
+          "enabled": "1",
+          "default_content": "1",
+          "amount": "2",
+          "per_row": "1",
+          "title": "",
+          "banners": {
+           "1": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/viber_image_2022-02-23_07-27-39-397.jpg",
+            "link_type": "external",
+            "link_value": "https://www.mentrend.bg/Article/10458054",
+            "caption": "",
+            "target": "_self"
+           },
+           "2": {
+            "type": "image",
+            "img_type": "internal",
+            "src": "https://cdncloudcart.com/26377/files/image/viber_image_2022-02-23_07-27-37-634.jpg",
+            "link_type": "external",
+            "link_value": "https://www.mentrend.bg/Article/10458054",
+            "caption": "",
+            "target": "_blank"
+           }
+          },
+          "enable_slider": "0",
+          "enable_gallery": "0"
+         }
+        }
+       ],
+       "width": "1.5"
+      },
+      {
+       "children": [
+        {
+         "id": "",
+         "map": "video",
+         "settings": {
+          "enabled": "1",
+          "type": "html5",
+          "src": "https://cdncloudcart.com/26377/files/video/0-02-0a-3b582e1520cea566602244c86fa7b1f8f936b6cf2839c40451d4d168a416b7ee_3e8f0cd9626b98a5.mp4?1685003574",
+          "autoplay": "0"
+         }
+        },
+        {
+         "id": "",
+         "map": "text",
+         "settings": {
+          "enabled": "1",
+          "text": "<p>Бяхме част от страхотното събитие на&nbsp;<span>ФОРУМ ПОЧТИ ВСИЧКО ЗА РОДИТЕЛСТВОТО.</span></p>\n<p></p>"
+         }
+        }
+       ],
+       "width": "1.5"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "padding_bottom": "30",
+      "margin_top": "0",
+      "margin_bottom": "0"
+     }
+    },
+    {
+     "children": [
+      {
+       "children": [],
+       "width": "6"
+      }
+     ],
+     "options": {
+      "type": "",
+      "padding_top": "30",
+      "padding_bottom": "30",
+      "margin_top": "0",
+      "margin_bottom": "0"
+     }
+    }
+   ],
+   "options": {
+    "enable_header": "1",
+    "enable_footer": "1"
+   }
+  }
+ }
+}

@@ -76,9 +76,15 @@ function rowStyle(node: BuilderNode): React.CSSProperties {
   };
 }
 
+/**
+ * The panel stores column widths on a SIX-column grid — 6 is full width, 3 is a
+ * half, 1.5 a quarter — and doubles them for its Bootstrap output. Reading them
+ * as twelfths made every full-width column render at half width.
+ */
 function colSpan(width: string | undefined): string {
-  const w = number(width) ?? 12;
-  return `bb-bd-col-${Math.max(1, Math.min(12, Math.round(w)))}`;
+  const w = number(width) ?? 6;
+  const twelfths = Math.round(w * 2);
+  return `bb-bd-col-${Math.max(1, Math.min(12, twelfths))}`;
 }
 
 /**
