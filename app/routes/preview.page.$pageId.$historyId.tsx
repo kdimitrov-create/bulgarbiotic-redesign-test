@@ -1,10 +1,17 @@
 import {useLoaderData, data} from 'react-router';
+import {useEffect} from 'react';
 import type {Route} from './+types/preview.page.$pageId.$historyId';
 import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {PageShell} from '~/components/PageShell';
 import {BuilderDesignRenderer} from '~/components/BuilderDesignRenderer';
 import {fetchPageDraft} from '~/lib/page-preview.server';
+import {fetchHomeSectionData} from '~/lib/home-data.server';
+import {
+  collectBuilderNeeds,
+  fetchBuilderData,
+  EMPTY_BUILDER_DATA,
+} from '~/lib/builder-data.server';
 
 /**
  * „Преглед" from the page builder.
@@ -33,14 +40,35 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
       {status: 404},
     );
   }
-  return {draft};
+
+  // A preview must show what the page will really look like, so it loads the
+  // same data the live routes do: the homepage sections behind the bb: markers,
+  // and whatever the showcase or article blocks ask for.
+  const [sections, builderData] = await Promise.all([
+    fetchHomeSectionData(ctx).catch(() => ({})),
+    fetchBuilderData(
+      ctx.storefront,
+      ctx.env as Record<string, string | undefined>,
+      collectBuilderNeeds(draft.design),
+    ).catch(() => EMPTY_BUILDER_DATA),
+  ]);
+
+  return {draft, sections, builderData};
 }
 
 export default function PagePreview() {
-  const {draft} = useLoaderData<typeof loader>();
+  const {draft, sections, builderData} = useLoaderData<typeof loader>();
+
+  // Sections start at opacity 0 and are revealed by an observer that lives in
+  // the homepage route. The preview does not run it, so without this everything
+  // below the fold stayed invisible — which looked like missing sections rather
+  // than hidden ones.
+  useEffect(() => {
+    document.querySelectorAll('.reveal').forEach((el) => el.classList.add('visible'));
+  }, [draft]);
 
   return (
-    <PageShell title={draft.title} tag="Преглед" breadcrumbs={[]} variant="narrow">
+    <PageShell title={draft.title} tag="Преглед" breadcrumbs={[]} variant="barebones">
       <div className="bb-preview-note">
         {draft.published
           ? 'Това е публикуваната версия на страницата.'
@@ -52,7 +80,11 @@ export default function PagePreview() {
         )}
       </div>
 
-      <BuilderDesignRenderer design={draft.design as any} />
+      <BuilderDesignRenderer
+        design={draft.design as any}
+        sections={sections as any}
+        data={builderData}
+      />
 
       <style>{`
         .bb-preview-note {
