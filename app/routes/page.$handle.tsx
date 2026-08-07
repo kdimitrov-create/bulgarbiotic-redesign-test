@@ -162,10 +162,13 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
     >
       {hasRealHtml ? (
         <RichText data={page.body} />
-      ) : hasDesign && !authored ? (
-        <BuilderDesignRenderer design={design} data={builderData} />
       ) : override ? (
+        // A page we designed by hand beats the builder tree. Several of these
+        // pages ALSO have a builder design in the panel, and letting that win
+        // replaced their layout with a generic stack of blocks (2026-08-07).
         override()
+      ) : hasDesign ? (
+        <BuilderDesignRenderer design={design} data={builderData} />
       ) : (
         <p className="text-gray-500">
           Съдържанието на тази страница е в процес на подготовка.{' '}
