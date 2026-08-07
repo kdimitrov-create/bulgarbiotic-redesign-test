@@ -116,10 +116,7 @@ export default function ProductPage() {
 
       {/* Product description at the top (client reorder: "описанието най-горе") —
           extracted from the old tabs; still collapses with "прочети повече". */}
-      <ProductDescription
-        handle={product.handle}
-        descriptionHtml={product.descriptionHtml}
-      />
+      <ProductDescription descriptionHtml={product.descriptionHtml} />
 
       {/* FAQ accordion moved up (client 2026-07): now sits directly above the
           "Как работи пробиотикът" video section. Per-product questions. */}

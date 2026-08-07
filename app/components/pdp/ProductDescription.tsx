@@ -2,7 +2,6 @@ import {useState, useEffect, useRef, type ReactNode} from 'react';
 import {RichText} from '@cloudcart/nitro-react';
 import {MedicalStudies} from '../MedicalStudies';
 import {parseProductDescription} from '~/lib/parse-product-description';
-import {PRODUCT_DESCRIPTIONS} from '~/lib/product-descriptions';
 
 /**
  * Product description — standalone section rendered HIGH on the PDP (client
@@ -37,55 +36,41 @@ function stripVideoHtml(html: string): string {
   );
 }
 
-export function ProductDescription({
-  descriptionHtml,
-  handle,
-}: {
-  descriptionHtml?: string;
-  handle?: string;
-}) {
-  // Client (2026-07): per-product description override from the Google Doc.
-  // When present, it replaces the CloudCart CMS description TEXT in this section
-  // — but we keep the product VIDEO that was embedded in the CMS description.
+export function ProductDescription({descriptionHtml}: {descriptionHtml?: string}) {
+  // The text comes from the product's own description in the panel — including
+  // any HTML written there. Until 2026-08-07 twenty-four products had their
+  // copy hard-coded here instead, so editing the description in the panel
+  // changed nothing; those texts now live on the products themselves.
   //
-  // Client (2026-08-04): the wide product photo that used to open this section is
-  // gone and the video took its place, at the photo's size. So the embed is
-  // pulled out of the body for EVERY product, not just the overridden ones, and
-  // stripped from the text so it does not render twice.
-  const override = handle ? PRODUCT_DESCRIPTIONS[handle] : undefined;
+  // Client (2026-08-04): the wide product photo that used to open this section
+  // is gone and the video took its place, at the photo's size. So the embed is
+  // pulled out of the body and stripped from the text so it does not render
+  // twice.
   const video = extractVideoHtml(descriptionHtml);
   const body = descriptionHtml ? stripVideoHtml(descriptionHtml) : undefined;
-  if (!override && !body) return null;
-  const parsed = override ? null : parseProductDescription(body!);
+  if (!body) return null;
+  const parsed = parseProductDescription(body);
 
   return (
     <section id="description" className="bb-pdp-tabs-wrap">
       <div className="bb-pdp-tabs">
         {video && <div dangerouslySetInnerHTML={{__html: video}} />}
-        {override ? (
+        {parsed.before && (
           <CollapsibleDescription>
-            <div className={proseClass} dangerouslySetInnerHTML={{__html: override}} />
+            <RichText data={parsed.before} className={proseClass} />
           </CollapsibleDescription>
-        ) : (
-          <>
-            {parsed!.before && (
-              <CollapsibleDescription>
-                <RichText data={parsed!.before} className={proseClass} />
-              </CollapsibleDescription>
-            )}
-            {parsed!.studies.length > 0 && (
-              <MedicalStudies
-                title={parsed!.studiesTitle}
-                subtitle={parsed!.studiesSubtitle}
-                studies={parsed!.studies}
-              />
-            )}
-            {parsed!.after && (
-              <CollapsibleDescription>
-                <RichText data={parsed!.after} className={proseClass} />
-              </CollapsibleDescription>
-            )}
-          </>
+        )}
+        {parsed.studies.length > 0 && (
+          <MedicalStudies
+            title={parsed.studiesTitle}
+            subtitle={parsed.studiesSubtitle}
+            studies={parsed.studies}
+          />
+        )}
+        {parsed.after && (
+          <CollapsibleDescription>
+            <RichText data={parsed.after} className={proseClass} />
+          </CollapsibleDescription>
         )}
       </div>
     </section>
