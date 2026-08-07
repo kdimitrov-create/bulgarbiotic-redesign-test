@@ -2,6 +2,7 @@ import {Fragment, useEffect, useRef} from 'react';
 import {Link} from 'react-router';
 import {entries, isOn, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
+import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
 import {
   carouselSlides,
@@ -314,7 +315,11 @@ function renderBlock(
       // the merchant placing one of the shop's own sections here.
       const marker = readMarker(html);
       if (marker) {
-        const node = renderMarker(marker, sections ?? {});
+        // `bb:page:<handle>` places a whole designed page; anything else is a
+        // homepage section.
+        const node = marker.startsWith('page:')
+          ? renderPageSection(marker.slice('page:'.length))
+          : renderMarker(marker, sections ?? {});
         return node ? <Fragment key={idx}>{node}</Fragment> : null;
       }
       return <CodeBlock key={idx} html={html} />;

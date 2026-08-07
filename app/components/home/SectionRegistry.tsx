@@ -99,9 +99,14 @@ export const HOME_SECTIONS: Section[] = [
 
 const BY_MARKER = new Map(HOME_SECTIONS.map((s) => [s.marker, s]));
 
-/** `<!-- bb:doctors -->` → the marker name, or null when the block is real HTML. */
+/**
+ * `<!-- bb:doctors -->` → the marker name, or null when the block is real HTML.
+ *
+ * Colons are allowed so a page section can be addressed too:
+ * `bb:page:kosa-koja-i-nokti`.
+ */
 export function readMarker(html: string): string | null {
-  const match = html.match(/^\s*<!--\s*bb:([a-z0-9-]+)\s*-->\s*$/i);
+  const match = html.match(/^\s*<!--\s*bb:([a-z0-9:-]+)\s*-->\s*$/i);
   return match ? match[1].toLowerCase() : null;
 }
 
