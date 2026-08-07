@@ -35,6 +35,11 @@ import {
 } from '~/components/BuilderDesignRenderer';
 import {designTurnedOff} from '~/components/home/SectionRegistry';
 import {pageIsActive} from '~/lib/page-flags.server';
+import {
+  collectBuilderNeeds,
+  fetchBuilderData,
+  EMPTY_BUILDER_DATA,
+} from '~/lib/builder-data.server';
 
 export const meta: Route.MetaFunction = () =>
   getSeoMeta({
@@ -168,17 +173,27 @@ export async function loader({context, request}: Route.LoaderArgs) {
   const parsed = parseBuilderDesign((builderPage as any)?.body);
   const homeDesign = builderPageOn && !designTurnedOff(parsed) ? parsed : null;
 
+  // Only the blocks actually placed on the page are fetched for.
+  const builderData = homeDesign
+    ? await fetchBuilderData(
+        ctx.storefront,
+        ctx.env as Record<string, string | undefined>,
+        collectBuilderNeeds(homeDesign),
+      )
+    : EMPTY_BUILDER_DATA;
+
   return {
     featuredProducts,
     familyPack,
     articles,
     homeReviews,
     homeDesign: builderHasContent(homeDesign) ? homeDesign : null,
+    builderData,
   };
 }
 
 export default function Homepage() {
-  const {featuredProducts, familyPack, articles, homeReviews, homeDesign} =
+  const {featuredProducts, familyPack, articles, homeReviews, homeDesign, builderData} =
     useLoaderData<typeof loader>();
 
   // Page-wide scroll progress + reveal-on-scroll observer + magnetic buttons
@@ -239,6 +254,7 @@ export default function Homepage() {
         <BuilderDesignRenderer
           design={homeDesign}
           sections={{featuredProducts, familyPack, homeReviews, articles}}
+          data={builderData}
         />
         <NewsletterPopup />
       </>

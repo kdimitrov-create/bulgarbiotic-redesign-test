@@ -1,6 +1,11 @@
 import {useLoaderData, data, Link} from 'react-router';
 import type {Route} from './+types/page.$handle';
 import {getContext} from '~/lib/context';
+import {
+  collectBuilderNeeds,
+  fetchBuilderData,
+  EMPTY_BUILDER_DATA,
+} from '~/lib/builder-data.server';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {RichText} from '@cloudcart/nitro-react';
 import {PageShell, PageBackLink} from '~/components/PageShell';
@@ -59,14 +64,26 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
     throw err;
   });
   if (!page) throw data('Страницата не е намерена', {status: 404});
+
+  // A builder page may hold showcases or article lists; fetch only what the
+  // blocks on THIS page ask for.
+  const design = parseBuilderDesign((page as any).body);
+  const builderData = design
+    ? await fetchBuilderData(
+        ctx.storefront,
+        ctx.env as Record<string, string | undefined>,
+        collectBuilderNeeds(design),
+      )
+    : EMPTY_BUILDER_DATA;
+
   // Every downstream decision (custom layout, authored body, override lookup)
   // keys off the handle, and the one the API returns is not always the one in
   // the URL — pin the URL's, which is what those maps are written against.
-  return {page: {...page, handle: params.handle}};
+  return {page: {...page, handle: params.handle}, builderData};
 }
 
 export default function PageRoute() {
-  const {page} = useLoaderData<typeof loader>();
+  const {page, builderData} = useLoaderData<typeof loader>();
   const handle = page.handle;
 
   // Route to custom layouts for the high-traffic special pages first.
@@ -81,7 +98,7 @@ export default function PageRoute() {
   }
 
   // Default: PageShell with rich-text body content.
-  return <DefaultPage page={page} />;
+  return <DefaultPage page={page} builderData={builderData} />;
 }
 
 /* ============================================================ */
@@ -110,7 +127,7 @@ const PAGES_WITH_OWN_HERO = new Set([
   'events',
 ]);
 
-function DefaultPage({page}: {page: any}) {
+function DefaultPage({page, builderData}: {page: any; builderData: any}) {
   const body = (page.body || '').trim();
   const override = getPageContentOverride(page.handle);
   // A page built in the panel's Page Builder returns its tree here instead of
@@ -137,7 +154,7 @@ function DefaultPage({page}: {page: any}) {
       {hasRealHtml ? (
         <RichText data={page.body} />
       ) : hasDesign && !authored ? (
-        <BuilderDesignRenderer design={design} />
+        <BuilderDesignRenderer design={design} data={builderData} />
       ) : override ? (
         override()
       ) : (

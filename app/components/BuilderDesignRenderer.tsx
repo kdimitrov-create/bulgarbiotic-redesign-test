@@ -2,6 +2,13 @@ import {Fragment, useEffect, useRef} from 'react';
 import {Link} from 'react-router';
 import {entries, isOn, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
+import {ProductCard} from '~/components/ProductCard';
+import {
+  carouselSlides,
+  showcaseProducts,
+  EMPTY_BUILDER_DATA,
+  type BuilderData,
+} from '~/lib/builder-data';
 
 /**
  * Renders CloudCart's page-builder tree into React markup.
@@ -41,18 +48,16 @@ interface Props {
   design: BuilderNode | null | undefined;
   /** Loader data for the marker-driven homepage sections. */
   sections?: SectionData;
+  /** Catalogue data the route loaded for the showcase and article blocks. */
+  data?: BuilderData;
 }
 
 /** Blocks that are recognised but wait on data we do not load yet. */
 const DATA_BLOCKS = new Set([
-  'product-showcase',
   'showcase',
-  'bundle-products',
   'product',
   'add-to-cart',
-  'carousel',
   'text-carousel',
-  'recent-articles',
   'product_review',
   'request_review',
   'order-details',
@@ -191,7 +196,95 @@ function LinkOrAnchor({
   );
 }
 
-function renderBlock(block: BuilderNode, idx: number, sections?: SectionData): React.ReactNode {
+
+/** A product showcase: the products the merchant picked, in our card design. */
+function Showcase({block, data}: {block: BuilderNode; data: BuilderData}) {
+  const settings = block.settings ?? {};
+  const products = showcaseProducts(settings, data);
+  if (!products.length) return null;
+  const title = text(settings.title);
+  const perRow = Math.max(2, Math.min(5, number(settings.per_row) ?? 4));
+
+  return (
+    <div className="bb-bd-showcase">
+      {title && <h2 className="bb-bd-showcase-title">{title}</h2>}
+      <div
+        className="bb-bd-showcase-grid"
+        style={{'--bb-bd-per-row': perRow} as React.CSSProperties}
+      >
+        {products.map((p: any) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** An image slider. Mobile gets its own file when the merchant uploaded one. */
+function Carousel({block}: {block: BuilderNode}) {
+  const settings = block.settings ?? {};
+  const slides = carouselSlides(settings);
+  if (!slides.length) return null;
+
+  return (
+    <div className="bb-bd-carousel">
+      {slides.map((slide, i) => {
+        const picture = (
+          <picture>
+            {slide.mobile && <source media="(max-width: 767px)" srcSet={slide.mobile} />}
+            <img src={slide.src} alt={slide.alt ?? ''} loading={i === 0 ? 'eager' : 'lazy'} />
+          </picture>
+        );
+        return (
+          <div className="bb-bd-slide" key={i}>
+            {slide.link ? <LinkOrAnchor href={slide.link}>{picture}</LinkOrAnchor> : picture}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Recent blog articles. */
+function Articles({block, data}: {block: BuilderNode; data: BuilderData}) {
+  const settings = block.settings ?? {};
+  const count = Math.max(1, Math.min(12, number(settings.count) ?? 3));
+  const list = data.articles.slice(0, count);
+  if (!list.length) return null;
+  const perRow = Math.max(1, Math.min(4, number(settings.per_row) ?? 3));
+  const title = text(settings.title);
+
+  return (
+    <div className="bb-bd-articles">
+      {title && <h2 className="bb-bd-showcase-title">{title}</h2>}
+      <div
+        className="bb-bd-articles-grid"
+        style={{'--bb-bd-per-row': perRow} as React.CSSProperties}
+      >
+        {list.map((article: any) => (
+          <Link
+            key={article.id ?? article.handle}
+            to={`/article/${article.handle}`}
+            className="bb-bd-article"
+            prefetch="intent"
+          >
+            {article.image?.url && (
+              <img src={article.image.url} alt="" loading="lazy" />
+            )}
+            <span className="bb-bd-article-title">{article.title}</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function renderBlock(
+  block: BuilderNode,
+  idx: number,
+  sections?: SectionData,
+  data: BuilderData = EMPTY_BUILDER_DATA,
+): React.ReactNode {
   const settings = block.settings ?? {};
   if (!isOn(settings.enabled, true)) return null;
 
@@ -228,6 +321,13 @@ function renderBlock(block: BuilderNode, idx: number, sections?: SectionData): R
     }
     case 'banner':
       return <Banner key={idx} block={block} />;
+    case 'product-showcase':
+    case 'bundle-products':
+      return <Showcase key={idx} block={block} data={data} />;
+    case 'carousel':
+      return <Carousel key={idx} block={block} />;
+    case 'recent-articles':
+      return <Articles key={idx} block={block} data={data} />;
     case 'button':
       return <Buttons key={idx} block={block} />;
     case 'separator': {
@@ -293,18 +393,28 @@ function renderBlock(block: BuilderNode, idx: number, sections?: SectionData): R
   }
 }
 
-function renderColumn(col: BuilderNode, idx: number, sections?: SectionData): React.ReactNode {
+function renderColumn(
+  col: BuilderNode,
+  idx: number,
+  sections?: SectionData,
+  data?: BuilderData,
+): React.ReactNode {
   return (
     <div key={idx} className={`bb-bd-col ${colSpan(col.width)}`}>
-      {(col.children ?? []).map((block, i) => renderBlock(block, i, sections))}
+      {(col.children ?? []).map((block, i) => renderBlock(block, i, sections, data))}
     </div>
   );
 }
 
-function renderRow(row: BuilderNode, idx: number, sections?: SectionData): React.ReactNode {
+function renderRow(
+  row: BuilderNode,
+  idx: number,
+  sections?: SectionData,
+  data?: BuilderData,
+): React.ReactNode {
   return (
     <div key={idx} className="bb-bd-row" style={rowStyle(row)}>
-      {(row.children ?? []).map((col, i) => renderColumn(col, i, sections))}
+      {(row.children ?? []).map((col, i) => renderColumn(col, i, sections, data))}
     </div>
   );
 }
@@ -335,7 +445,11 @@ export function parseBuilderDesign(body: string | null | undefined): BuilderNode
   }
 }
 
-export function BuilderDesignRenderer({design, sections}: Props) {
+export function BuilderDesignRenderer({design, sections, data}: Props) {
   if (!design || !design.children) return null;
-  return <div className="bb-bd">{design.children.map((row, i) => renderRow(row, i, sections))}</div>;
+  return (
+    <div className="bb-bd">
+      {design.children.map((row, i) => renderRow(row, i, sections, data))}
+    </div>
+  );
 }
