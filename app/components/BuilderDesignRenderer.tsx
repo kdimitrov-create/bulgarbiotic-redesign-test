@@ -28,7 +28,11 @@ import {
  *
  * Blocks that need nothing but their own settings:
  *
- *   text · title · banner · button · code · image · video · separator
+ *   text · title · banner · button · code · video · separator
+ *
+ * There is deliberately no `image` block: the panel has no such widget, and a
+ * design containing one makes the builder refuse to open the whole page with
+ * "Widget Not Found: image". A single picture is a `banner` with one entry.
  *
  * Blocks that need catalogue data (`product-showcase`, `bundle-products`,
  * `carousel`, `recent-articles`) get it from the loader via `builder-data`; a
@@ -195,10 +199,18 @@ function Banner({block}: {block: BuilderNode}) {
             className="bb-bd-banner-img"
           />
         );
-        const href = banner.link || banner.url;
+        // The panel writes the link as `link_value`; `link`/`url` are what a
+        // hand-written block uses.
+        const href = banner.link || banner.url || banner.link_value;
         return (
           <div key={i} className="bb-bd-banner">
-            {href ? <LinkOrAnchor href={href}>{img}</LinkOrAnchor> : img}
+            {href ? (
+              <LinkOrAnchor href={href} className="bb-bd-banner-link">
+                {img}
+              </LinkOrAnchor>
+            ) : (
+              img
+            )}
           </div>
         );
       })}
@@ -459,25 +471,7 @@ function renderBlock(
         </div>
       );
     }
-    case 'image': {
-      const src = text(settings.image) || text(settings.src);
-      if (!src) return null;
-      const href = text(settings.link) || text(settings.href);
-      const img = (
-        <img src={src} alt={text(settings.alt) || ''} loading="lazy" className="bb-bd-image" />
-      );
-      return (
-        <div key={idx} className="bb-bd-image-wrap">
-          {href ? (
-            <LinkOrAnchor href={href} className="bb-bd-image-link">
-              {img}
-            </LinkOrAnchor>
-          ) : (
-            img
-          )}
-        </div>
-      );
-    }
+
     default:
       if (block.map && !DATA_BLOCKS.has(block.map) && process.env.NODE_ENV !== 'production') {
         console.warn('builder: no renderer for block "%s"', block.map);

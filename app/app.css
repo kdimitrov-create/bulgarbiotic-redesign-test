@@ -4346,8 +4346,8 @@ img.pm-banner {
   margin: 0 0 14px;
 }
 .bb-bd-text { margin-bottom: 8px; }
-.bb-bd-text img, .bb-bd-image, .bb-bd-banner-img { max-width: 100%; height: auto; display: block; }
-.bb-bd-image, .bb-bd-banner-img { border-radius: 14px; }
+.bb-bd-text img, .bb-bd-banner-img { max-width: 100%; height: auto; display: block; }
+.bb-bd-banner-img { border-radius: 14px; }
 
 .bb-bd-banners {
   display: grid;
@@ -4551,7 +4551,7 @@ img.pm-banner {
 @media (max-width: 600px) { .bb-row-rail .bb-bd-showcase-title { padding: 0 16px; } }
 
 /* A linked picture behaves like the picture, not like a word of text. */
-.bb-bd-image-link { display: block; }
+.bb-bd-banner-link { display: block; }
 
 /* A centred section head: eyebrow, headline, lead. One Текст block. */
 .bb-row-headline {
@@ -4611,8 +4611,8 @@ img.pm-banner {
   border-color: var(--color-pink-2);
   box-shadow: 0 28px 56px -20px rgba(10, 37, 64, 0.18);
 }
-.bb-row-doctors .bb-bd-image-wrap { display: flex; justify-content: center; margin-bottom: 16px; }
-.bb-row-doctors .bb-bd-image {
+.bb-row-doctors .bb-bd-banners { display: flex; justify-content: center; margin-bottom: 16px; }
+.bb-row-doctors .bb-bd-banner-img {
   width: 96px; height: 96px;
   border-radius: 999px;
   object-fit: cover;
@@ -4721,7 +4721,7 @@ img.pm-banner {
   border-left: 2px solid #fff; border-bottom: 2px solid #fff;
   transform: rotate(-45deg);
 }
-.bb-row-bundle .bb-bd-image-wrap {
+.bb-row-bundle .bb-bd-banners {
   aspect-ratio: 1 / 1;
   border-radius: 28px;
   overflow: hidden;
@@ -4729,8 +4729,8 @@ img.pm-banner {
   transform: rotate(-2deg);
   transition: transform 0.5s ease;
 }
-.bb-row-bundle .bb-bd-image-wrap:hover { transform: rotate(0deg) scale(1.02); }
-.bb-row-bundle .bb-bd-image { width: 100%; height: 100%; object-fit: cover; }
+.bb-row-bundle .bb-bd-banners:hover { transform: rotate(0deg) scale(1.02); }
+.bb-row-bundle .bb-bd-banner-img { width: 100%; height: 100%; object-fit: cover; }
 
 /* ── „За всеки етап": една колона = една плочка ─────────────────────────────
    The first column is the tall tile; the rest fill the two columns beside it.
@@ -4766,14 +4766,16 @@ img.pm-banner {
 @media (max-width: 540px) {
   .bb-row-tiles > .bb-bd-col:first-child { grid-column: auto; min-height: 280px; }
 }
-/* The link has to be a block that fills the tile: an inline anchor gives the
-   picture inside it no box to be 100% of, and the tile came out empty. */
-.bb-row-tiles .bb-bd-image-wrap,
-.bb-row-tiles .bb-bd-image-link { position: absolute; inset: 0; display: block; }
-.bb-row-tiles .bb-bd-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
-.bb-row-tiles > .bb-bd-col:hover .bb-bd-image { transform: scale(1.05); }
+/* Every wrapper down to the anchor has to fill the tile: an inline anchor
+   gives the picture inside it no box to be 100% of, and the tile came out
+   empty. */
+.bb-row-tiles .bb-bd-banners,
+.bb-row-tiles .bb-bd-banner,
+.bb-row-tiles .bb-bd-banner-link { position: absolute; inset: 0; display: block; }
+.bb-row-tiles .bb-bd-banner-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+.bb-row-tiles > .bb-bd-col:hover .bb-bd-banner-img { transform: scale(1.05); }
 /* The picture's own link is what makes the whole tile clickable. */
-.bb-row-tiles .bb-bd-image-link::after { content: ""; position: absolute; inset: 0; z-index: 3; }
+.bb-row-tiles .bb-bd-banner-link::after { content: ""; position: absolute; inset: 0; z-index: 3; }
 .bb-row-tiles .bb-bd-text {
   position: absolute; inset: 0;
   padding: 32px;
