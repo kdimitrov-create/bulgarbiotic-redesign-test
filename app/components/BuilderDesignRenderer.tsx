@@ -66,21 +66,73 @@ const DATA_BLOCKS = new Set([
   'cc_form',
 ]);
 
+/**
+ * A row's own settings, as the panel stores them.
+ *
+ * The builder lets the merchant set a class per row (`class_name`) plus
+ * padding, a background colour or image, full-width and desktop/mobile
+ * visibility. Honouring all of it is what makes the panel enough to lay a page
+ * out — the class is the hook their CSS attaches to.
+ */
 function rowStyle(node: BuilderNode): React.CSSProperties {
   const o = node.options ?? {};
-  return {
+  const style: React.CSSProperties = {
     paddingTop: number(o.padding_top),
     paddingBottom: number(o.padding_bottom),
     marginTop: number(o.margin_top),
     marginBottom: number(o.margin_bottom),
   };
+
+  const side = number(o.padding_side);
+  if (side) {
+    style.paddingLeft = side;
+    style.paddingRight = side;
+  }
+  const sideMargin = number(o.margin_side);
+  if (sideMargin) {
+    style.marginLeft = sideMargin;
+    style.marginRight = sideMargin;
+  }
+
+  // `type: "color"` means the colour field is the background; `type: "image"`
+  // means `src` is.
+  const kind = (text(o.type) || '').toLowerCase();
+  const colour = text(o.color);
+  if (colour && kind !== 'image') style.background = colour;
+
+  const image = text(o.src);
+  if (image) {
+    style.backgroundImage = `url("${image.replace('{storage_url}', 'https://cdncloudcart.com/')}")`;
+    style.backgroundSize = text(o.background_size) || 'cover';
+    style.backgroundRepeat = 'no-repeat';
+    style.backgroundAttachment = text(o.background_attachment) || 'scroll';
+    style.backgroundPosition =
+      `${text(o.background_position_x) || 'center'} ${text(o.background_position_y) || 'center'}`;
+  }
+
+  return style;
 }
 
-/**
- * The panel stores column widths on a SIX-column grid — 6 is full width, 3 is a
- * half, 1.5 a quarter — and doubles them for its Bootstrap output. Reading them
- * as twelfths made every full-width column render at half width.
- */
+/** Classes a row carries: the merchant's own, plus the layout switches. */
+function rowClasses(node: BuilderNode): string {
+  const o = node.options ?? {};
+  const classes = ['bb-bd-row'];
+  if (isOn(o.full_width)) classes.push('bb-bd-row--full');
+  if (isOn(o.reverse_column_order)) classes.push('bb-bd-row--reverse');
+
+  const visibility = (text(o.show_mobile_or_desktop) || '').toLowerCase();
+  if (visibility === 'desktop') classes.push('bb-bd-desktop-only');
+  if (visibility === 'mobile') classes.push('bb-bd-mobile-only');
+
+  const align = text(o.vertical_align_class);
+  if (align) classes.push(`bb-bd-${align.replace(/^_/, '')}`);
+
+  const own = text(o.class_name);
+  if (own) classes.push(own.trim());
+
+  return classes.join(' ');
+}
+
 function colSpan(width: string | undefined): string {
   const w = number(width) ?? 6;
   const twelfths = Math.round(w * 2);
@@ -424,7 +476,7 @@ function renderRow(
   data?: BuilderData,
 ): React.ReactNode {
   return (
-    <div key={idx} className="bb-bd-row" style={rowStyle(row)}>
+    <div key={idx} className={rowClasses(row)} style={rowStyle(row)}>
       {(row.children ?? []).map((col, i) => renderColumn(col, i, sections, data))}
     </div>
   );

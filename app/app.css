@@ -4466,3 +4466,13 @@ img.pm-banner {
 .bb-bd-article img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 14px; }
 .bb-bd-article-title { font-size: 15px; font-weight: 700; line-height: 1.4; }
 .bb-bd-article:hover .bb-bd-article-title { color: var(--color-brand-pink); }
+
+/* Row switches the builder offers alongside the merchant's own class */
+.bb-bd-row--full { grid-column: 1 / -1; width: 100vw; margin-left: calc(50% - 50vw); }
+.bb-bd-row--reverse { direction: rtl; }
+.bb-bd-row--reverse > .bb-bd-col { direction: ltr; }
+.bb-bd-vtop { align-items: start; }
+.bb-bd-vcenter { align-items: center; }
+.bb-bd-vbottom { align-items: end; }
+@media (max-width: 767px) { .bb-bd-desktop-only { display: none; } }
+@media (min-width: 768px) { .bb-bd-mobile-only { display: none; } }

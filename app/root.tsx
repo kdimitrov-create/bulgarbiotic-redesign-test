@@ -6,6 +6,7 @@ import {setAutoDiscounts} from '~/lib/active-discounts';
 import {fetchProductMarks} from '~/lib/product-marks.server';
 import {fetchMainMenu} from '~/lib/navigation.server';
 import {fetchThemeModules} from '~/lib/theme-modules.server';
+import {fetchCustomCss} from '~/lib/custom-css.server';
 import {setThemeModules, forClient} from '~/lib/theme-modules';
 import {setProductMarks} from '~/lib/product-marks';
 import {fetchQuantityPackages} from '~/lib/quantity-packages.server';
@@ -43,7 +44,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // and they read this module synchronously.
   // Labels and banners ride along for the same reason: the listing queries do
   // not return them, so without this the badges only ever appear on the PDP.
-  const [live, marks, packages, offers, adminMenu, themeModules] = await Promise.all([
+  const [live, marks, packages, offers, adminMenu, themeModules, customCss] = await Promise.all([
     fetchAutoDiscounts(env),
     fetchProductMarks(env),
     fetchQuantityPackages(env),
@@ -54,6 +55,8 @@ export async function loader({context, request}: Route.LoaderArgs) {
     // The merchant's own theme modules: promo bar, homepage texts and banners,
     // product showcases. Same reason as the marks — surfaces read them directly.
     fetchThemeModules(env),
+    // The merchant's own CSS for the classes they put on builder rows.
+    fetchCustomCss(env),
   ]);
   setAutoDiscounts(live?.discounts, live?.handles);
   setProductMarks(marks);
@@ -61,7 +64,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setCartOffers(offers);
   setThemeModules(themeModules);
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules)};
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -78,6 +81,13 @@ export function Layout({children}: {children: React.ReactNode}) {
         {canonical ? <link rel="canonical" href={canonical} /> : null}
         <Meta />
         <Links />
+        {/* The merchant's own CSS goes last so their rules win over ours. */}
+        {data?.customCss ? (
+          <style
+            data-source="admin-custom-css"
+            dangerouslySetInnerHTML={{__html: data.customCss}}
+          />
+        ) : null}
       </head>
       <body>
         {children}
