@@ -12,9 +12,12 @@ import {number} from './builder-settings';
  * rather than an error, because a page must survive one bad product id.
  */
 
+// Imported as a value, not only re-exported: `export {X} from '…'` forwards X
+// to consumers without binding it in this module, and this file uses it.
+import {EMPTY_BUILDER_DATA} from './builder-data';
 import type {BuilderData} from './builder-data';
-export {EMPTY_BUILDER_DATA} from './builder-data';
-export type {BuilderData} from './builder-data';
+export {EMPTY_BUILDER_DATA};
+export type {BuilderData};
 
 interface Needs {
   productIds: Set<string>;
