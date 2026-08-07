@@ -89,12 +89,24 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   // Every downstream decision (custom layout, authored body, override lookup)
   // keys off the handle, and the one the API returns is not always the one in
   // the URL — pin the URL's, which is what those maps are written against.
-  return {page: {...page, handle: params.handle}, builderData};
+  return {
+    page: {...page, handle: params.handle},
+    builderData,
+    movedToBuilder: designPlacesPage(design, params.handle),
+  };
 }
 
 export default function PageRoute() {
-  const {page, builderData} = useLoaderData<typeof loader>();
+  const {page, builderData, movedToBuilder} = useLoaderData<typeof loader>();
   const handle = page.handle;
+
+  // A page the merchant has moved into the builder is composed there — even the
+  // three that have a custom layout of their own. Without this check those
+  // three ignored the builder entirely, so anything added around their marker
+  // in the panel had no effect (2026-08-07).
+  if (movedToBuilder) {
+    return <DefaultPage page={page} builderData={builderData} />;
+  }
 
   // Route to custom layouts for the high-traffic special pages first.
   if (handle === 'pateshestvie') {
@@ -153,9 +165,7 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
   // When the override component provides its own hero, render the shell
   // barebones (just breadcrumbs + content, full width).
   const useBarebones = override && PAGES_WITH_OWN_HERO.has(page.handle);
-  // The merchant has moved this page into the builder when its design places
-  // the page's own section. Then the builder drives it — with the designed
-  // content still inside, plus whatever they added around it.
+  // Same signal the route used to get here.
   const movedToBuilder = hasDesign && designPlacesPage(design, page.handle);
 
   return (
