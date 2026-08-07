@@ -33,7 +33,7 @@ import {
   builderHasContent,
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
-import {designTurnedOff} from '~/components/home/SectionRegistry';
+import {designTurnedOff, BUILDER_HOME_HANDLE} from '~/components/home/SectionRegistry';
 import {pageIsActive} from '~/lib/page-flags.server';
 import {
   collectBuilderNeeds,
@@ -80,13 +80,6 @@ const BLOG_HIGHLIGHT_HANDLES: string[] = [
   'top-5-uprajneniya-za-korem-u-doma-za-stegnato-i-silno-tyalo',
   'roza-damascena-taynata-na-jenskata-krasota-balans-i-dalgoletie',
 ];
-
-/**
- * When the merchant has built a homepage in Дизайн → Страници with the handle
- * below, that page drives the homepage. Delete it, deactivate it or empty it and
- * the coded homepage returns on the next request — no deploy, no rollback.
- */
-const BUILDER_HOME_HANDLE = 'home';
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);

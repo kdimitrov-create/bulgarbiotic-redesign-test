@@ -37,6 +37,12 @@ import {BottomCTAs} from '~/components/home/BottomCTAs';
  * marker cannot ask for something the page has not loaded.
  */
 
+/**
+ * The page the merchant composes the homepage in. Kept here because both the
+ * homepage route (which renders it) and the page route (which must not) need it.
+ */
+export const BUILDER_HOME_HANDLE = 'home';
+
 export interface SectionData {
   featuredProducts?: any[];
   familyPack?: any;

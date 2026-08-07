@@ -1,4 +1,4 @@
-import {useLoaderData, data, Link} from 'react-router';
+import {useLoaderData, data, redirect, Link} from 'react-router';
 import type {Route} from './+types/page.$handle';
 import {getContext} from '~/lib/context';
 import {
@@ -14,6 +14,7 @@ import {
   builderHasContent,
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
+import {BUILDER_HOME_HANDLE} from '~/components/home/SectionRegistry';
 import {
   getPageContentOverride,
   PAGES_WITH_CUSTOM_LAYOUT,
@@ -47,6 +48,14 @@ const HANDLE_TITLES: Record<string, string> = {
 };
 
 export async function loader({params, context, request}: Route.LoaderArgs) {
+  // The homepage the merchant composes lives at this handle, and the storefront
+  // already serves it at "/". Leaving it reachable here too would publish the
+  // same content at two addresses — a duplicate for search engines, and a
+  // half-rendered one, since this route carries none of the homepage's data.
+  if (params.handle === BUILDER_HOME_HANDLE) {
+    throw redirect('/', 301);
+  }
+
   const ctx = await getContext(context, request);
   // Storefront API has intermittent 500s on some builder-built pages; if we
   // have a hand-authored override for the handle, gracefully fall back.
