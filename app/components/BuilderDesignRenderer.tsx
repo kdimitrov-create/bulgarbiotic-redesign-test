@@ -6,6 +6,7 @@ import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
 import {BannerSlider} from '~/components/home/HeroBannerSlider';
 import {ProductRail} from '~/components/home/ProductRail';
+import {BundlePrice} from '~/components/home/BundleFeature';
 import {
   carouselSlides,
   showcaseProducts,
@@ -291,6 +292,19 @@ function Showcase({block, data}: {block: BuilderNode; data: BuilderData}) {
 }
 
 /**
+ * The live half of "Пакет на месеца": the price and the button, taken from
+ * whichever product the merchant picked in the block.
+ *
+ * The copy around it (eyebrow, headline, bullets) is ordinary Текст blocks, so
+ * the whole section can be reworked each month without touching the code.
+ */
+function BundlePick({block, data}: {block: BuilderNode; data: BuilderData}) {
+  const product = showcaseProducts(block.settings ?? {}, data)[0];
+  if (!product) return null;
+  return <BundlePrice product={product} />;
+}
+
+/**
  * An image slider — the shop's own hero slider, driven by the slides the
  * merchant uploaded. Mobile gets its own file when they uploaded one.
  */
@@ -343,6 +357,7 @@ function renderBlock(
   idx: number,
   sections?: SectionData,
   data: BuilderData = EMPTY_BUILDER_DATA,
+  rowClass = '',
 ): React.ReactNode {
   const settings = block.settings ?? {};
   if (!isOn(settings.enabled, true)) return null;
@@ -386,6 +401,11 @@ function renderBlock(
       return <Banner key={idx} block={block} />;
     case 'product-showcase':
     case 'bundle-products':
+      // "Пакет на месеца" is one product shown as a feature, not as a card:
+      // the row says so, the block only says which product.
+      if (rowClass.includes('bb-row-bundle')) {
+        return <BundlePick key={idx} block={block} data={data} />;
+      }
       return <Showcase key={idx} block={block} data={data} />;
     case 'carousel':
       return <Carousel key={idx} block={block} />;
@@ -446,7 +466,17 @@ function renderBlock(
       const img = (
         <img src={src} alt={text(settings.alt) || ''} loading="lazy" className="bb-bd-image" />
       );
-      return <div key={idx}>{href ? <LinkOrAnchor href={href}>{img}</LinkOrAnchor> : img}</div>;
+      return (
+        <div key={idx} className="bb-bd-image-wrap">
+          {href ? (
+            <LinkOrAnchor href={href} className="bb-bd-image-link">
+              {img}
+            </LinkOrAnchor>
+          ) : (
+            img
+          )}
+        </div>
+      );
     }
     default:
       if (block.map && !DATA_BLOCKS.has(block.map) && process.env.NODE_ENV !== 'production') {
@@ -461,10 +491,11 @@ function renderColumn(
   idx: number,
   sections?: SectionData,
   data?: BuilderData,
+  rowClass = '',
 ): React.ReactNode {
   return (
     <div key={idx} className={`bb-bd-col ${colSpan(col.width)}`}>
-      {(col.children ?? []).map((block, i) => renderBlock(block, i, sections, data))}
+      {(col.children ?? []).map((block, i) => renderBlock(block, i, sections, data, rowClass))}
     </div>
   );
 }
@@ -475,9 +506,10 @@ function renderRow(
   sections?: SectionData,
   data?: BuilderData,
 ): React.ReactNode {
+  const classes = rowClasses(row);
   return (
-    <div key={idx} className={rowClasses(row)} style={rowStyle(row)}>
-      {(row.children ?? []).map((col, i) => renderColumn(col, i, sections, data))}
+    <div key={idx} className={classes} style={rowStyle(row)}>
+      {(row.children ?? []).map((col, i) => renderColumn(col, i, sections, data, classes))}
     </div>
   );
 }

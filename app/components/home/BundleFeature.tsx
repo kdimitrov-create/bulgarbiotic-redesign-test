@@ -18,25 +18,75 @@ function fmt(amount: number, currency: 'BGN' | 'EUR'): string {
 }
 
 /**
- * "Bundle of the day" — promotes Family Pack on the homepage.
+ * The live part of the section: the price and the button.
  *
- * Now backed by real CloudCart data via the homepage loader (passes
- * `getProduct('family-pack')`). Title, image, price and CTA all come from
- * the live catalog. The "what's in the box" bullet list is still hard-coded
- * marketing copy (the API description is a single paragraph) — easy to swap
- * to `descriptionHtml` rendering if needed.
- *
- * If the product fails to load, the section is hidden gracefully.
+ * Separated from the copy around it so the page builder can place it under
+ * whatever text the merchant writes for this month's bundle — they pick the
+ * product, the price and the link follow it.
  */
-export function BundleFeature({product}: Props) {
-  if (!product) return null;
-
+export function BundlePrice({product}: {product: Product}) {
   const variant = product.variants?.nodes?.[0];
   const priceObj = variant?.price ?? product.priceRange?.minVariantPrice;
   const amount = parseFloat(priceObj?.amount ?? '0');
   const currency = (priceObj?.currencyCode ?? 'EUR') as 'BGN' | 'EUR';
   const eur = currency === 'EUR' ? amount : amount / EUR_TO_BGN;
   const bgn = currency === 'BGN' ? amount : amount * EUR_TO_BGN;
+
+  return (
+    <>
+      <div className="bb-bundle-pricerow">
+        <span className="bb-price-now">{fmt(eur, 'EUR')}</span>
+        <span className="bb-price-bgn">{fmt(bgn, 'BGN')}</span>
+        {product.availableForSale === false && (
+          <span className="bb-out">Изчерпан временно</span>
+        )}
+      </div>
+      <Link
+        to={`/product/${product.handle}`}
+        className="btn-primary magnetic"
+        prefetch="intent"
+      >
+        {product.availableForSale === false ? 'Виж продукта' : 'Поръчай пакета'}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </Link>
+
+      <style>{`
+        .bb-bundle-pricerow { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; flex-wrap: wrap; }
+        .bb-price-now {
+          font-size: 48px; font-weight: 500; font-style: italic;
+          letter-spacing: -1.4px; color: var(--color-ink);
+          font-family: var(--font-serif);
+        }
+        .bb-price-bgn {
+          font-size: 18px; font-weight: 600;
+          color: rgba(10, 37, 64, 0.55);
+          letter-spacing: -0.2px;
+        }
+        .bb-out {
+          background: rgba(10, 37, 64, 0.75); color: white;
+          padding: 5px 12px; font-size: 11px; font-weight: 800;
+          letter-spacing: 1px; border-radius: 6px;
+          text-transform: uppercase;
+        }
+      `}</style>
+    </>
+  );
+}
+
+/**
+ * "Пакет на месеца" as it is coded: this month's copy around the live price.
+ *
+ * The same section rebuilt in the page builder is a `bb-row-bundle` row whose
+ * text blocks hold the copy and whose product block holds `BundlePrice`, so
+ * the merchant can change both the product and the words every month.
+ *
+ * If the product fails to load, the section is hidden gracefully.
+ */
+export function BundleFeature({product}: Props) {
+  if (!product) return null;
 
   return (
     <section className="bb-bundle">
@@ -55,24 +105,7 @@ export function BundleFeature({product}: Props) {
             <li>Подобрява храносмилането и редовното изхождане</li>
             <li>Подпомага метаболизма и контрола на теглото</li>
           </ul>
-          <div className="bb-bundle-pricerow">
-            <span className="bb-price-now">{fmt(eur, 'EUR')}</span>
-            <span className="bb-price-bgn">{fmt(bgn, 'BGN')}</span>
-            {product.availableForSale === false && (
-              <span className="bb-out">Изчерпан временно</span>
-            )}
-          </div>
-          <Link
-            to={`/product/${product.handle}`}
-            className="btn-primary magnetic"
-            prefetch="intent"
-          >
-            {product.availableForSale === false ? 'Виж продукта' : 'Поръчай пакета'}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </Link>
+          <BundlePrice product={product} />
         </div>
         <div className="bb-bundle-image">
           {product.featuredImage?.url ? (
@@ -125,24 +158,6 @@ export function BundleFeature({product}: Props) {
           border-left: 2px solid white; border-bottom: 2px solid white;
           transform: rotate(-45deg);
         }
-        .bb-bundle-pricerow { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; flex-wrap: wrap; }
-        .bb-price-now {
-          font-size: 48px; font-weight: 500; font-style: italic;
-          letter-spacing: -1.4px; color: var(--color-ink);
-          font-family: var(--font-serif);
-        }
-        .bb-price-bgn {
-          font-size: 18px; font-weight: 600;
-          color: rgba(10, 37, 64, 0.55);
-          letter-spacing: -0.2px;
-        }
-        .bb-out {
-          background: rgba(10, 37, 64, 0.75); color: white;
-          padding: 5px 12px; font-size: 11px; font-weight: 800;
-          letter-spacing: 1px; border-radius: 6px;
-          text-transform: uppercase;
-        }
-
         .bb-bundle-image {
           aspect-ratio: 1/1;
           border-radius: 28px;
