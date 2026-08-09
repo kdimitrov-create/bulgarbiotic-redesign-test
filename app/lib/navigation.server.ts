@@ -20,13 +20,15 @@ import type {NavMenu, NavNode} from './navigation';
 const CACHE_TTL_MS = 30 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 
-const TREE_QUERY = `query MainMenu {
-  navigation(group: "main") {
+const FIELDS = 'id name type linkType linkId url blank class widgetText order';
+
+const treeQuery = (group: string) => `query NavMenu {
+  navigation(group: "${group}") {
     items {
-      id name type linkType linkId url blank class widgetText order
+      ${FIELDS}
       children {
-        id name type linkType linkId url blank class widgetText order
-        children { id name type linkType linkId url blank class widgetText order }
+        ${FIELDS}
+        children { ${FIELDS} }
       }
     }
   }
@@ -55,32 +57,46 @@ interface RawItem {
   children?: RawItem[];
 }
 
-let cache: {at: number; data: NavMenu} | null = null;
+/** One cache per group: the header and the footer are separate menus. */
+const cache = new Map<string, {at: number; data: NavMenu}>();
 
-/** The merchant's menu, or null when unconfigured / the call failed. Never throws. */
-export async function fetchMainMenu(
+/** A menu group from the panel, or null when unconfigured / the call failed. */
+export async function fetchNavMenu(
   env: Record<string, string | undefined>,
+  group: string,
 ): Promise<NavMenu | null> {
   const pat = env.CLOUDCART_ADMIN_PAT || env.CLOUDCARTADMINPAT;
   const origin = adminOrigin(env);
   if (!pat || !origin) return null;
 
-  if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
+  const cached = cache.get(group);
+  if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
 
   try {
-    const tree = await gql(origin, pat, TREE_QUERY, {});
+    const tree = await gql(origin, pat, treeQuery(group), {});
     const roots: RawItem[] = tree?.navigation?.items ?? [];
-    if (!roots.length) return cache?.data ?? null;
+    if (!roots.length) return cached?.data ?? null;
 
     const handles = await resolveHandles(origin, pat, roots);
     const items = roots.map((item) => toNode(item, handles)).filter(Boolean) as NavNode[];
 
-    cache = {at: Date.now(), data: {items}};
-    return cache.data;
+    const data = {items};
+    cache.set(group, {at: Date.now(), data});
+    return data;
   } catch (error) {
-    console.error('navigation: keeping the previous menu —', (error as Error).message);
-    return cache?.data ?? null;
+    console.error('navigation(%s): keeping the previous menu —', group, (error as Error).message);
+    return cached?.data ?? null;
   }
+}
+
+/** Дизайн → Навигация, главното меню. */
+export function fetchMainMenu(env: Record<string, string | undefined>) {
+  return fetchNavMenu(env, 'main');
+}
+
+/** Дизайн → Навигация, менюто на футъра. Each group is one footer column. */
+export function fetchFooterMenu(env: Record<string, string | undefined>) {
+  return fetchNavMenu(env, 'footer');
 }
 
 /** What one batched lookup gives back for a linked entity. */

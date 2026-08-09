@@ -4,7 +4,7 @@ import {getContext} from '~/lib/context';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {setAutoDiscounts} from '~/lib/active-discounts';
 import {fetchProductMarks} from '~/lib/product-marks.server';
-import {fetchMainMenu} from '~/lib/navigation.server';
+import {fetchMainMenu, fetchFooterMenu} from '~/lib/navigation.server';
 import {fetchThemeModules} from '~/lib/theme-modules.server';
 import {fetchCustomCss} from '~/lib/custom-css.server';
 import {setThemeModules, forClient} from '~/lib/theme-modules';
@@ -44,7 +44,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // and they read this module synchronously.
   // Labels and banners ride along for the same reason: the listing queries do
   // not return them, so without this the badges only ever appear on the PDP.
-  const [live, marks, packages, offers, adminMenu, themeModules, customCss] = await Promise.all([
+  const [live, marks, packages, offers, adminMenu, adminFooter, themeModules, customCss] = await Promise.all([
     fetchAutoDiscounts(env),
     fetchProductMarks(env),
     fetchQuantityPackages(env),
@@ -52,6 +52,9 @@ export async function loader({context, request}: Route.LoaderArgs) {
     // The header menu comes from Дизайн → Навигация. The Storefront API returns
     // no menus for this store, so this is the only way the two can match.
     fetchMainMenu(env),
+    // The footer columns come from the same place, group "footer": one group
+    // per column, so the merchant owns the footer links too.
+    fetchFooterMenu(env),
     // The merchant's own theme modules: promo bar, homepage texts and banners,
     // product showcases. Same reason as the marks — surfaces read them directly.
     fetchThemeModules(env),
@@ -64,7 +67,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setCartOffers(offers);
   setThemeModules(themeModules);
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, gaId: env.PUBLIC_GA_ID ?? null, pixelId: env.PUBLIC_META_PIXEL_ID ?? null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -133,6 +136,7 @@ export default function App() {
         shop={shop}
         headerMenu={data?.headerMenu ?? null}
         footerMenu={data?.footerMenu ?? null}
+        adminFooter={data?.adminFooter ?? null}
         cart={cart}
       >
         <Outlet />

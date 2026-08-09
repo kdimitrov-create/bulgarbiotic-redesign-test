@@ -1,12 +1,49 @@
 import {Link} from 'react-router';
 import type {Shop, Menu} from '@cloudcart/nitro';
+import type {NavMenu, NavNode} from '~/lib/navigation';
 
 interface FooterProps {
   shop: Shop;
   menu: Menu | null;
+  /**
+   * Дизайн → Навигация, group "footer". Each group there is one column here;
+   * the group named „Долна лента" is the thin bar under them.
+   *
+   * The coded columns below stay as the fallback: if the merchant empties the
+   * group, or the admin call fails, the footer still has its links.
+   */
+  adminFooter?: NavMenu | null;
 }
 
-export function Footer({shop}: FooterProps) {
+/** Ordinary links only — a column's own children, without nested containers. */
+function columnLinks(node: NavNode): NavNode[] {
+  return (node.children ?? []).filter((c) => c.url);
+}
+
+const BOTTOM_BAR = 'долна лента';
+
+function FooterLink({item}: {item: NavNode}) {
+  if (!item.url) return null;
+  const external = !item.url.startsWith('/') || item.url.startsWith('//');
+  if (external) {
+    return (
+      <a href={item.url} target={item.blank ? '_blank' : undefined} rel="noopener noreferrer">
+        {item.title}
+      </a>
+    );
+  }
+  return (
+    <Link to={item.url} prefetch="intent">
+      {item.title}
+    </Link>
+  );
+}
+
+export function Footer({shop, adminFooter}: FooterProps) {
+  const groups = (adminFooter?.items ?? []).filter((g) => columnLinks(g).length);
+  const columns = groups.filter((g) => g.title.trim().toLowerCase() !== BOTTOM_BAR);
+  const bottom = groups.find((g) => g.title.trim().toLowerCase() === BOTTOM_BAR);
+  const fromPanel = columns.length > 0;
   return (
     <footer className="bb-footer">
       <div className="bb-container">
@@ -30,37 +67,46 @@ export function Footer({shop}: FooterProps) {
             </div>
           </div>
 
-          {/* Column 2: Магазин */}
-          <div className="bb-ft-col">
-            <h4>Магазин</h4>
-            <Link to="/category/all-products">Всички продукти</Link>
-            <Link to="/category/perli">Перли</Link>
-            <Link to="/category/packages">Пакети</Link>
-            <Link to="/category/probiotik-za-jeni">За жени</Link>
-            <Link to="/category/probiotik-za-deca">За деца</Link>
-            <Link to="/selection/sale">Промоции</Link>
-          </div>
-
-          {/* Column 3: Bactology */}
-          <div className="bb-ft-col">
-            <h4>Bactology</h4>
-            <Link to="/page/about-us">За нас</Link>
-            <Link to="/page/events">Събития</Link>
-            <Link to="/page/mediite-za-nas">Медиите за нас</Link>
-            <Link to="/page/naukata-zad-bulgar-biotic">Науката</Link>
-            <Link to="/blog">Блог</Link>
-            <Link to="/page/about-us#contact">Контакти</Link>
-          </div>
-
-          {/* Column 4: Помощ */}
-          <div className="bb-ft-col">
-            <h4>Помощ</h4>
-            <Link to="/page/shipping">Доставка</Link>
-            <Link to="/page/payment">Плащане</Link>
-            <Link to="/page/vrashtane-na-produkt">Връщане на продукт</Link>
-            <Link to="/page/formulyar-za-otkaz">Формуляр за отказ</Link>
-            <Link to="/page/politika-otnosno-biskvitkite">Бисквитки</Link>
-          </div>
+          {/* Columns 2-4: the merchant's own, one per group in the panel. */}
+          {fromPanel
+            ? columns.map((col) => (
+                <div className="bb-ft-col" key={col.id}>
+                  <h4>{col.title}</h4>
+                  {columnLinks(col).map((item) => (
+                    <FooterLink key={item.id} item={item} />
+                  ))}
+                </div>
+              ))
+            : (
+              <>
+                <div className="bb-ft-col">
+                  <h4>Магазин</h4>
+                  <Link to="/category/all-products">Всички продукти</Link>
+                  <Link to="/category/perli">Перли</Link>
+                  <Link to="/category/packages">Пакети</Link>
+                  <Link to="/category/probiotik-za-jeni">За жени</Link>
+                  <Link to="/category/probiotik-za-deca">За деца</Link>
+                  <Link to="/selection/sale">Промоции</Link>
+                </div>
+                <div className="bb-ft-col">
+                  <h4>Bactology</h4>
+                  <Link to="/page/about-us">За нас</Link>
+                  <Link to="/page/events">Събития</Link>
+                  <Link to="/page/mediite-za-nas">Медиите за нас</Link>
+                  <Link to="/page/naukata-zad-bulgar-biotic">Науката</Link>
+                  <Link to="/blog">Блог</Link>
+                  <Link to="/page/about-us#contact">Контакти</Link>
+                </div>
+                <div className="bb-ft-col">
+                  <h4>Помощ</h4>
+                  <Link to="/page/shipping">Доставка</Link>
+                  <Link to="/page/payment">Плащане</Link>
+                  <Link to="/page/vrashtane-na-produkt">Връщане на продукт</Link>
+                  <Link to="/page/formulyar-za-otkaz">Формуляр за отказ</Link>
+                  <Link to="/page/politika-otnosno-biskvitkite">Бисквитки</Link>
+                </div>
+              </>
+            )}
 
           {/* Column 5: Свържи се + payments */}
           <div className="bb-ft-col bb-ft-contact">
@@ -153,9 +199,15 @@ export function Footer({shop}: FooterProps) {
         <div className="bb-ft-bottom">
           <div className="bb-ft-meta">
             <span>© {new Date().getFullYear()} BulgarBiotic Ltd.</span>
-            <Link to="/page/terms-policy">Общи условия</Link>
-            <Link to="/page/privacy-policy">Поверителност</Link>
-            <Link to="/page/politika-otnosno-biskvitkite">Бисквитки</Link>
+            {bottom ? (
+              columnLinks(bottom).map((item) => <FooterLink key={item.id} item={item} />)
+            ) : (
+              <>
+                <Link to="/page/terms-policy">Общи условия</Link>
+                <Link to="/page/privacy-policy">Поверителност</Link>
+                <Link to="/page/politika-otnosno-biskvitkite">Бисквитки</Link>
+              </>
+            )}
           </div>
           <div className="bb-ft-stamp"><span className="bb-ft-stamp-dot"></span>Произведено в България · от 2019</div>
           <div className="bb-ft-socials">
