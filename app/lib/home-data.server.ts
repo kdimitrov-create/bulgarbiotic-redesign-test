@@ -2,6 +2,7 @@ import type {Product, Article} from '@cloudcart/nitro';
 import {enhanceProducts} from '~/lib/product-images';
 import {enhanceArticleImage} from '~/lib/article-images';
 import type {SectionData} from '~/components/home/SectionRegistry';
+import {primaryBlogHandle} from '~/lib/blog.server';
 
 /**
  * The data every homepage section needs.
@@ -34,7 +35,7 @@ const FOCUS_PRODUCT_HANDLE = 'probiotici-za-plosko-koremche-promociya-femin-gast
 // "Beauty and Health" blog (id=1) on bulgarbiotic.bg.
 // Cover image URLs are decorated via the shared helper in
 // app/lib/article-images.ts (Storefront API doesn't surface them).
-const BLOG_BLOG_HANDLE = 'beauty-and-health';
+/* Блогът идва от панела през `primaryBlogHandle`, не се кова тук. */
 
 const BLOG_HIGHLIGHT_HANDLES: string[] = [
   'top-10-saveta-kak-da-podobrish-metabolizma-si',
@@ -43,6 +44,8 @@ const BLOG_HIGHLIGHT_HANDLES: string[] = [
 ];
 
 export async function fetchHomeSectionData(ctx: any): Promise<SectionData> {
+  // Блогът се резолвва преди останалото: статиите се искат по неговия handle.
+  const blogHandle = await primaryBlogHandle(ctx.storefront);
   // Featured products + Family Pack bundle + blog highlights + catalog pool
   // fetched in parallel. The catalog pool (getProducts) supplies the extra
   // cards that turn the homepage rail into a slider — see merge below.
@@ -61,7 +64,7 @@ export async function fetchHomeSectionData(ctx: any): Promise<SectionData> {
     }),
     Promise.all(
       BLOG_HIGHLIGHT_HANDLES.map((handle) =>
-        ctx.storefront.getArticle(BLOG_BLOG_HANDLE, handle).catch((error: Error) => {
+        ctx.storefront.getArticle(blogHandle, handle).catch((error: Error) => {
           console.error(`Failed to load article ${handle}:`, error.message);
           return null;
         }),

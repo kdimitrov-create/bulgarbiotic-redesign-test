@@ -6,7 +6,8 @@ interface Props {
   articles: Article[];
 }
 
-const BLOG_BLOG_HANDLE = 'beauty-and-health';
+/* Сочи към `/blog`, а не към конкретен блог: този маршрут вече резолвва
+   реалния handle от панела и пренасочва натам. Така връзката не остарява. */
 
 /** Map an article handle to a short category tag rendered above the title. */
 function categoryFor(handle: string): string {
@@ -55,7 +56,7 @@ export function BlogHighlights({articles}: Props) {
               Без жаргон. Базирано на наука.
             </p>
           </div>
-          <Link to={`/blog/${BLOG_BLOG_HANDLE}`} className="bb-blog-allcta" prefetch="intent">
+          <Link to="/blog" className="bb-blog-allcta" prefetch="intent">
             Виж всички статии
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <line x1="5" y1="12" x2="19" y2="12" />

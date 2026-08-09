@@ -1,5 +1,6 @@
 import {number} from './builder-settings';
 import {enhanceProducts} from '~/lib/product-images';
+import {primaryBlogHandle} from '~/lib/blog.server';
 
 /**
  * Loading what the page-builder's data blocks ask for.
@@ -80,7 +81,9 @@ export async function fetchBuilderData(
     needs.productIds.size ? fetchByIds(env, [...needs.productIds]) : Promise.resolve([]),
     needs.poolSize ? storefront.getProducts(needs.poolSize).catch(() => []) : Promise.resolve([]),
     needs.articleCount
-      ? storefront.getArticles('beauty-and-health', needs.articleCount).catch(() => [])
+      ? primaryBlogHandle(storefront)
+          .then((h) => storefront.getArticles(h, needs.articleCount))
+          .catch(() => [])
       : Promise.resolve([]),
   ]);
 

@@ -6,10 +6,12 @@ import {RichText, Image} from '@cloudcart/nitro-react';
 import {PageShell, PageBackLink} from '~/components/PageShell';
 import {enhanceArticleImage, setArticleImages} from '~/lib/article-images';
 import {fetchArticleImages} from '~/lib/blog-images.server';
+import {primaryBlogHandle} from '~/lib/blog.server';
 
 /** Default blog handle on bulgarbiotic.bg. All articles live in this blog,
  *  matching the legacy single-segment URL pattern `/article/{slug}`. */
-const DEFAULT_BLOG_HANDLE = 'beauty-and-health';
+/* Адресите на статиите са едносегментни, но Storefront API-то иска и блога.
+   Той идва от панела през `primaryBlogHandle`. */
 
 export const meta: Route.MetaFunction = ({data: d}) => {
   const article = d?.article as any;
@@ -26,8 +28,9 @@ export const meta: Route.MetaFunction = ({data: d}) => {
 
 export async function loader({params, context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
+  const blogHandle = await primaryBlogHandle(ctx.storefront);
   const [article, liveImages] = await Promise.all([
-    ctx.storefront.getArticle(DEFAULT_BLOG_HANDLE, params.handle).catch(() => null),
+    ctx.storefront.getArticle(blogHandle, params.handle).catch(() => null),
     fetchArticleImages(ctx.env as Record<string, string | undefined>),
   ]);
   if (!article) throw data('Статията не е намерена', {status: 404});
@@ -44,7 +47,9 @@ export default function ArticleRoute() {
 
   // Author + date — suppress CloudCart's epoch-zero sentinel
   // (`1970-01-01`) which appears when articles have no real publishedAt.
-  const author = a.authorV2?.name as string | undefined;
+  // Скрит: `authorV2.name` е името на админ акаунта, а всичките статии са на
+  // един и същ. Виж blog.$blogHandle._index.
+  const author: string | undefined = undefined;
   const rawDate = a.publishedAt as string | undefined;
   const dateObj = rawDate ? new Date(rawDate) : null;
   const publishedAt =
