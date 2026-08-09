@@ -43,7 +43,10 @@ export function Footer({shop, adminFooter}: FooterProps) {
   const groups = (adminFooter?.items ?? []).filter((g) => columnLinks(g).length);
   const columns = groups.filter((g) => g.title.trim().toLowerCase() !== BOTTOM_BAR);
   const bottom = groups.find((g) => g.title.trim().toLowerCase() === BOTTOM_BAR);
-  const fromPanel = columns.length > 0;
+  // „Долна лента" is the sign that this group was built for this footer. A shop
+  // whose footer group still holds the classic theme's two columns keeps the
+  // coded ones instead of rendering a footer it was never designed for.
+  const fromPanel = columns.length > 0 && !!bottom;
   return (
     <footer className="bb-footer">
       <div className="bb-container">
@@ -199,7 +202,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
         <div className="bb-ft-bottom">
           <div className="bb-ft-meta">
             <span>© {new Date().getFullYear()} BulgarBiotic Ltd.</span>
-            {bottom ? (
+            {fromPanel && bottom ? (
               columnLinks(bottom).map((item) => <FooterLink key={item.id} item={item} />)
             ) : (
               <>
