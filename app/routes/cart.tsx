@@ -1,6 +1,7 @@
 import {useLoaderData, redirect, useFetchers, data as routeData} from 'react-router';
 import type {Route} from './+types/cart';
 import {getContext} from '~/lib/context';
+import {reconcileGifts} from '~/lib/cart-gifts.server';
 import type {CartData} from '@cloudcart/nitro';
 import {CartPage as CartPageView} from '~/components/CartPage';
 
@@ -91,6 +92,11 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   const headers = new Headers();
+  // Подаръкът от кръстосаните оферти влиза и излиза сам, според сумата.
+  // Прави се тук, а не в браузъра, за да важи и когато количката се променя от
+  // няколко места (карта, продуктова страница, колело).
+  cart = await reconcileGifts(cart, ctx.cart);
+
   if (ctx.session.isPending) {
     headers.set('Set-Cookie', await ctx.session.commit());
   }

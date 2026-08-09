@@ -110,8 +110,14 @@ export async function fetchCartOffers(
         productTitle: reward.itemName ?? 'Подарък',
         imageUrl: null,
         handle: null,
+        productId: String(reward.itemId),
+        variantId: null,
       });
     }
+
+    // The offer names a product; the cart needs a variant. One batched request
+    // turns every rewarded product into the variant the line will carry.
+    await attachVariants(env, gifts);
 
     const rules: CartRuleNotice[] = cartRules.map((rule) => {
       const detail = details?.[`r${rule.id}`];
@@ -164,4 +170,45 @@ function apiOrigin(env: Record<string, string | undefined>): string | null {
   const origin = env.PUBLIC_API_ORIGIN || env.PUBLIC_STORE_DOMAIN;
   if (!origin) return null;
   return origin.startsWith('http') ? origin.replace(/\/$/, '') : `https://${origin}`;
+}
+
+
+/**
+ * The first variant of every rewarded product, in one request.
+ *
+ * The admin names the gift by product id, the cart adds by variant id. Without
+ * this the storefront knows what it owes the shopper and cannot hand it over.
+ */
+async function attachVariants(
+  env: Record<string, string | undefined>,
+  gifts: GiftOffer[],
+): Promise<void> {
+  const ids = [...new Set(gifts.map((g) => g.productId).filter(Boolean))] as string[];
+  const origin = apiOrigin(env);
+  const token = env.PUBLIC_STOREFRONT_API_TOKEN;
+  if (!ids.length || !origin || !token) return;
+
+  const fields = ids
+    .filter((id) => /^\d+$/.test(id))
+    .map((id) => `p${id}: product(id: "${id}") { id handle featuredImage { url } variants(first: 1) { nodes { id } } }`);
+  if (!fields.length) return;
+
+  try {
+    const res = await fetch(`${origin}/api/sf`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', 'X-Storefront-Access-Token': token},
+      body: JSON.stringify({query: `query GiftVariants { ${fields.join(' ')} }`}),
+    });
+    if (!res.ok) return;
+    const json = (await res.json()) as {data?: Record<string, any>};
+    for (const gift of gifts) {
+      const node = json.data?.[`p${gift.productId}`];
+      if (!node) continue;
+      gift.variantId = node.variants?.nodes?.[0]?.id ?? null;
+      gift.handle = node.handle ?? null;
+      gift.imageUrl = node.featuredImage?.url ?? null;
+    }
+  } catch (error) {
+    console.warn('cart-offers: gift variants unresolved —', (error as Error).message);
+  }
 }

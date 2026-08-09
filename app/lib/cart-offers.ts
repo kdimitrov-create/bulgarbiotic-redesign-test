@@ -22,6 +22,14 @@ export interface GiftOffer {
   productTitle: string;
   imageUrl: string | null;
   handle: string | null;
+  /** The rewarded product, as the offer names it. */
+  productId: string | null;
+  /**
+   * What the cart actually needs to add. CloudCart's checkout does NOT add the
+   * gift for a cart built through the Storefront API (verified 2026-08-09), so
+   * the storefront puts the line in and takes it out itself.
+   */
+  variantId: string | null;
 }
 
 export interface CartRuleNotice {
