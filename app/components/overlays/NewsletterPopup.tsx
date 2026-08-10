@@ -1,27 +1,42 @@
 import {useEffect, useState, useRef} from 'react';
+import {NewsletterConsent} from '~/components/NewsletterConsent';
+import {useNewsletter} from '~/lib/use-newsletter';
 
 const POPUP_KEY = 'bactology-npopup-v1';
 const WELCOME_CODE = 'WELCOME10';
 
 /**
+ * ⚠️ ПОПЪПЪТ Е СКРИТ ЗА ПОСЕТИТЕЛИТЕ.
+ *
+ * Клиентът поиска да го махнем на 2026-08-10 и това решение стои. Формата
+ * обаче вече е вързана към истинските абонати, затова се показва само с
+ * `?popup=1` в адреса - за да може да се пробва на живо, без да изскача на
+ * никого. Пускането за всички е една стойност: `PREVIEW_ONLY = false`.
+ */
+const PREVIEW_ONLY = true;
+
+/**
  * First-visit newsletter popup — appears after 8s OR 30% scroll, whichever first.
  *
- * Two states:
- *   1. Capture: email form. On submit advances to the next state.
- *   2. Reveal: shows the actual WELCOME10 discount code (real CloudCart
- *      campaign id=440, 2,027 uses to date) with a click-to-copy chip,
- *      a CTA to start shopping, and a manual close. No auto-close, so the
- *      user can copy the code at their own pace.
+ * Три състояния:
+ *   1. Capture: имейл + съгласие. Праща към `/api/subscribe`, което първо
+ *      проверява дали такъв абонат вече съществува.
+ *   2. Reveal: истинският код WELCOME10 (кампания id=440 в CloudCart) с чип за
+ *      копиране. Показва се САМО при новозаписан абонат - иначе един и същ
+ *      имейл вадеше код колкото пъти го напишеш.
+ *   3. Exists: казваме, че вече има абонат с този имейл, и не даваме код.
  */
 export function NewsletterPopup() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [stage, setStage] = useState<'capture' | 'reveal'>('capture');
+  const [stage, setStage] = useState<'capture' | 'reveal' | 'exists'>('capture');
   const [copied, setCopied] = useState(false);
   const triggered = useRef(false);
+  const news = useNewsletter();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (PREVIEW_ONLY && !new URLSearchParams(window.location.search).has('popup')) return;
     if (sessionStorage.getItem(POPUP_KEY)) return;
     setMounted(true);
 
@@ -68,11 +83,11 @@ export function NewsletterPopup() {
     }, 600);
   }
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    // Show the code immediately — email is captured by the form action elsewhere
-    // (future wire-up: POST to /api/subscribe with the email).
-    setStage('reveal');
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const status = await news.submit(e);
+    if (status === 'created') setStage('reveal');
+    else if (status === 'exists') setStage('exists');
+    // При отказ оставаме на формата - `news.problem` казва защо.
   }
 
   async function copyCode() {
@@ -125,11 +140,50 @@ export function NewsletterPopup() {
                 + седмични съвети за микробиома директно в имейла ти.
               </p>
               <form className="bb-npopup-form" onSubmit={onSubmit}>
-                <input type="email" placeholder="твоят имейл адрес" required />
-                <button type="submit">Получи кода</button>
+                <input
+                  type="email"
+                  placeholder="твоят имейл адрес"
+                  value={news.email}
+                  onChange={(e) => news.setEmail(e.target.value)}
+                  disabled={news.sending}
+                  required
+                />
+                <button type="submit" disabled={news.sending}>
+                  {news.sending ? 'Записваме…' : 'Получи кода'}
+                </button>
               </form>
+              <NewsletterConsent
+                id="bb-consent-popup"
+                checked={news.consent}
+                onChange={news.setConsent}
+              />
+              {news.problem ? (
+                <div className="bb-npopup-problem" role="alert">
+                  {news.problem}
+                </div>
+              ) : null}
               <div className="bb-npopup-fineprint">
                 Без спам. Можеш да се отпишеш по всяко време. Присъединяваш се към 117 000+ читатели.
+              </div>
+            </>
+          ) : stage === 'exists' ? (
+            <>
+              <h2 id="bb-npopup-title">
+                Вече си <em>с нас.</em>
+              </h2>
+              <p>
+                Вече има абонат с този имейл, затова не го записваме втори път. Бюлетинът
+                продължава да идва както досега.
+              </p>
+              <a href="/category/all-products" className="bb-welcome-shop" onClick={close}>
+                Пазарувай сега
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
+              <div className="bb-npopup-fineprint">
+                Ако не получаваш писмата ни, провери папката „Спам".
               </div>
             </>
           ) : (
@@ -139,7 +193,7 @@ export function NewsletterPopup() {
               </h2>
               <p>
                 Приложи го на финалната стъпка от поръчката си, за да получиш <strong>10% намаление</strong>.
-                Изпратихме го и на имейла ти.
+                Записахме те и за бюлетина.
               </p>
               <button
                 id="bb-welcome-code-chip"
@@ -183,6 +237,22 @@ export function NewsletterPopup() {
         </div>
 
         <style>{`
+          /* Отказът стои под формата, не на мястото ѝ - иначе човекът губи
+             написаното и не вижда какво да поправи. */
+          .bb-npopup-problem {
+            margin-top: 10px;
+            padding: 9px 12px;
+            border-radius: 10px;
+            background: rgba(227, 22, 108, 0.08);
+            border: 1px solid rgba(227, 22, 108, 0.24);
+            color: var(--color-brand-pink);
+            font-size: 12.5px;
+            font-weight: 600;
+            text-align: left;
+          }
+          .bb-npopup-form input:disabled,
+          .bb-npopup-form button:disabled { opacity: 0.6; cursor: default; }
+
           /* WELCOME10 reveal chip + ctas */
           .bb-welcome-chip {
             display: flex;

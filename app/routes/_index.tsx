@@ -28,6 +28,7 @@ import {Stories} from '~/components/home/Stories';
 import {BlogHighlights} from '~/components/home/BlogHighlights';
 import {FAQ} from '~/components/home/FAQ';
 import {BottomCTAs} from '~/components/home/BottomCTAs';
+import {NewsletterPopup} from '~/components/overlays/NewsletterPopup';
 import {
   BuilderDesignRenderer,
   builderHasContent,
@@ -109,6 +110,7 @@ export default function Homepage() {
           sections={{featuredProducts, familyPack, homeReviews, articles}}
           data={builderData}
         />
+        <NewsletterPopup />
       </>
     );
   }
@@ -135,6 +137,7 @@ export default function Homepage() {
       <BlogHighlights articles={articles} />
       <FAQ />
       <BottomCTAs />
+      <NewsletterPopup />
     </>
   );
 }

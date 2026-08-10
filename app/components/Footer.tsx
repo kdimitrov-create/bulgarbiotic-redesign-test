@@ -1,6 +1,7 @@
 import {Link} from 'react-router';
 import type {Shop, Menu} from '@cloudcart/nitro';
 import type {NavMenu, NavNode} from '~/lib/navigation';
+import {NewsletterInlineForm} from '~/components/NewsletterInlineForm';
 
 interface FooterProps {
   shop: Shop;
@@ -63,10 +64,16 @@ export function Footer({shop, adminFooter}: FooterProps) {
               <div className="bb-ft-news-sub">
                 Седмични съвети за микробиома и ексклузивни оферти. Без спам.
               </div>
-              <form className="bb-ft-news-input" onSubmit={(e) => e.preventDefault()}>
-                <input type="email" placeholder="имейл адрес" />
-                <button type="submit">Абонирай се</button>
-              </form>
+              <NewsletterInlineForm
+                id="bb-consent-footer"
+                formClassName="bb-ft-news-input"
+                placeholder="имейл адрес"
+                success={
+                  <div className="bb-ft-news-done" role="status">
+                    Готово! Записахме те за бюлетина.
+                  </div>
+                }
+              />
             </div>
           </div>
 
@@ -312,6 +319,16 @@ export function Footer({shop, adminFooter}: FooterProps) {
           transition: background 0.2s;
         }
         .bb-ft-news-input button:hover { background: var(--color-brand-pink-dark); }
+        .bb-ft-news-done {
+          max-width: 320px;
+          padding: 12px 18px;
+          border-radius: 14px;
+          background: rgba(245,239,227,0.06);
+          border: 1px solid rgba(245,239,227,0.16);
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--color-cream-1);
+        }
 
         .bb-ft-col h4 {
           font-size: 11px; letter-spacing: 2px; text-transform: uppercase;

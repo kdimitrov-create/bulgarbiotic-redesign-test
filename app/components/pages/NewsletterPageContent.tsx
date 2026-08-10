@@ -1,4 +1,4 @@
-import {useState} from 'react';
+import {NewsletterInlineForm} from '~/components/NewsletterInlineForm';
 
 /**
  * /page/abomanmet-za-byuletin — Newsletter subscription landing page.
@@ -7,19 +7,10 @@ import {useState} from 'react';
  * benefits, what's inside, the 10%-off incentive, GDPR + frequency note) in the
  * redesign's design language: cream canvas, serif display headings, pink accents.
  *
- * NOTE: the redesign has no newsletter backend wired yet (the footer form is a
- * placeholder too) — the form validates + shows a thank-you state client-side.
- * Wire the submit to the real subscribe endpoint when it's available.
+ * Формата пише в истинските абонати на магазина през `/api/subscribe` - същият
+ * маршрут, който обслужва футъра и попъпа.
  */
 export function NewsletterPageContent() {
-  const [email, setEmail] = useState('');
-  const [done, setDone] = useState(false);
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (/.+@.+\..+/.test(email)) setDone(true);
-  };
-
   return (
     <>
       {/* ─── HERO + SIGN-UP FORM ─── */}
@@ -35,27 +26,19 @@ export function NewsletterPageContent() {
             кодове, ексклузивни намаления и ранен достъп до нови продукти.
           </p>
 
-          {done ? (
-            <div className="bb-news-thanks" role="status">
-              <span className="bb-news-thanks-icon" aria-hidden="true">✓</span>
-              <div>
-                <strong>Благодарим ти!</strong>
-                <span>Провери пощата си — изпратихме ти потвърждение и твоя код за −10%.</span>
+          <NewsletterInlineForm
+            id="bb-consent-newsletter-page"
+            formClassName="bb-news-form"
+            success={
+              <div className="bb-news-thanks" role="status">
+                <span className="bb-news-thanks-icon" aria-hidden="true">✓</span>
+                <div>
+                  <strong>Благодарим ти!</strong>
+                  <span>Записахме те за бюлетина с този имейл.</span>
+                </div>
               </div>
-            </div>
-          ) : (
-            <form className="bb-news-form" onSubmit={onSubmit}>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="твоят имейл адрес"
-                aria-label="Имейл адрес"
-              />
-              <button type="submit">Абонирай се</button>
-            </form>
-          )}
+            }
+          />
 
           <p className="bb-news-consent">
             Използваме имейла ти само за да ти пращаме бюлетина и офертите ни.
