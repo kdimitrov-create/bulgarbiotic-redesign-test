@@ -112,13 +112,16 @@ export function DoctorsSection() {
         .bb-docs-title em { font-family: var(--font-serif); font-style: italic; font-weight: 500; color: var(--color-brand-pink); }
         .bb-docs-lead { margin: 16px 0 0; font-size: 15px; line-height: 1.7; color: rgba(10, 37, 64, 0.65); }
 
-        /* align-items:start so an unfolding card grows on its own instead of
-           stretching its neighbours in the same row. */
-        .bb-docs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; align-items: start; }
+        /* stretch, за да са трите карти еднакво високи и "Визитка" да пада на
+           една линия. Цитатите са с различна дължина, затова без това картите
+           свършваха на различна височина. Изравняването се поема САМО от фона
+           на цитата (flex: 1 отдолу) - текстът не се пипа. */
+        .bb-docs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; align-items: stretch; }
         .bb-doc {
           display: flex; flex-direction: column; align-items: center; text-align: center;
           background: #fff; border: 1px solid rgba(10, 37, 64, 0.08); border-radius: 22px;
           padding: 32px 26px 28px; box-shadow: 0 20px 44px -30px rgba(10, 37, 64, 0.4);
+          height: 100%;
         }
         .bb-doc-photo {
           position: relative; width: 116px; height: 116px; border-radius: 999px;
@@ -157,6 +160,9 @@ export function DoctorsSection() {
 
         .bb-doc-quote {
           margin: 18px 0 0;
+          /* Поема цялото свободно място в картата, за да завършат трите цитата
+             на една линия. Расте само подложката - текстът си стои горе. */
+          flex: 1 1 auto; width: 100%; box-sizing: border-box;
           position: relative; padding: 16px 18px 16px 20px;
           text-align: left; font-size: 13.5px; line-height: 1.65; font-style: italic;
           color: var(--color-ink); background: var(--color-cream-2, #f7f2e8); border-radius: 14px;
