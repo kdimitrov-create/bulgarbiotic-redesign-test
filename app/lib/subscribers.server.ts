@@ -23,7 +23,7 @@ import {envValue} from './env.server';
 
 const REQUEST_TIMEOUT_MS = 8000;
 
-export type SubscribeOutcome = 'created' | 'exists' | 'error';
+export type SubscribeOutcome = 'created' | 'exists' | 'updated' | 'error';
 
 /**
  * Токенът на администратора.
@@ -67,15 +67,34 @@ async function gql<T>(
   }
 }
 
+/**
+ * Стъпка 1 - кандидатите. Само идентификатори.
+ *
+ * ⚠️ Каналите НЕ се искат тук нарочно. Списъчната заявка ги връща празни за
+ * абонат, който не приема маркетинг - същият капан като при етикетите и
+ * офертите. Проверено 2026-08-10: за такъв абонат `subscribers` дава
+ * `channels: []`, а `subscriber(id:)` връща имейла с `marketing: false`.
+ * Тоест проверка само по списъка обявява „няма такъв" точно за хората, които
+ * този код трябва да разпознае.
+ */
 const FIND = `query FindSubscriber($filters: SubscriberFilters) {
-  subscribers(first: 20, filters: $filters) {
-    edges { node { id channels { channel channelIdentifier } } }
-  }
+  subscribers(first: 20, filters: $filters) { edges { node { id } } }
 }`;
 
 const IMPORT = `mutation AddSubscriber($subscribers: [BatchSubscriberInput!]) {
   subscribersBulkImport(subscribers: $subscribers) { queuedCount failedCount }
 }`;
+
+/** Вдига съгласието за маркетинг на вече съществуващ абонат. */
+const ALLOW = `mutation AllowMarketing($ids: [ID!]!) {
+  setSubscribersMarketing(ids: $ids, allow: true)
+}`;
+
+type Match = {
+  id: string;
+  /** Приема ли вече маркетинг по този имейл. */
+  marketing: boolean;
+};
 
 /**
  * Позволяваме само това, което наистина е имейл, и режем дългите низове -
@@ -88,41 +107,63 @@ export function isValidEmail(value: unknown): value is string {
 }
 
 /**
- * Има ли вече абонат с този имейл.
+ * Абонатът с точно този имейл, ако го има.
  *
- * `filters.search` е свободно търсене, не точно съвпадение - за „ivan@abv.bg"
- * може да върне и „ivan@abv.bg.com". Затова резултатът се проверява канал по
- * канал. Връща `null`, когато проверката изобщо не е могла да се направи, за
- * да не мине създаване върху непроверена основа.
+ * Две заявки, защото едната не стига:
+ *  1. `subscribers(filters: {search})` дава кандидатите. Търсенето е свободно,
+ *     не точно съвпадение - за „ivan@abv.bg" връща и „ivan@abv.bg.com".
+ *  2. `subscriber(id:)` за всеки кандидат, всички в една заявка с aliases,
+ *     защото само оттам идват истинските канали.
+ *
+ * Хвърля при проблем с администраторското API, за да не се обърка „не можах да
+ * проверя" с „няма такъв" - второто води до създаване на дубликат.
  */
-export async function subscriberExists(
-  env: Record<string, string | undefined>,
-  email: string,
-): Promise<boolean | null> {
-  const pat = adminToken(env);
-  const origin = adminOrigin(env);
-  if (!pat || !origin) return null;
-
+async function findByEmail(origin: string, pat: string, email: string): Promise<Match | null> {
   const needle = email.trim().toLowerCase();
-  try {
-    const found = await gql<{
-      subscribers: {edges: Array<{node: {channels: Array<{channel: string; channelIdentifier: string}>}}>};
-    }>(origin, pat, FIND, {filters: {search: needle}});
 
-    for (const edge of found?.subscribers?.edges ?? []) {
-      for (const ch of edge.node?.channels ?? []) {
-        if (String(ch.channelIdentifier ?? '').trim().toLowerCase() === needle) return true;
-      }
+  // Търсенето е с изоставане: абонат, създаден преди секунди, понякога още не
+  // се намира (измерено 2026-08-10 - веднъж за 3 секунди, друг път над минута).
+  // За реален посетител това няма значение, защото стар абонат отдавна е в
+  // индекса; заслужава си само да се знае при проби едно след друго.
+  const found = await gql<{subscribers: {edges: Array<{node: {id: string}}>}}>(
+    origin,
+    pat,
+    FIND,
+    {filters: {search: needle}},
+  );
+  const ids = (found?.subscribers?.edges ?? []).map((e) => String(e.node?.id)).filter(Boolean);
+  if (!ids.length) return null;
+
+  const fields = ids
+    .map((id) => `s${id}: subscriber(id: "${id}") { id channels { channelIdentifier marketing unsubscribed } }`)
+    .join(' ');
+  const detailed = await gql<Record<string, {
+    id: string;
+    channels: Array<{channelIdentifier: string; marketing: boolean; unsubscribed: boolean}>;
+  } | null>>(origin, pat, `query { ${fields} }`, {});
+
+  for (const row of Object.values(detailed ?? {})) {
+    for (const ch of row?.channels ?? []) {
+      if (String(ch.channelIdentifier ?? '').trim().toLowerCase() !== needle) continue;
+      // Отписаният брои за „не приема" - човекът пред формата тъкмо даде
+      // ново съгласие, значи трябва да се вдигне, а не да му се каже „вече си".
+      return {id: String(row!.id), marketing: ch.marketing === true && ch.unsubscribed !== true};
     }
-    return false;
-  } catch (error) {
-    console.error('абонати: проверката не мина -', (error as Error).message);
-    return null;
   }
+  return null;
 }
 
 /**
- * Проверява и, ако няма такъв, създава абонат със съгласие за маркетинг.
+ * Записва абоната и връща какво точно се е случило.
+ *
+ * Три изхода по същество:
+ *  - няма такъв → създава се
+ *  - има такъв и приема маркетинг → нищо не се пипа
+ *  - има такъв, но НЕ приема маркетинг → съгласието се вдига
+ *
+ * Последното не става с повторен import: проверено 2026-08-10, вторият import
+ * със същия имейл и `marketing: true` остави `acceptMarketing: false`.
+ * Единственото, което го мени, е `setSubscribersMarketing`.
  *
  * `marketing: true` се подава само защото извикващият вече е взел изричното
  * съгласие - маршрутът отказва заявка без него.
@@ -136,11 +177,17 @@ export async function subscribeEmail(
   if (!pat || !origin) return 'error';
 
   const clean = email.trim();
-  const exists = await subscriberExists(env, clean);
-  if (exists === null) return 'error';
-  if (exists) return 'exists';
-
   try {
+    const match = await findByEmail(origin, pat, clean);
+
+    if (match) {
+      if (match.marketing) return 'exists';
+      const allowed = await gql<{setSubscribersMarketing: boolean}>(origin, pat, ALLOW, {
+        ids: [match.id],
+      });
+      return allowed?.setSubscribersMarketing ? 'updated' : 'error';
+    }
+
     const res = await gql<{subscribersBulkImport: {queuedCount: number; failedCount: number}}>(
       origin,
       pat,

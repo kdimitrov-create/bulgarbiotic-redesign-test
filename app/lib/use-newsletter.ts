@@ -7,17 +7,27 @@ import {useState} from 'react';
  * имейл щеше да получава различен отговор на различно място.
  */
 
-export type SubscribeStatus = 'created' | 'exists' | 'invalid' | 'consent' | 'error';
+export type SubscribeStatus = 'created' | 'updated' | 'exists' | 'invalid' | 'consent' | 'error';
 export type NewsletterState = 'idle' | 'sending' | SubscribeStatus;
 
-/** Едно изречение за всеки изход. Успехът се съобщава от самата форма. */
+/**
+ * `created` и `updated` са двата успеха: единият е нов абонат, другият е стар,
+ * който не приемаше маркетинг и тъкмо даде съгласие. За човека пред екрана
+ * разликата е само в думите.
+ */
 export const NEWSLETTER_MESSAGES: Record<SubscribeStatus, string> = {
   created: 'Готово! Записахме те за бюлетина.',
+  updated: 'Готово! Отново си записан за бюлетина.',
   exists: 'Вече има абонат с този имейл.',
   invalid: 'Провери имейл адреса.',
   consent: 'Отбележи съгласието за обработване на лични данни.',
   error: 'Нещо се обърка. Опитай пак след малко.',
 };
+
+/** Записан ли е човекът след този отговор. */
+export function isSubscribed(status: SubscribeStatus): boolean {
+  return status === 'created' || status === 'updated';
+}
 
 export function useNewsletter() {
   const [email, setEmail] = useState('');
@@ -67,11 +77,17 @@ export function useNewsletter() {
     if (state === 'consent') setState('idle');
   }
 
+  const done = state === 'created' || state === 'updated';
+
   return {
     email,
     consent,
     state,
     sending: state === 'sending',
+    /** Записан ли е човекът - и двата успеха се броят. */
+    done,
+    /** Кое от двете, за да се смени формулировката. */
+    successMessage: done ? NEWSLETTER_MESSAGES[state as 'created' | 'updated'] : null,
     /** Показва ли се съобщение за отказ под формата. */
     problem:
       state === 'exists' || state === 'invalid' || state === 'consent' || state === 'error'

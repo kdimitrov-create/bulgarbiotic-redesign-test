@@ -11,7 +11,8 @@ import {isValidEmail, subscribeEmail} from '~/lib/subscribers.server';
  */
 export type SubscribeStatus =
   | 'created' // нов абонат, записан
-  | 'exists' // вече има абонат с този имейл
+  | 'updated' // имаше го, но не приемаше маркетинг - съгласието е вдигнато
+  | 'exists' // вече има абонат с този имейл и той приема маркетинг
   | 'invalid' // имейлът не е имейл
   | 'consent' // няма съгласие за обработване на лични данни
   | 'error'; // администраторското API не отговори

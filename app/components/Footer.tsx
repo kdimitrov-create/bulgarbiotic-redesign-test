@@ -68,11 +68,11 @@ export function Footer({shop, adminFooter}: FooterProps) {
                 id="bb-consent-footer"
                 formClassName="bb-ft-news-input"
                 placeholder="имейл адрес"
-                success={
+                success={(message) => (
                   <div className="bb-ft-news-done" role="status">
-                    Готово! Записахме те за бюлетина.
+                    {message}
                   </div>
-                }
+                )}
               />
             </div>
           </div>

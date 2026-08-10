@@ -17,8 +17,12 @@ interface Props {
   formClassName: string;
   placeholder?: string;
   label?: string;
-  /** Какво се показва на мястото на формата след успешно записване. */
-  success: ReactNode;
+  /**
+   * Какво се показва на мястото на формата след успешно записване.
+   * Текстът идва отвътре, защото „записахме те" и „отново си записан" са два
+   * различни успеха и формата знае кой от двата се е случил.
+   */
+  success: (message: string) => ReactNode;
 }
 
 export function NewsletterInlineForm({
@@ -30,7 +34,7 @@ export function NewsletterInlineForm({
 }: Props) {
   const news = useNewsletter();
 
-  if (news.state === 'created') return <>{success}</>;
+  if (news.done) return <>{success(news.successMessage ?? '')}</>;
 
   return (
     <div className="bb-nl-inline">

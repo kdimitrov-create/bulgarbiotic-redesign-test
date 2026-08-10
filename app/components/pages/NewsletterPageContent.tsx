@@ -29,15 +29,15 @@ export function NewsletterPageContent() {
           <NewsletterInlineForm
             id="bb-consent-newsletter-page"
             formClassName="bb-news-form"
-            success={
+            success={(message) => (
               <div className="bb-news-thanks" role="status">
                 <span className="bb-news-thanks-icon" aria-hidden="true">✓</span>
                 <div>
                   <strong>Благодарим ти!</strong>
-                  <span>Записахме те за бюлетина с този имейл.</span>
+                  <span>{message}</span>
                 </div>
               </div>
-            }
+            )}
           />
 
           <p className="bb-news-consent">

@@ -85,7 +85,10 @@ export function NewsletterPopup() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     const status = await news.submit(e);
-    if (status === 'created') setStage('reveal');
+    // `updated` е абонат, който го е имало, но не е приемал маркетинг и тъкмо
+    // е дал съгласие. За бюлетина това е записване като всяко друго, затова
+    // получава кода - иначе човекът дава съгласие и остава с празни ръце.
+    if (status === 'created' || status === 'updated') setStage('reveal');
     else if (status === 'exists') setStage('exists');
     // При отказ оставаме на формата - `news.problem` казва защо.
   }
