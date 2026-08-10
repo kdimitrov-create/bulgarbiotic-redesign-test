@@ -2,9 +2,12 @@ import {Link, useFetcher} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
 import {getEnhancedFeatured} from '~/lib/product-images';
 import {CheckoutButton} from './CheckoutButton';
+import {PromoCode} from './PromoCode';
 import {fallbackToPlaceholder} from './CartDrawer';
 import {CartOffersStrip} from './CartOffers';
 import {bestDiscountForHandle} from '~/lib/active-discounts';
+import {promoDiscountEur} from '~/lib/promo-codes';
+import {numericId} from '~/lib/analytics';
 import {
   EUR_TO_BGN,
   FREE_SHIPPING_THRESHOLD_EUR,
@@ -34,12 +37,36 @@ export function CartPage({cart}: {cart: CartData | null}) {
   let totalDiscountEur = 0;
   for (const l of lines as any[]) {
     const lineEur = bothCurrencies(l.cost?.totalAmount).eur;
-    const d = bestDiscountForHandle(l.merchandise?.product?.handle);
+    // Сумата ПРЕДИ отстъпки решава дали условните правила важат - точно както
+    // ги смята CloudCart на checkout-а.
+    const d = bestDiscountForHandle(l.merchandise?.product?.handle, {subtotalEur: rawSubtotal.eur});
     if (d && d.percent > 0) totalDiscountEur += lineEur * (d.percent / 100);
   }
   const subtotalEur = Math.max(0, rawSubtotal.eur - totalDiscountEur);
-  const totalEur = Math.max(0, rawTotal.eur - totalDiscountEur);
-  const totalBgn = Math.max(0, rawTotal.bgn - totalDiscountEur * EUR_TO_BGN);
+
+  /* Промо кодът се приспада отделно. Storefront API-то го приема, но не мени
+     `cart.cost` - без тази сметка количката показваше цената БЕЗ кода, а
+     checkout-ът после я показваше с него. */
+  const promoEur = promoDiscountEur(
+    (cart as any)?.discountCodes,
+    subtotalEur,
+    (lines as any[]).map((l) => ({
+      handle: String(l.merchandise?.product?.handle ?? ''),
+      lineEur: bothCurrencies(l.cost?.totalAmount).eur,
+    })),
+  );
+
+  // ⚠️ Подаръкът НЕ се вади от сметката. Измерено 2026-08-09: касата не го
+  // нулира за количка, построена през Storefront API-то, защото кръстосаната
+  // оферта пише своите 100% върху реда на поръчката и то само когато количката
+  // е минала през двигателя на CloudCart. Извадехме ли го тук, клиентът вижда
+  // една сума и плаща друга.
+  //
+  // Стане ли подаръкът наистина безплатен (цена 0 на продукта или отстъпка
+  // върху него), редът идва с 0 и сметката излиза сама, без промяна тук.
+  const savedEur = totalDiscountEur + promoEur;
+  const totalEur = Math.max(0, rawTotal.eur - savedEur);
+  const totalBgn = Math.max(0, rawTotal.bgn - savedEur * EUR_TO_BGN);
 
   const remainingEur = Math.max(0, FREE_SHIPPING_THRESHOLD_EUR - subtotalEur);
   const shippingPct = Math.min(100, (subtotalEur / FREE_SHIPPING_THRESHOLD_EUR) * 100);
@@ -82,7 +109,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
 
           <ul className="bb-cart-items">
             {lines.map((line) => (
-              <CartPageRow key={line.id} line={line} />
+              <CartPageRow key={line.id} line={line} subtotalEur={rawSubtotal.eur} />
             ))}
           </ul>
 
@@ -103,7 +130,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
               <span>Междинна сума</span>
               <span>{fmtEur(rawSubtotal.eur)}</span>
             </div>
-            {totalDiscountEur > 0 && (
+            {savedEur > 0 && (
               <div className="bb-cart-sum-row bb-cart-sum-row--save">
                 <span>
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -111,7 +138,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
                   </svg>
                   Спестяваш
                 </span>
-                <span>−{fmtEur(totalDiscountEur)}</span>
+                <span>−{fmtEur(savedEur)}</span>
               </div>
             )}
             <div className="bb-cart-sum-row">
@@ -122,13 +149,15 @@ export function CartPage({cart}: {cart: CartData | null}) {
             <div className="bb-cart-total">
               <div className="bb-cart-total-lbl">Крайна сума</div>
               <div className="bb-cart-total-vals">
-                {totalDiscountEur > 0 && (
+                {savedEur > 0 && (
                   <div className="bb-cart-total-msrp">{fmtEur(rawTotal.eur)}</div>
                 )}
                 <div className="bb-cart-total-eur">{fmtEur(totalEur)}</div>
                 <div className="bb-cart-total-bgn">{fmtBgn(totalBgn)}</div>
               </div>
             </div>
+
+            <PromoCode cart={cart} />
 
             <CheckoutButton cart={cart} className="bb-cart-checkout" />
 
@@ -174,7 +203,7 @@ function CartPageEmpty() {
 }
 
 /** One cart line on the page — roomier than the drawer row. */
-function CartPageRow({line}: {line: any}) {
+function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
   const update = useFetcher({key: `page-update-${line.id}`});
   const remove = useFetcher({key: `page-remove-${line.id}`});
 
@@ -194,7 +223,7 @@ function CartPageRow({line}: {line: any}) {
   const variantTitle = m.title && m.title !== 'Default Title' ? m.title : null;
 
   const msrp = bothCurrencies(line.cost?.totalAmount);
-  const discount = bestDiscountForHandle(handle);
+  const discount = bestDiscountForHandle(handle, {subtotalEur});
   const hasDiscount = !!discount && discount.percent > 0;
   const saleEur = hasDiscount ? msrp.eur * (1 - discount.percent / 100) : msrp.eur;
   const saleBgn = hasDiscount ? msrp.bgn * (1 - discount.percent / 100) : msrp.bgn;

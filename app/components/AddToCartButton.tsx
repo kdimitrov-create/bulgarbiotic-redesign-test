@@ -1,6 +1,7 @@
 import {useFetcher} from 'react-router';
 import {useEffect, type ReactNode} from 'react';
 import {useAside} from './Aside';
+import {pushEcommerce, idForHandle} from '~/lib/analytics';
 
 export function AddToCartButton({
   merchandiseId,
@@ -23,8 +24,36 @@ export function AddToCartButton({
   useEffect(() => {
     if (fetcher.state === 'idle' && fetcher.data) {
       open('cart');
+
+      // `add_to_cart` е второто по важност събитие след purchase: от него се
+      // хранят и Google Ads, и Meta аудиториите "заряза количката".
+      // Данните се четат от върнатата количка, за да не се налага всяко място,
+      // което ползва този бутон, да ги подава отделно.
+      const line = ((fetcher.data as any)?.cart?.lines?.nodes ?? []).find(
+        (l: any) => l?.merchandise?.id === merchandiseId,
+      );
+      if (line) {
+        const price = parseFloat(
+          line.cost?.amountPerQuantity?.amount ?? line.merchandise?.price?.amount ?? '0',
+        );
+        pushEcommerce('add_to_cart', {
+          currency:
+            line.cost?.amountPerQuantity?.currencyCode ??
+            line.merchandise?.price?.currencyCode ??
+            'EUR',
+          value: price * quantity,
+          items: [
+            {
+              item_id: idForHandle(line.merchandise?.product?.handle),
+              item_name: line.merchandise?.product?.title ?? '',
+              price,
+              quantity,
+            },
+          ],
+        });
+      }
     }
-  }, [fetcher.state, fetcher.data, open]);
+  }, [fetcher.state, fetcher.data, open, merchandiseId, quantity]);
 
   return (
     <fetcher.Form method="post" action="/cart">

@@ -1,5 +1,6 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useFetcher, useFetchers} from 'react-router';
+import {rememberPromo} from '../PendingPromo';
 
 /**
  * Колело на късмета — Nitrogen версия.
@@ -236,14 +237,19 @@ export function LuckyWheel() {
         {method: 'post', action: '/cart'},
       );
     } else {
-      setResult(
-        `🎉 Спечели: ${p.label} отстъпка\nКодът вече е приложен в количката ти.`,
-      );
+      // Кодът се запомня ВИНАГИ. Прилагането върху празна количка минава без
+      // грешка, но не се запазва (проверено срещу живото API), а при завъртане
+      // количката почти винаги е празна - затова спечеленият код изчезваше.
+      // `PendingPromo` го слага при първото добавяне на продукт.
+      rememberPromo(p.code!);
       fetcher.submit(
         {action: 'APPLY_DISCOUNT', code: p.code!},
         {method: 'post', action: '/cart'},
       );
-      showToast('Промо кодът е добавен в количката');
+      setResult(
+        `🎉 Спечели: ${p.label} отстъпка\nКодът ${p.code} е запазен и ще се приложи в количката ти.`,
+      );
+      showToast(`Промо код ${p.code} е запазен за поръчката ти`);
     }
   }
 

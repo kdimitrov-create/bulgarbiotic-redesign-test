@@ -8,6 +8,7 @@ import {ProbioticFinderFAB} from './ProbioticFinderFAB';
 import {CookieBanner} from './overlays/CookieBanner';
 import {Analytics} from './Analytics';
 import {LuckyWheel} from './overlays/LuckyWheel';
+import {PendingPromo} from './PendingPromo';
 
 interface PageLayoutProps {
   shop: Shop;
@@ -34,6 +35,9 @@ export function PageLayout({shop, headerMenu, footerMenu, adminFooter, cart, chi
       <ProbioticFinderFAB />
       <CookieBanner />
       <Analytics />
+      {/* Слага спечеления промо код, щом количката получи първия си продукт.
+          Стои в layout-а, защото колелото може отдавна да е затворено. */}
+      <PendingPromo />
       {/* Пали се при добавяне в количката — затова стои в layout-а, не в отделна страница. */}
       <LuckyWheel />
     </div>

@@ -7,6 +7,9 @@ import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricingForLine, marksForHandle} from '~/lib/product-marks';
 import {CheckoutButton} from './CheckoutButton';
+import {PromoCode} from './PromoCode';
+import {promoDiscountEur} from '~/lib/promo-codes';
+import {numericId} from '~/lib/analytics';
 import {CartOffersStrip} from './CartOffers';
 
 export const EUR_TO_BGN = 1.95583;
@@ -88,9 +91,31 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
     eur: Math.max(0, rawSubtotal.eur - totalDiscountEur),
     bgn: Math.max(0, rawSubtotal.bgn - totalDiscountEur * EUR_TO_BGN),
   };
+
+  /* Промо кодът - същата сметка като на страницата на количката. Storefront
+     API-то приема кода, но връща непроменена сума, затова се смята тук. */
+  const promoEur = promoDiscountEur(
+    (cart as any)?.discountCodes,
+    subtotal.eur,
+    (lines as any[]).map((l) => ({
+      handle: String(l.merchandise?.product?.handle ?? ''),
+      lineEur: bothCurrencies(l.cost?.totalAmount).eur,
+    })),
+  );
+  // Същият подарък, същата причина - виж CartPage.
+  // ⚠️ Подаръкът НЕ се вади от сметката. Измерено 2026-08-09: касата не го
+  // нулира за количка, построена през Storefront API-то, защото кръстосаната
+  // оферта пише своите 100% върху реда на поръчката и то само когато количката
+  // е минала през двигателя на CloudCart. Извадехме ли го тук, клиентът вижда
+  // една сума и плаща друга.
+  //
+  // Стане ли подаръкът наистина безплатен (цена 0 на продукта или отстъпка
+  // върху него), редът идва с 0 и сметката излиза сама, без промяна тук.
+  const savedEur = totalDiscountEur + promoEur;
+
   const total = {
-    eur: Math.max(0, rawTotal.eur - totalDiscountEur),
-    bgn: Math.max(0, rawTotal.bgn - totalDiscountEur * EUR_TO_BGN),
+    eur: Math.max(0, rawTotal.eur - savedEur),
+    bgn: Math.max(0, rawTotal.bgn - savedEur * EUR_TO_BGN),
   };
   // Threshold + progress live in EUR because the store's base currency
   // is EUR (verified via generalSettings.currency). The Bulgarian-lev
@@ -184,18 +209,23 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
           </div>
 
           <div className="bb-cd-foot">
+            {/* Промокодът стои НАД крайната сума, за да се вижда как сумата се
+                променя веднага след прилагане. Същият компонент като на
+                страницата `/cart` - два отделни преписа щяха да се разминат. */}
+            <PromoCode cart={cart} variant="drawer" />
+
             {/* Single-line grand total — shipping already communicated
                 up top by the progress bar, VAT note moved to subtitle.
                 Drops 3 separate rows → 1 row + 1 subtitle. */}
             <div className="bb-cd-grand">
               <div className="bb-cd-grand-lbl-col">
                 <div className="bb-cd-grand-lbl">Крайна сума</div>
-                {totalDiscountEur > 0 && (
+                {savedEur > 0 && (
                   <div className="bb-cd-grand-savings">
                     <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Спестяваш <strong>{fmtEur(totalDiscountEur)}</strong>
+                    Спестяваш <strong>{fmtEur(savedEur)}</strong>
                   </div>
                 )}
                 <div className="bb-cd-grand-note">
@@ -203,7 +233,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
                 </div>
               </div>
               <div className="bb-cd-grand-val-col">
-                {totalDiscountEur > 0 && (
+                {savedEur > 0 && (
                   <div className="bb-cd-grand-msrp" aria-label={`Стара цена ${fmtEur(rawTotal.eur)}`}>
                     {fmtEur(rawTotal.eur)}
                   </div>

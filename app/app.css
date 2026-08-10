@@ -4801,3 +4801,46 @@ img.pm-banner {
 .bb-row-tiles .bb-prose p {
   font-size: 13px; opacity: 0.9; margin: 0; max-width: 320px; line-height: 1.5; color: #fff;
 }
+
+/* ==========================================================================
+   Поле за промо код в количката (пренесено от реалния дизайн)
+   ========================================================================== */
+/* --- промокод --- */
+.bb-cart-promo { border-top: 1px solid rgba(10, 37, 64, 0.09); margin-top: 14px; padding-top: 14px; }
+.bb-cart-promo-label { display: block; font-size: 12px; font-weight: 700; color: rgba(10, 37, 64, 0.75); margin-bottom: 7px; }
+.bb-cart-promo-row { display: flex; gap: 8px; }
+.bb-cart-promo-input {
+  flex: 1; min-width: 0; padding: 10px 12px; font-size: 13px; font-family: inherit;
+  border: 1px solid rgba(10, 37, 64, 0.16); border-radius: 999px; background: #fff;
+  color: var(--color-ink); text-transform: uppercase; transition: border-color 0.15s;
+}
+.bb-cart-promo-input::placeholder { color: rgba(10, 37, 64, 0.35); text-transform: none; }
+.bb-cart-promo-input:focus { outline: none; border-color: var(--color-brand-pink); }
+.bb-cart-promo-input[disabled] { opacity: 0.6; }
+.bb-cart-promo-apply {
+  padding: 10px 18px; font-size: 12.5px; font-weight: 800; font-family: inherit;
+  border: 1px solid var(--color-ink); border-radius: 999px; background: transparent;
+  color: var(--color-ink); cursor: pointer; white-space: nowrap;
+  transition: background 0.18s, color 0.18s;
+}
+.bb-cart-promo-apply:hover:not([disabled]) { background: var(--color-ink); color: var(--color-cream-1); }
+.bb-cart-promo-apply[disabled] { opacity: 0.55; cursor: default; }
+.bb-cart-promo-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.bb-cart-promo-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bb-cart-promo-tag {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+  background: rgba(22, 163, 74, 0.1); color: #16a34a; border-radius: 999px;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.4px;
+}
+.bb-cart-promo-remove {
+  border: none; background: none; padding: 0; font-family: inherit; font-size: 11.5px;
+  color: rgba(10, 37, 64, 0.5); text-decoration: underline; cursor: pointer;
+}
+.bb-cart-promo-remove:hover:not([disabled]) { color: var(--color-brand-pink); }
+.bb-cart-promo-error { font-size: 11.5px; color: #c20d59; margin: 8px 0 0; line-height: 1.4; }
+/* Същото поле в чекмеджето: по-тесни отстояния, за да не изяде мястото на
+   крайната сума и бутона, които трябва да се виждат без скрол. */
+.bb-cart-promo--drawer { border-top: none; margin-top: 0; padding-top: 0; padding-bottom: 12px; }
+.bb-cart-promo--drawer .bb-cart-promo-label { font-size: 11.5px; margin-bottom: 6px; }
+.bb-cart-promo--drawer .bb-cart-promo-input { padding: 9px 12px; font-size: 12.5px; }
+.bb-cart-promo--drawer .bb-cart-promo-apply { padding: 9px 16px; font-size: 12px; }

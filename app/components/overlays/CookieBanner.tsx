@@ -1,11 +1,15 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router';
-
-const COOKIE_KEY = 'bactology-cookies-v1';
+import {readConsent, setConsent} from '~/lib/analytics';
 
 /**
  * GDPR cookie consent banner.
- * Slides up after 1.2 s on first visit, persists choice in sessionStorage.
+ *
+ * Изборът се пази в localStorage, не в sessionStorage: със sessionStorage
+ * банерът изскачаше наново при всяко ново табче, а <Analytics/> не виждаше
+ * съгласие - тоест GTM не тръгваше и трафикът оставаше неизмерен.
+ * `setConsent` вдига и събитие, за да тръгне контейнерът веднага след
+ * натискане, без презареждане.
  */
 export function CookieBanner() {
   const [shown, setShown] = useState(false);
@@ -13,14 +17,14 @@ export function CookieBanner() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (sessionStorage.getItem(COOKIE_KEY)) return;
+    if (readConsent()) return;
     setDismissed(false);
     const t = setTimeout(() => setShown(true), 1200);
     return () => clearTimeout(t);
   }, []);
 
   function persist(value: 'accepted' | 'rejected') {
-    sessionStorage.setItem(COOKIE_KEY, value);
+    setConsent(value);
     setShown(false);
     setTimeout(() => setDismissed(true), 600);
   }

@@ -111,6 +111,7 @@ export async function fetchCartOffers(
         imageUrl: null,
         handle: null,
         productId: String(reward.itemId),
+        free: offer.discountType === 'free_product',
         variantId: null,
       });
     }

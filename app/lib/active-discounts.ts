@@ -148,7 +148,10 @@ export function productIdFromGid(idOrGid: string | undefined | null): string | n
  * but not the numeric product ID, so this helper resolves a discount
  * lookup straight from the URL handle.
  */
-export function bestDiscountForHandle(handle: string | undefined | null): {
+export function bestDiscountForHandle(
+  handle: string | undefined | null,
+  opts?: {subtotalEur?: number},
+): {
   percent: number;
   id: string;
   name: string;
@@ -157,12 +160,14 @@ export function bestDiscountForHandle(handle: string | undefined | null): {
   const pid = currentHandleToId[handle];
   // Store-wide rules apply even when the handle is not in the id map.
   if (!pid) {
-    const all = currentDiscounts.filter((d) => d.appliesToAll);
+    const all = currentDiscounts.filter(
+      (d) => d.appliesToAll && qualifiesByOrderTotal(d, opts?.subtotalEur),
+    );
     if (!all.length) return null;
     const best = all.reduce((a, b) => (b.percent > a.percent ? b : a));
     return {percent: best.percent, id: best.id, name: best.name};
   }
-  return bestDiscountFor(pid);
+  return bestDiscountFor(pid, opts);
 }
 
 /**
@@ -177,7 +182,10 @@ export function bestDiscountForHandle(handle: string | undefined | null): {
  * Accepts either the raw "37" numeric ID OR the full
  * "gid://cloudcart/Product/37" gid form.
  */
-export function bestDiscountFor(productIdOrGid: string | undefined | null): {
+export function bestDiscountFor(
+  productIdOrGid: string | undefined | null,
+  opts?: {subtotalEur?: number},
+): {
   percent: number;
   id: string;
   name: string;
@@ -188,11 +196,38 @@ export function bestDiscountFor(productIdOrGid: string | undefined | null): {
   for (const d of currentDiscounts) {
     // A store-wide rule targets every product, so there is no id list to check.
     if (!d.appliesToAll && !d.productIds.includes(pid)) continue;
+    if (!qualifiesByOrderTotal(d, opts?.subtotalEur)) continue;
     if (!best || d.percent > best.percent) {
       best = {percent: d.percent, id: d.id, name: d.name};
     }
   }
   return best;
+}
+
+/**
+ * Правило с минимална сума за поръчка важи само когато количката я достига.
+ *
+ * `orderOver` се четеше от API-то и се пазеше в обекта, но никъде не се
+ * проверяваше - тоест правило „−10% при поръчка над 100" се смяташе върху
+ * всяка количка, независимо от сумата. Клиентът виждаше една цена, а
+ * checkout-ът на CloudCart смяташе друга.
+ *
+ * Днес нито едно активно правило няма `orderOver`, значи това нищо не променя.
+ * Стои, за да не се появи грешна цена в деня, в който магазинът си направи
+ * такава промоция.
+ *
+ * Когато сумата не е известна (продуктова карта, PDP - там няма количка),
+ * условното правило се ПРОПУСКА. По-добре да не покажем отстъпка, която може
+ * да важи, отколкото да обещаем такава, която няма да я има на плащане.
+ */
+function qualifiesByOrderTotal(
+  d: {orderOver?: number | null},
+  subtotalEur: number | undefined,
+): boolean {
+  const min = d.orderOver ?? 0;
+  if (!min || min <= 0) return true;
+  if (typeof subtotalEur !== 'number') return false;
+  return subtotalEur >= min;
 }
 
 /**

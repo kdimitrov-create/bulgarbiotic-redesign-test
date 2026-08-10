@@ -1,5 +1,6 @@
 import {useRouteLoaderData} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
+import {pushEcommerce, idForHandle} from '~/lib/analytics';
 
 /**
  * "Към плащане" — hands the Nitrogen cart over to CloudCart's hosted checkout.
@@ -27,6 +28,23 @@ export function CheckoutButton({cart, className}: {cart: CartData | null; classN
   const classicOrigin = root?.classicOrigin ?? null;
   const lines = (cart?.lines?.nodes ?? []) as any[];
 
+  // Последното събитие, което storefront-ът може да отчете: оттук нататък
+  // клиентът е в checkout-а на платформата и GTM там си пали purchase сам.
+  function trackBeginCheckout() {
+    pushEcommerce('begin_checkout', {
+      currency: (cart as any)?.cost?.totalAmount?.currencyCode ?? 'EUR',
+      value: parseFloat((cart as any)?.cost?.totalAmount?.amount ?? '0'),
+      items: lines.map((line: any) => ({
+        item_id: idForHandle(line.merchandise?.product?.handle),
+        item_name: line.merchandise?.product?.title ?? '',
+        price: parseFloat(
+          line.cost?.amountPerQuantity?.amount ?? line.merchandise?.price?.amount ?? '0',
+        ),
+        quantity: line.quantity ?? 1,
+      })),
+    });
+  }
+
   const label = (
     <>
       Към плащане
@@ -40,9 +58,24 @@ export function CheckoutButton({cart, className}: {cart: CartData | null; classN
     return <button type="button" className={className} disabled>{label}</button>;
   }
 
+  // Редът е нарочен: първо адресът, който самата платформа връща
+  // (`/checkout/adopt/<jwt>`). Проверено 2026-08-09, че той стига до касата
+  // дори когато домейнът вече сочи към storefront-а, защото CloudCart обслужва
+  // `/checkout*` сам.
+  //
+  // Ръчното подаване към класическия хост остава само за случая, в който
+  // количката няма такъв адрес. То е и по-крехкото: служебният домейн 301-ва
+  // всичко към основния, а основният след прехвърлянето е този worker, където
+  // `/cart/add` е 404.
+  if (cart.checkoutUrl) {
+    return (
+      <a href={cart.checkoutUrl} className={className} onClick={trackBeginCheckout}>{label}</a>
+    );
+  }
+
   if (classicOrigin && lines.length > 0) {
     return (
-      <form method="POST" action={`${classicOrigin.replace(/\/$/, '')}/cart/add`}>
+      <form method="POST" action={`${classicOrigin.replace(/\/$/, '')}/cart/add`} onSubmit={trackBeginCheckout}>
         {lines.map((line, i) => (
           <CheckoutLineFields key={line.id ?? i} line={line} />
         ))}
@@ -51,19 +84,19 @@ export function CheckoutButton({cart, className}: {cart: CartData | null; classN
     );
   }
 
-  return cart.checkoutUrl ? (
-    <a href={cart.checkoutUrl} className={className}>{label}</a>
-  ) : (
-    <button type="button" className={className} disabled>{label}</button>
-  );
+  return <button type="button" className={className} disabled>{label}</button>;
 }
 
 /**
- * One cart line as hidden fields. CloudCart ids arrive from the Storefront API
- * as `gid://cloudcart/Product/67`; the classic form wants the bare number.
+ * One cart line as hidden fields. The classic form wants bare numbers.
+ *
+ * ⚠️ Продуктовото id НЕ идва от реда: `CartLine.merchandise.product` носи само
+ * `title`, `handle` и снимка. Дотук се четеше `product.id`, което е винаги
+ * `undefined`, тоест `if (!productId) return null` изхвърляше ВСЕКИ ред и
+ * формата тръгваше празна. Затова id-то се вади от handle-а.
  */
 function CheckoutLineFields({line}: {line: any}) {
-  const productId = numericId(line.merchandise?.product?.id);
+  const productId = idForHandle(line.merchandise?.product?.handle);
   const variantId = numericId(line.merchandise?.id);
   if (!productId) return null;
   return (

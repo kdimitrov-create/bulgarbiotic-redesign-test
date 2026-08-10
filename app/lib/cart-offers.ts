@@ -25,6 +25,14 @@ export interface GiftOffer {
   /** The rewarded product, as the offer names it. */
   productId: string | null;
   /**
+   * Офертата дава продукта БЕЗПЛАТНО (`discountType: free_product` в панела).
+   *
+   * Класическата тема нулира реда сама. Nitrogen строи количката през
+   * Storefront API-то, което не минава през тази логика, затова редът идваше с
+   * пълната си цена и подаръкът не беше подарък.
+   */
+  free: boolean;
+  /**
    * What the cart actually needs to add. CloudCart's checkout does NOT add the
    * gift for a cart built through the Storefront API (verified 2026-08-09), so
    * the storefront puts the line in and takes it out itself.
@@ -70,6 +78,7 @@ export interface GiftProgress extends GiftOffer {
  * The gift offers measured against a cart total. Sorted so the one the shopper
  * is closest to earning comes first — that is the one worth nudging them about.
  */
+
 export function giftProgress(subtotal: number): GiftProgress[] {
   return current.gifts
     .map((gift) => {
