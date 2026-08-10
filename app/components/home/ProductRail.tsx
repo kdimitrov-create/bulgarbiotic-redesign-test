@@ -220,6 +220,8 @@ export function ProductRail({
          * native scroll-snap. Arrows nudge by ~one card; swipe/scroll do the rest. */
         .bb-pgrid {
           display: flex; gap: 18px;
+          /* Картите се изравняват по най-високата, за да не стърчат дъната. */
+          align-items: stretch;
           padding: 4px 36px 10px;
           overflow-x: auto; overflow-y: hidden;
           scroll-snap-type: x mandatory;
@@ -269,6 +271,11 @@ export function ProductRail({
           background: white;
           border-radius: 22px;
           overflow: hidden;
+          /* Колона, за да може тялото да порасне и бутонът да падне най-долу.
+             Заглавията са с различна дължина: без това „Добави" стои на
+             различна височина във всяка карта (клиент 2026-08-09). */
+          display: flex;
+          flex-direction: column;
           transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
           cursor: pointer;
           position: relative;
@@ -305,14 +312,22 @@ export function ProductRail({
         }
         .bb-pcard:hover .bb-pcard-quick { transform: translateY(0); }
 
-        .bb-pcard-body { padding: 22px 22px 24px; }
+        .bb-pcard-body {
+          padding: 22px 22px 24px;
+          display: flex; flex-direction: column; flex: 1;
+        }
         .bb-pcard-name {
           font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
           line-height: 1.2; margin-bottom: 6px; color: var(--color-ink);
+          /* Точно два реда: и късото, и дългото заглавие заемат едно и също
+             място, така че цените под тях тръгват от една линия. */
           min-height: 44px;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
-        .bb-pcard-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; }
+        /* Цената и оценката се долепват до бутона, а празното остава над тях. */
+        .bb-pcard-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; margin-top: auto; }
         .bb-pcard-pricewrap { display: flex; flex-direction: column; gap: 3px; }
         .bb-pcard-price-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
         /* Match the category listing / PDP price: elegant serif, weight 600
@@ -343,7 +358,7 @@ export function ProductRail({
 
         /* "Купи" button — full-width pink CTA at the bottom of the card (client). */
         .bb-pcard-buy {
-          width: 100%; margin-top: 14px;
+          width: 100%; margin-top: 14px; flex: none;
           display: inline-flex; align-items: center; justify-content: center; gap: 8px;
           padding: 12px 16px; border: none; border-radius: 12px;
           background: var(--color-brand-pink); color: #fff;
