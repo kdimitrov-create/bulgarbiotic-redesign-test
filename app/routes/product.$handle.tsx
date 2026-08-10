@@ -96,8 +96,13 @@ export default function ProductPage() {
        * `items-start` is critical: without it the columns stretch to match
        * heights and `position: sticky` becomes a no-op. */}
       <div className="grid items-start gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16 mt-2">
-        <ProductMedia product={product} variant={variant} />
-        <div className="md:sticky md:top-[calc(4rem+1.5rem)] self-start">
+        {/* СНИМКАТА стои, дясната колона се движи покрай нея. Снимката се
+            откача чак в края на решетката - тоест когато динамичната лента
+            отдолу дойде до нея. Затова sticky е тук, а не отдясно. */}
+        <div className="bb-pdp-media self-start">
+          <ProductMedia product={product} variant={variant} />
+        </div>
+        <div className="self-start">
           <ProductDetails product={product} variant={variant} basePriceEur={basePriceEur} keyBenefits={keyBenefits} />
         </div>
       </div>
@@ -208,7 +213,11 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
 
   return (
     <div className="relative">
-      <div className="relative md:sticky md:top-[calc(4rem+1.5rem)]">
+      {/* Тук НЯМА sticky нарочно. Този елемент е точно колкото галерията, тоест
+          вложеният sticky нямаше къде да пътува и никога не залепваше - това
+          беше причината снимката да се изнася нагоре. Залепването се прави
+          един ниво по-горе, от `.bb-pdp-media`, чийто контейнер е решетката. */}
+      <div className="relative">
         {/* „Любими“ е изключено в модула „Продуктов каталог“ (клиент 2026-08-04). */}
         <ProductMarkTags
           product={product}
