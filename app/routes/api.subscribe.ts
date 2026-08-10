@@ -1,8 +1,7 @@
 import {data, redirect} from 'react-router';
 import type {Route} from './+types/api.subscribe';
 import {getContext} from '~/lib/context';
-import * as subscribers from '~/lib/subscribers.server';
-const {isValidEmail, subscribeEmail} = subscribers;
+import {isValidEmail, subscribeEmail} from '~/lib/subscribers.server';
 
 /**
  * Записване за бюлетина - обслужва попъпа, футъра и страницата „Абонирай се".
@@ -82,8 +81,5 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   const status = await subscribeEmail(env, email);
-  // ВРЕМЕННО: причината пътува в отговора, докато проверя защо работникът на
-  // Nova не стига до администраторското API. Маха се веднага след това.
-  const reason = status === 'error' ? subscribers.lastFailure : undefined;
-  return data({status, reason}, {status: status === 'error' ? 502 : 200, ...noStore});
+  return data({status}, {status: status === 'error' ? 502 : 200, ...noStore});
 }

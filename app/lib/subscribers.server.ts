@@ -26,13 +26,15 @@ const REQUEST_TIMEOUT_MS = 8000;
 export type SubscribeOutcome = 'created' | 'exists' | 'error';
 
 /**
- * Защо е паднало последното записване. Само за диагностика - маршрутът връща
- * на потребителя само `error`, никога подробността.
+ * Токенът на администратора.
+ *
+ * ⚠️ Двете имена не са прищявка: Nova е записвала променливата и като
+ * `CLOUDCARTADMINPAT`, без долни черти. Измерено 2026-08-10 - работникът на
+ * тестовия магазин връщаше `no-pat` при първото име и заработи с второто.
+ * Всички останали помощници тук четат по същия начин.
  */
-export let lastFailure: string | null = null;
-function fail(reason: string): 'error' {
-  lastFailure = reason;
-  return 'error';
+function adminToken(env: Record<string, string | undefined>): string | undefined {
+  return envValue(env, 'CLOUDCART_ADMIN_PAT') || envValue(env, 'CLOUDCARTADMINPAT');
 }
 
 function adminOrigin(env: Record<string, string | undefined>): string | null {
@@ -97,12 +99,9 @@ export async function subscriberExists(
   env: Record<string, string | undefined>,
   email: string,
 ): Promise<boolean | null> {
-  const pat = envValue(env, 'CLOUDCART_ADMIN_PAT');
+  const pat = adminToken(env);
   const origin = adminOrigin(env);
-  if (!pat || !origin) {
-    lastFailure = !pat ? 'no-pat' : 'no-origin';
-    return null;
-  }
+  if (!pat || !origin) return null;
 
   const needle = email.trim().toLowerCase();
   try {
@@ -117,7 +116,6 @@ export async function subscriberExists(
     }
     return false;
   } catch (error) {
-    lastFailure = `find:${(error as Error).message}`;
     console.error('абонати: проверката не мина -', (error as Error).message);
     return null;
   }
@@ -133,9 +131,9 @@ export async function subscribeEmail(
   env: Record<string, string | undefined>,
   email: string,
 ): Promise<SubscribeOutcome> {
-  const pat = envValue(env, 'CLOUDCART_ADMIN_PAT');
+  const pat = adminToken(env);
   const origin = adminOrigin(env);
-  if (!pat || !origin) return fail(!pat ? 'no-pat' : 'no-origin');
+  if (!pat || !origin) return 'error';
 
   const clean = email.trim();
   const exists = await subscriberExists(env, clean);
@@ -152,12 +150,10 @@ export async function subscribeEmail(
     const out = res?.subscribersBulkImport;
     // Записването е опашка, не директен ред: връща се брой поставени задачи,
     // не самият абонат. Измерено 2026-08-10 - абонатът се появява до 2 секунди.
-    if (!out || out.queuedCount < 1 || out.failedCount > 0) {
-      return fail(`queued:${out?.queuedCount ?? 'none'}/failed:${out?.failedCount ?? 'none'}`);
-    }
+    if (!out || out.queuedCount < 1 || out.failedCount > 0) return 'error';
     return 'created';
   } catch (error) {
     console.error('абонати: записването не мина -', (error as Error).message);
-    return fail(`import:${(error as Error).message}`);
+    return 'error';
   }
 }
