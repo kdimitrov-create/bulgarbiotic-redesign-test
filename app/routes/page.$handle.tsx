@@ -15,6 +15,7 @@ import {
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
 import {BUILDER_HOME_HANDLE, designComposesHome} from '~/components/home/SectionRegistry';
+import {homePageHandle} from '~/lib/page-flags.server';
 import {designPlacesPage} from '~/components/PageSectionRegistry';
 import {fetchHomeSectionData} from '~/lib/home-data.server';
 import {useHomeMotion} from '~/lib/use-home-motion';
@@ -55,11 +56,14 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   // already serves it at "/". Leaving it reachable here too would publish the
   // same content at two addresses — a duplicate for search engines, and a
   // half-rendered one, since this route carries none of the homepage's data.
-  if (params.handle === BUILDER_HOME_HANDLE) {
+  const ctx = await getContext(context, request);
+
+  const homeHandle =
+    (await homePageHandle(ctx.env as Record<string, string | undefined>)) ??
+    BUILDER_HOME_HANDLE;
+  if (params.handle === homeHandle || params.handle === BUILDER_HOME_HANDLE) {
     throw redirect('/', 301);
   }
-
-  const ctx = await getContext(context, request);
   // Storefront API has intermittent 500s on some builder-built pages; if we
   // have a hand-authored override for the handle, gracefully fall back.
   const override = getPageContentOverride(params.handle);

@@ -14,7 +14,12 @@
 const CACHE_TTL_MS = 30 * 1000;
 const REQUEST_TIMEOUT_MS = 6000;
 
-let cache: {at: number; byHandle: Record<string, boolean>} | null = null;
+let cache: {
+  at: number;
+  byHandle: Record<string, boolean>;
+  /** handle-ът, който панелът е маркирал като начална страница. */
+  homeHandle: string | null;
+} | null = null;
 
 export async function pageIsActive(
   env: Record<string, string | undefined>,
@@ -34,7 +39,7 @@ export async function pageIsActive(
     const res = await fetch(`${origin}/api/gql`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query: '{ pages(first: 200) { nodes { urlHandle active } } }'}),
+      body: JSON.stringify({query: '{ pages(first: 200) { nodes { urlHandle active systemPage } } }'}),
       signal: controller.signal,
     });
     if (!res.ok) throw new Error(`admin api ${res.status}`);
@@ -42,10 +47,13 @@ export async function pageIsActive(
     if (json.errors?.length) throw new Error(json.errors[0].message);
 
     const byHandle: Record<string, boolean> = {};
+    let homeHandle: string | null = null;
     for (const node of json.data?.pages?.nodes ?? []) {
-      if (node?.urlHandle) byHandle[node.urlHandle] = String(node.active) === 'yes';
+      if (!node?.urlHandle) continue;
+      byHandle[node.urlHandle] = String(node.active) === 'yes';
+      if (node.systemPage === 'home') homeHandle = node.urlHandle;
     }
-    cache = {at: Date.now(), byHandle};
+    cache = {at: Date.now(), byHandle, homeHandle};
     return byHandle[handle] ?? true;
   } catch (error) {
     console.warn('page flags: assuming the page is on —', (error as Error).message);
@@ -53,6 +61,26 @@ export async function pageIsActive(
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Коя страница панелът смята за начална (`systemPage: home`).
+ *
+ * Дотук handle-ът беше закован на `home` - какъвто този магазин няма, затова
+ * `page(handle: "home")` връщаше null и композицията от панела никога не се
+ * активираше. Сега се чете оттам, откъдето се и задава: смени я в панела и
+ * витрината я следва, без deploy.
+ *
+ * Ползва същата заявка и кеш като `pageIsActive`, тоест не струва нищо отгоре.
+ * Без PAT или при проблем връща null и извикващият пада на закования handle.
+ */
+export async function homePageHandle(
+  env: Record<string, string | undefined>,
+): Promise<string | null> {
+  if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.homeHandle;
+  // Заявката живее в `pageIsActive`; едно извикване пълни кеша и за двете.
+  await pageIsActive(env, '__warm__');
+  return cache?.homeHandle ?? null;
 }
 
 function adminOrigin(env: Record<string, string | undefined>): string | null {

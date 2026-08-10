@@ -41,8 +41,16 @@ import {BottomCTAs} from '~/components/home/BottomCTAs';
 /**
  * The page the merchant composes the homepage in. Kept here because both the
  * homepage route (which renders it) and the page route (which must not) need it.
+ *
+ * Беше `home` - handle, който този магазин няма. `page(handle: "home")` връщаше
+ * null, тоест композицията от панела никога не се активираше и началната винаги
+ * рисуваше закованите секции. Реалната страница е „Начална (нова)".
+ *
+ * Смяната има две следствия, и двете търсени: `/` рисува тази композиция, а
+ * `/page/nachalna-nova` 301-ва към `/`, за да не се публикува едно и също
+ * съдържание на два адреса.
  */
-export const BUILDER_HOME_HANDLE = 'home';
+export const BUILDER_HOME_HANDLE = 'nachalna-nova';
 
 export interface SectionData {
   featuredProducts?: any[];

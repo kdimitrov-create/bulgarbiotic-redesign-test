@@ -34,7 +34,7 @@ import {
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
 import {designTurnedOff, BUILDER_HOME_HANDLE} from '~/components/home/SectionRegistry';
-import {pageIsActive} from '~/lib/page-flags.server';
+import {pageIsActive, homePageHandle} from '~/lib/page-flags.server';
 import {
   collectBuilderNeeds,
   fetchBuilderData,
@@ -59,11 +59,16 @@ export async function loader({context, request}: Route.LoaderArgs) {
 
   // Never let a missing builder page break the homepage: any failure here
   // simply means the coded sections render, exactly as before.
+  // Кой е handle-ът на началната казва панелът; закованият е само резерва.
+  const homeHandle =
+    (await homePageHandle(ctx.env as Record<string, string | undefined>)) ??
+    BUILDER_HOME_HANDLE;
+
   const [builderPage, builderPageOn] = await Promise.all([
-    ctx.storefront.getPage(BUILDER_HOME_HANDLE).catch(() => null),
+    ctx.storefront.getPage(homeHandle).catch(() => null),
     // The Storefront API serves a page's body even when the merchant has
     // switched it off, so the flag has to come from the admin.
-    pageIsActive(ctx.env as Record<string, string | undefined>, BUILDER_HOME_HANDLE),
+    pageIsActive(ctx.env as Record<string, string | undefined>, homeHandle),
   ]);
   const parsed = parseBuilderDesign((builderPage as any)?.body);
   const homeDesign = builderPageOn && !designTurnedOff(parsed) ? parsed : null;
