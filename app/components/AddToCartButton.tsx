@@ -1,7 +1,7 @@
 import {useFetcher} from 'react-router';
 import {useEffect, type ReactNode} from 'react';
-import {useAside} from './Aside';
 import {pushEcommerce, idForHandle} from '~/lib/analytics';
+import {syncCartToPlatform, announceCartAdd} from '~/lib/cart-sync';
 import {CART_ACTION} from '~/lib/cart-action';
 
 export function AddToCartButton({
@@ -18,13 +18,14 @@ export function AddToCartButton({
   disabled?: boolean;
 }) {
   const fetcher = useFetcher();
-  const {open} = useAside();
   const isAdding = fetcher.state !== 'idle';
 
-  // Open cart drawer after successful add
   useEffect(() => {
     if (fetcher.state === 'idle' && fetcher.data) {
-      open('cart');
+      // Количката на платформата рисува `/cart`, но не знае за нашата, докато
+      // не я „осинови". Правим го тихо, за да остане клиентът тук.
+      syncCartToPlatform((fetcher.data as any)?.cart?.checkoutUrl);
+      announceCartAdd();
 
       // `add_to_cart` е второто по важност събитие след purchase: от него се
       // хранят и Google Ads, и Meta аудиториите "заряза количката".
