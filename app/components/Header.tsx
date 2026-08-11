@@ -253,12 +253,22 @@ export function Header({shop, menu, cart}: HeaderProps) {
                 <path d="M5.5 19.5c1.4-3.2 3.9-4.8 6.5-4.8s5.1 1.6 6.5 4.8" />
               </svg>
             </NavLink>
+            {/* Иконката води право в касата на CloudCart, а не в нашата количка
+                (клиент, 2026-08-11). Празна количка няма адрес за предаване,
+                затова тогава пада обратно към нашата страница. */}
             <button
               ref={cartBtnRef}
               type="button"
               className="bb-icon-btn bb-icon-cart"
-              onClick={() => open('cart')}
-              aria-label="Отвори количка"
+              onClick={async () => {
+                const resolved = await cart;
+                if (resolved?.checkoutUrl && (resolved?.totalQuantity ?? 0) > 0) {
+                  window.location.href = resolved.checkoutUrl;
+                  return;
+                }
+                open('cart');
+              }}
+              aria-label="Към касата"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5.5 8h13l-1.2 10.5a1.6 1.6 0 01-1.6 1.5H8.3a1.6 1.6 0 01-1.6-1.5L5.5 8z" />
