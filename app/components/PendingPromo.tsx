@@ -1,5 +1,6 @@
 import {useEffect} from 'react';
 import {useFetcher, useFetchers} from 'react-router';
+import {CART_ACTION} from '~/lib/cart-action';
 
 /**
  * Пази спечелен промо код, докато количката получи първия си продукт.
@@ -55,7 +56,7 @@ export function PendingPromo() {
   const settled = fetchers.find(
     (f) =>
       f.key !== 'bb-pending-promo' &&
-      f.formAction === '/cart' &&
+      f.formAction === CART_ACTION &&
       f.state === 'idle' &&
       ((f.data as any)?.cart?.totalQuantity ?? 0) > 0,
   );
@@ -70,7 +71,7 @@ export function PendingPromo() {
       return;
     }
     if (fetcher.state !== 'idle') return;
-    fetcher.submit({action: 'APPLY_DISCOUNT', code}, {method: 'post', action: '/cart'});
+    fetcher.submit({action: 'APPLY_DISCOUNT', code}, {method: 'post', action: CART_ACTION});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settledCart]);
 

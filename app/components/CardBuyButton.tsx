@@ -1,6 +1,7 @@
 import {useFetcher} from 'react-router';
 import {useEffect} from 'react';
 import {useAside} from './Aside';
+import {CART_ACTION} from '~/lib/cart-action';
 
 /**
  * "Купи" button for product cards — the home carousel AND the category/listing
@@ -42,7 +43,7 @@ export function CardBuyButton({
           merchandiseId
             ? {action: 'ADD_TO_CART', merchandiseId, quantity: '1'}
             : {action: 'ADD_TO_CART', handle, quantity: '1'},
-          {method: 'post', action: '/cart'},
+          {method: 'post', action: CART_ACTION},
         );
       }}
     >

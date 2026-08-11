@@ -8,6 +8,7 @@ import {ProductMarks} from '~/components/ProductMarks';
 import {useAside} from '~/components/Aside';
 
 import {SHOW_BGN} from '~/lib/currency';
+import {CART_ACTION} from '~/lib/cart-action';
 /**
  * The horizontal product slider used on the homepage — and by the page
  * builder's "Продуктова витрина" widget, so a showcase the merchant assembles
@@ -39,7 +40,7 @@ function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
         e.stopPropagation();
         fetcher.submit(
           {action: 'ADD_TO_CART', merchandiseId, quantity: '1'},
-          {method: 'post', action: '/cart'},
+          {method: 'post', action: CART_ACTION},
         );
       }}
     >

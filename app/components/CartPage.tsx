@@ -17,6 +17,7 @@ import {
   bothCurrencies,
   CartTrustStrip,
 } from './CartDrawer';
+import {CART_ACTION} from '~/lib/cart-action';
 
 /**
  * Full cart PAGE (/cart) — the drawer's design language in a two-column
@@ -244,7 +245,7 @@ function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
 
         <div className="bb-cart-item-actions">
           <div className="bb-cart-qty">
-            <update.Form method="post" action="/cart">
+            <update.Form method="post" action={CART_ACTION}>
               <input type="hidden" name="action" value="UPDATE_CART" />
               <input type="hidden" name="lineId" value={line.id} />
               <input type="hidden" name="quantity" value={Math.max(0, qty - 1)} />
@@ -255,7 +256,7 @@ function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
               </button>
             </update.Form>
             <span className="bb-cart-qty-num">{qty}</span>
-            <update.Form method="post" action="/cart">
+            <update.Form method="post" action={CART_ACTION}>
               <input type="hidden" name="action" value="UPDATE_CART" />
               <input type="hidden" name="lineId" value={line.id} />
               <input type="hidden" name="quantity" value={qty + 1} />
@@ -268,7 +269,7 @@ function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
             </update.Form>
           </div>
 
-          <remove.Form method="post" action="/cart">
+          <remove.Form method="post" action={CART_ACTION}>
             <input type="hidden" name="action" value="REMOVE_FROM_CART" />
             <input type="hidden" name="lineId" value={line.id} />
             <button type="submit" className="bb-cart-remove" aria-label={`Премахни ${title}`}>

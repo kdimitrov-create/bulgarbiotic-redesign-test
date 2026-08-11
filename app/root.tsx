@@ -20,6 +20,7 @@ import {AsideProvider, Aside} from '~/components/Aside';
 import {CartDrawer} from '~/components/CartDrawer';
 import {PageLayout} from '~/components/PageLayout';
 import '~/app.css';
+import {CART_ACTION} from '~/lib/cart-action';
 
 export const meta: MetaFunction = () => getSeoMeta({title: 'Bulgar Biotic — Български пробиотици Bactology'});
 
@@ -128,7 +129,7 @@ export default function App() {
   // "Купи" click. Falls back to the loader cart on first load / reload.
   const cartFetchers = useFetchers();
   const latestCart = cartFetchers
-    .filter((f) => f.formAction === '/cart' && (f.data as any)?.cart)
+    .filter((f) => f.formAction === CART_ACTION && (f.data as any)?.cart)
     .map((f) => (f.data as any).cart)
     .pop();
   const cart = latestCart ? Promise.resolve(latestCart) : (data?.cart ?? Promise.resolve(null));

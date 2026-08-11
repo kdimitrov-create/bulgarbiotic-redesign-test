@@ -13,6 +13,7 @@ import {numericId} from '~/lib/analytics';
 import {CartOffersStrip} from './CartOffers';
 
 import {SHOW_BGN} from '~/lib/currency';
+import {CART_ACTION} from '~/lib/cart-action';
 export const EUR_TO_BGN = 1.95583;
 // Free-shipping target = the merchant's BumpCart `totalCartAmount` setting
 // (51 € on bulgarbiotic.bg as of 2026-05-21). This sits between the
@@ -376,7 +377,7 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
         <div className="bb-cd-item-row">
           {/* −/+ stepper */}
           <div className="bb-cd-qty">
-            <update.Form method="post" action="/cart" className="bb-cd-qty-form">
+            <update.Form method="post" action={CART_ACTION} className="bb-cd-qty-form">
               <input type="hidden" name="action" value="UPDATE_CART" />
               <input type="hidden" name="lineId" value={line.id} />
               <input type="hidden" name="quantity" value={Math.max(0, qty - 1)} />
@@ -391,7 +392,7 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
               </button>
             </update.Form>
             <span className="bb-cd-qty-num">{qty}</span>
-            <update.Form method="post" action="/cart" className="bb-cd-qty-form">
+            <update.Form method="post" action={CART_ACTION} className="bb-cd-qty-form">
               <input type="hidden" name="action" value="UPDATE_CART" />
               <input type="hidden" name="lineId" value={line.id} />
               <input type="hidden" name="quantity" value={qty + 1} />
@@ -409,7 +410,7 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
           </div>
 
           {/* Remove */}
-          <remove.Form method="post" action="/cart">
+          <remove.Form method="post" action={CART_ACTION}>
             <input type="hidden" name="action" value="REMOVE_FROM_CART" />
             <input type="hidden" name="lineId" value={line.id} />
             <button type="submit" className="bb-cd-remove" aria-label={`Премахни ${title}`}>
@@ -688,7 +689,7 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
             )}
           </div>
         )}
-        <add.Form method="post" action="/cart" className="bb-cd-upsell-add-form">
+        <add.Form method="post" action={CART_ACTION} className="bb-cd-upsell-add-form">
           <input type="hidden" name="action" value="ADD_TO_CART" />
           <input type="hidden" name="merchandiseId" value={suggestion.merchandiseId ?? ''} />
           {/* Fallback: if the upsell suggestion has no variant id, send the

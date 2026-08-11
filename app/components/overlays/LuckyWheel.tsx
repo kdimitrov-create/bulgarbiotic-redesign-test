@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {useFetcher, useFetchers} from 'react-router';
 import {rememberPromo} from '../PendingPromo';
+import {CART_ACTION} from '~/lib/cart-action';
 
 /**
  * Колело на късмета — Nitrogen версия.
@@ -132,7 +133,7 @@ export function LuckyWheel() {
   const someoneAdding = fetchers.some(
     (f) =>
       f.key !== FETCHER_KEY &&
-      f.formAction === '/cart' &&
+      f.formAction === CART_ACTION &&
       f.formData?.get('action') === 'ADD_TO_CART',
   );
 
@@ -174,7 +175,7 @@ export function LuckyWheel() {
     pendingCode.current = null;
     fetcher.submit(
       {action: 'APPLY_DISCOUNT', code},
-      {method: 'post', action: '/cart'},
+      {method: 'post', action: CART_ACTION},
     );
     showToast('Промо кодът е добавен в количката');
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -234,7 +235,7 @@ export function LuckyWheel() {
       pendingCode.current = p.freeCode ?? null;
       fetcher.submit(
         {action: 'ADD_TO_CART', merchandiseId: p.merchandiseId, quantity: '1'},
-        {method: 'post', action: '/cart'},
+        {method: 'post', action: CART_ACTION},
       );
     } else {
       // Кодът се запомня ВИНАГИ. Прилагането върху празна количка минава без
@@ -244,7 +245,7 @@ export function LuckyWheel() {
       rememberPromo(p.code!);
       fetcher.submit(
         {action: 'APPLY_DISCOUNT', code: p.code!},
-        {method: 'post', action: '/cart'},
+        {method: 'post', action: CART_ACTION},
       );
       setResult(
         `🎉 Спечели: ${p.label} отстъпка\nКодът ${p.code} е запазен и ще се приложи в количката ти.`,

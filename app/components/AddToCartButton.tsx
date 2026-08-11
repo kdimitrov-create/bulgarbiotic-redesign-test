@@ -2,6 +2,7 @@ import {useFetcher} from 'react-router';
 import {useEffect, type ReactNode} from 'react';
 import {useAside} from './Aside';
 import {pushEcommerce, idForHandle} from '~/lib/analytics';
+import {CART_ACTION} from '~/lib/cart-action';
 
 export function AddToCartButton({
   merchandiseId,
@@ -56,7 +57,7 @@ export function AddToCartButton({
   }, [fetcher.state, fetcher.data, open, merchandiseId, quantity]);
 
   return (
-    <fetcher.Form method="post" action="/cart">
+    <fetcher.Form method="post" action={CART_ACTION}>
       <input type="hidden" name="action" value="ADD_TO_CART" />
       <input type="hidden" name="merchandiseId" value={merchandiseId} />
       <input type="hidden" name="quantity" value={quantity} />

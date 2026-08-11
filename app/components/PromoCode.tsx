@@ -1,5 +1,6 @@
 import {useFetcher} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
+import {CART_ACTION} from '~/lib/cart-action';
 
 /**
  * Поле за промокод. Едно и също в страницата на количката и в чекмеджето.
@@ -43,7 +44,7 @@ export function PromoCode({
           {active.map((d) => (
             <li key={d.code}>
               <span className="bb-cart-promo-tag">{d.code}</span>
-              <fetcher.Form method="post" action="/cart">
+              <fetcher.Form method="post" action={CART_ACTION}>
                 <input type="hidden" name="action" value="APPLY_DISCOUNT" />
                 <input type="hidden" name="code" value="" />
                 <button
@@ -60,7 +61,7 @@ export function PromoCode({
         </ul>
       )}
 
-      <fetcher.Form method="post" action="/cart" className="bb-cart-promo-form">
+      <fetcher.Form method="post" action={CART_ACTION} className="bb-cart-promo-form">
         <input type="hidden" name="action" value="APPLY_DISCOUNT" />
         <label className="bb-cart-promo-label" htmlFor={inputId}>
           Имаш промокод?

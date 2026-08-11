@@ -2,6 +2,7 @@ import {Link, useFetcher} from 'react-router';
 import type {CartLine} from '@cloudcart/nitro';
 import {Money, Image} from '@cloudcart/nitro-react';
 import {PlusIcon, MinusIcon, TrashIcon} from '@heroicons/react/24/outline';
+import {CART_ACTION} from '~/lib/cart-action';
 
 interface CartLineItemProps {
   line: CartLine;
@@ -69,7 +70,7 @@ function CartLineQuantity({line, quantity, layout}: {line: CartLine; quantity: n
   return (
     <div className={isDrawer ? 'flex flex-col items-end gap-2' : 'flex items-center gap-2'}>
       <div className="flex items-center gap-1">
-        <updateFetcher.Form method="post" action="/cart">
+        <updateFetcher.Form method="post" action={CART_ACTION}>
           <input type="hidden" name="action" value="UPDATE_CART" />
           <input type="hidden" name="lineId" value={line.id} />
           <input type="hidden" name="quantity" value={Math.max(0, quantity - 1)} />
@@ -78,7 +79,7 @@ function CartLineQuantity({line, quantity, layout}: {line: CartLine; quantity: n
           </button>
         </updateFetcher.Form>
         <span className={isDrawer ? 'text-xs min-w-5 text-center' : 'text-sm min-w-5 text-center'}>{quantity}</span>
-        <updateFetcher.Form method="post" action="/cart">
+        <updateFetcher.Form method="post" action={CART_ACTION}>
           <input type="hidden" name="action" value="UPDATE_CART" />
           <input type="hidden" name="lineId" value={line.id} />
           <input type="hidden" name="quantity" value={quantity + 1} />
@@ -87,7 +88,7 @@ function CartLineQuantity({line, quantity, layout}: {line: CartLine; quantity: n
           </button>
         </updateFetcher.Form>
       </div>
-      <removeFetcher.Form method="post" action="/cart">
+      <removeFetcher.Form method="post" action={CART_ACTION}>
         <input type="hidden" name="action" value="REMOVE_FROM_CART" />
         <input type="hidden" name="lineId" value={line.id} />
         <button
