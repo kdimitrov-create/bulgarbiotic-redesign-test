@@ -278,8 +278,10 @@ export function Award() {
         }
 
         .bb-award-medal {
-          width: 220px; height: 220px;
-          filter: drop-shadow(0 18px 30px rgba(212, 175, 106, 0.28));
+          /* Смалена с 10% и без сияние (клиент, 2026-08-11): златният
+             drop-shadow се разстилаше около кръга и върху тъмносиния фон
+             четеше като бял ореол, тоест като подложка зад логото. */
+          width: 198px; height: 198px;
           animation: bb-medal-float 5s ease-in-out infinite;
         }
         .bb-award-medal svg { width: 100%; height: 100%; }
@@ -288,7 +290,7 @@ export function Award() {
           50%      { transform: translateY(-8px) rotate(1deg); }
         }
         @media (max-width: 880px) {
-          .bb-award-medal { width: 180px; height: 180px; }
+          .bb-award-medal { width: 162px; height: 162px; }
         }
 
         .bb-award-tag {

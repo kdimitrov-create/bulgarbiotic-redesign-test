@@ -51,7 +51,7 @@ export function AddToCartButton({
         });
       }
     }
-  }, [fetcher.state, fetcher.data, open, merchandiseId, quantity]);
+  }, [fetcher.state, fetcher.data, merchandiseId, quantity]);
 
   return (
     <fetcher.Form method="post" action={CART_ACTION}>
