@@ -253,22 +253,21 @@ export function Header({shop, menu, cart}: HeaderProps) {
                 <path d="M5.5 19.5c1.4-3.2 3.9-4.8 6.5-4.8s5.1 1.6 6.5 4.8" />
               </svg>
             </NavLink>
-            {/* Иконката води право в касата на CloudCart, а не в нашата количка
-                (клиент, 2026-08-11). Празна количка няма адрес за предаване,
-                затова тогава пада обратно към нашата страница. */}
-            <button
-              ref={cartBtnRef}
-              type="button"
+            {/* Иконката води в количката на CloudCart (клиент, 2026-08-11).
+                `/cart` вече е резервиран в диспечера на Nova, тоест този адрес
+                се проксира към платформата и тя рисува своята количка - със
+                своя двигател за отстъпки, подаръци и правила.
+
+                ⚠️ Измерено 2026-08-11: без предварително „осиновяване" на
+                количката платформата не вижда продуктите, добавени през
+                Storefront API-то, и страницата излиза празна. Мостът е
+                `cart.checkoutUrl` (`/checkout/adopt/<jwt>`), който сега стои
+                неизползван по изрично искане - тества се дали е нужен. */}
+            <a
+              ref={cartBtnRef as any}
+              href="/cart"
               className="bb-icon-btn bb-icon-cart"
-              onClick={async () => {
-                const resolved = await cart;
-                if (resolved?.checkoutUrl && (resolved?.totalQuantity ?? 0) > 0) {
-                  window.location.href = resolved.checkoutUrl;
-                  return;
-                }
-                open('cart');
-              }}
-              aria-label="Към касата"
+              aria-label="Количка"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5.5 8h13l-1.2 10.5a1.6 1.6 0 01-1.6 1.5H8.3a1.6 1.6 0 01-1.6-1.5L5.5 8z" />
@@ -283,7 +282,7 @@ export function Header({shop, menu, cart}: HeaderProps) {
                   }
                 </Await>
               </Suspense>
-            </button>
+            </a>
           </div>
         </div>
       </div>
