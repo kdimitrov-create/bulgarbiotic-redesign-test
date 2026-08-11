@@ -107,7 +107,9 @@ export function CapsuleScience() {
           <div className="bb-cap-eyebrow"><span className="bb-cap-pulse"></span>DR-CAPS™ ТЕХНОЛОГИЯ</div>
           {/* Client (т.7): ONE fixed text — no per-scroll text swap; only the
               capsule frames animate. (Old cycling heading "Колонизация…" removed.) */}
-          <h2 className="bb-cap-h2">Възстановява баланса на микробиома<br />още след <em>2 седмици.</em></h2>
+          {/* „2 седмици" излизаше от рамката на един ред с „още след"
+              (клиент, 2026-08-11), затова се пренася само то. */}
+          <h2 className="bb-cap-h2">Възстановява баланса на микробиома<br />още след<br /><em>2 седмици.</em></h2>
           <p className="bb-cap-lede">DR-Caps™ киселинно-устойчивата капсула доставя 50 милиарда живи бактерии точно в дебелото черво. Проучванията показват измерима промяна в микробиома вече след 14 дни.</p>
         </div>
 

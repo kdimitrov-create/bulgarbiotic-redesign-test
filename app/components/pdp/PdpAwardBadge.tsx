@@ -37,11 +37,17 @@ export function PdpAwardBadge() {
           Forbes graphic said nothing on its own, so it is spelled out. Same
           image the merchant uses as a product banner, now with its own label. */}
       <div className="bb-pdp-award-forbes">
+        {/* Същата значка като на началната страница (клиент, 2026-08-11).
+            Дотук стоеше банер от CDN-а, който носеше бял квадрат зад черния
+            кръг. Файлът е локален и вече е с прозрачни ъгли, тоест кръгът
+            стои сам, без подложка. */}
         <img
-          src="https://bulgarbiotic.bg/cdn/img/products_banners/7/%21%21%21%D1%81.png?width=96&height=96&v=1777459060"
+          src="/images/awards/forbes-2026.png"
           alt=""
           aria-hidden="true"
           loading="lazy"
+          width={96}
+          height={96}
           onError={(e) => {
             e.currentTarget.style.display = 'none';
           }}
