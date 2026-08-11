@@ -5,7 +5,7 @@ export function Doverie() {
         <div className="bb-doverie-stat">110K<span className="bb-small">+</span></div>
         <div className="bb-doverie-text">
           <h3>Доверието на 110 000+ български семейства от 2019 г.</h3>
-          <p>От Bactology Femin до Babies &amp; Kids — нашите продукти са в ежедневието на хиляди домове, защото работят. Не обещания. Резултати.</p>
+          <p>Нашите продукти са в ежедневието на хиляди домове, защото работят. Не обещания. Резултати.</p>
           <div className="bb-doverie-pills">
             <span className="bb-doverie-pill"><span className="bb-doverie-dot"></span>117 000+ читатели на бюлетина</span>
             <span className="bb-doverie-pill"><span className="bb-doverie-dot"></span>4.9★ от 3 303 ревюта</span>

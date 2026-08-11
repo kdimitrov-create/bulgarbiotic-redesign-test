@@ -17,8 +17,8 @@ type ActiveChip = {
 /** Try to find a human-readable label for a given URL param + value. */
 function labelFor(filters: Filter[], param: string, value: string): string {
   // Price range — handled separately
-  if (param === 'minPrice') return `Цена от ${value} лв`;
-  if (param === 'maxPrice') return `Цена до ${value} лв`;
+  if (param === 'minPrice') return `Цена от ${value} €`;
+  if (param === 'maxPrice') return `Цена до ${value} €`;
 
   // Brand booleans
   if (param === 'onSale') return 'Промоция';

@@ -137,7 +137,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
               </svg>
               <div>
                 <div className="bb-ft-label">Имейл</div>
-                <a className="bb-ft-val" href="mailto:office@bulgarbiotic.bg">office@bulgarbiotic.bg</a>
+                <a className="bb-ft-val" href="mailto:bulgarbiotic.eu@gmail.com">bulgarbiotic.eu@gmail.com</a>
               </div>
             </div>
             <div className="bb-ft-row">

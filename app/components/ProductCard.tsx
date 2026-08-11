@@ -6,7 +6,8 @@ import {CardBuyButton} from './CardBuyButton';
 import {ProductMarks} from './ProductMarks';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing} from '~/lib/product-marks';
-
+
+import {SHOW_BGN} from '~/lib/currency';
 const EUR_TO_BGN = 1.95583;
 
 const fmt = (n: number, currency: 'EUR' | 'BGN') =>
@@ -108,9 +109,11 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           >
             {hasRange ? 'от ' : ''}{fmt(eur, 'EUR')}
           </span>
-          <span className="text-[12px] text-gray-500 leading-none">
-            {fmt(bgn, 'BGN')}
-          </span>
+          {SHOW_BGN && (
+            <span className="text-[12px] text-gray-500 leading-none">
+              {fmt(bgn, 'BGN')}
+            </span>
+          )}
           {isOnSale && compareEur > 0 && (
             <span className="text-[12px] text-gray-400 line-through leading-none ml-0.5">
               {fmt(compareEur, 'EUR')}

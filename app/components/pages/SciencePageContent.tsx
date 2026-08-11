@@ -109,7 +109,7 @@ export function SciencePageContent() {
             },
             {
               n: '02', h: 'Научен подход',
-              p: 'Прецизно подбрани щамове. Научно обосновани формули. Всяка съставка с клинично потвърдено действие. Никакво маркетингово вдъхновение.',
+              p: 'Прецизно подбрани щамове. Научно обосновани формули. Всяка съставка с клинично потвърдено действие.',
               icon: (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 4h6l-1 4h-4z" />
@@ -120,7 +120,7 @@ export function SciencePageContent() {
             },
             {
               n: '03', h: 'Лабораторни анализи',
-              p: 'Микробиологични и биохимични изследвания за ефективност, чистота и стабилност — на всяка партида. Не на проба-проба, а на 100% от партидите.',
+              p: '',
               icon: (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10 2v6l-5 8a3 3 0 002.5 4.5h9A3 3 0 0019 16l-5-8V2" />
@@ -225,7 +225,7 @@ export function SciencePageContent() {
             Прозрачност <em>без компромис.</em>
           </h2>
           <p className="bb-sci-section-sub">
-            Ето всички клинично проучени щамове + витамини и минерали,
+            Всички клинично проучени щамове + витамини и минерали,
             които комбинираме в различните си формули.
           </p>
         </div>

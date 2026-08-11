@@ -3,12 +3,6 @@ import {Link} from 'react-router';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {liveModule} from '~/lib/theme-modules';
 
-const EUR_TO_BGN = 1.95583;
-const SHIP_THRESHOLD_BGN_FMT = new Intl.NumberFormat('bg-BG', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-}).format(BUMP_CART_CONFIG.totalCartAmount * EUR_TO_BGN) + ' лв';
-
 /**
  * Sticky promo bar at the very top of every page. Cycles through live
  * campaigns every 6 seconds with a soft fade. Closable; persists dismissal
@@ -53,7 +47,7 @@ const CAMPAIGNS: Campaign[] = [
     // bump-cart-config.ts is the single source of truth (51 € as of
     // 2026-05-21). When the merchant retunes the offer in admin, this
     // copy follows automatically.
-    text: `Безплатна доставка при поръчка над ${BUMP_CART_CONFIG.totalCartAmount} € (≈ ${SHIP_THRESHOLD_BGN_FMT})`,
+    text: `Безплатна доставка при поръчка над ${BUMP_CART_CONFIG.totalCartAmount} €`,
     cta: 'Към продуктите',
     to: '/category/all-products',
   },
@@ -61,12 +55,10 @@ const CAMPAIGNS: Campaign[] = [
 
 
 /**
- * Each top-level paragraph the merchant writes in the "Promo Bar" module is one
- * rotating message — that is what the panel's editor produces per line, and it
- * lets the admin-driven bar behave like the designed one instead of showing a
- * single static sentence.
+ * Всеки абзац в модула „Promo Bar" е едно съобщение от въртележката - точно
+ * това произвежда редакторът в панела ред по ред.
  *
- * Anything that is not a list of paragraphs is kept whole as a single message.
+ * Каквото не е списък от абзаци, остава едно цяло съобщение.
  */
 function splitOwnSlides(html: string): string[] {
   const raw = (html || '').trim();
@@ -79,6 +71,49 @@ function splitOwnSlides(html: string): string[] {
     .map((p) => p.replace(open, '').replace(/<\/p>\s*$/i, '').trim())
     .filter((p) => p.replace(/<[^>]+>/g, '').trim().length > 0);
   return slides.length ? slides : [raw];
+}
+
+/**
+ * Съдържанието от админа, разглобено до частите, с които е нарисувана лентата
+ * в този дизайн: знак отпред, текст и връзка накрая.
+ *
+ * Защо не се налива направо: панелът пази HTML, писан за старата тема - със
+ * свои `<a>`, свои удебелявания и понякога свои стилове. Досега точно този HTML
+ * влизаше суров в лентата и тя изглеждаше като чуждо парче в новия дизайн.
+ * Клиентът поиска обратното: съдържанието да е от панела, видът да е нашият.
+ */
+type OwnSlide = {glyph: string; text: string; cta: string; to: string};
+
+/** Първият знак, ако абзацът започва със символ, а не с буква или цифра. */
+const LEADING_GLYPH = /^\s*([^\p{L}\p{N}\s<])\s*/u;
+
+function stripTags(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseOwnSlide(html: string): OwnSlide {
+  // Връзката накрая става бутонът „Виж …", както при рисуваните съобщения.
+  const link = html.match(/<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/i);
+  const to = link ? link[1] : '';
+  const cta = link ? stripTags(link[2]).replace(/\s*[»→>]+\s*$/, '').trim() : '';
+
+  let text = stripTags(link ? html.replace(link[0], ' ') : html);
+  let glyph = '';
+  const lead = text.match(LEADING_GLYPH);
+  if (lead) {
+    glyph = lead[1];
+    text = text.slice(lead[0].length);
+  }
+  return {glyph, text: text.trim(), cta, to};
 }
 
 const STORAGE_KEY = 'bb-promo-bar-v1';
@@ -137,25 +172,42 @@ export function PromoBar() {
   return (
     <div className="bb-promo" role="region" aria-label="Активни кампании">
       <div className="bb-promo-track">
-        {ownSlides.map((html, i) => (
-          <div
-            key={`own-${i}`}
-            className={`bb-promo-slide bb-promo-slide--own${i === idx % ownSlides.length ? ' bb-promo-slide--on' : ''}`}
-            aria-hidden={i !== idx % ownSlides.length}
-          >
-            <span className="bb-promo-own" dangerouslySetInnerHTML={{__html: html}} />
-            {showButton && (
-              <a
-                className="bb-promo-cta bb-promo-cta--own"
-                href={button.link}
-                target={button.target || undefined}
-                rel={button.target === '_blank' ? 'noopener noreferrer' : undefined}
-              >
-                {button.text || 'Виж повече'}
-              </a>
-            )}
-          </div>
-        ))}
+        {ownSlides.map((html, i) => {
+          const slide = parseOwnSlide(html);
+          const to = slide.to || (showButton ? button.link : '');
+          const cta = slide.cta || (showButton ? button.text || 'Виж повече' : '');
+          const body = (
+            <>
+              <strong>{slide.text}</strong>
+              {cta ? (
+                <span className="bb-promo-cta">
+                  {cta} <span aria-hidden="true">»</span>
+                </span>
+              ) : null}
+            </>
+          );
+          const external = /^https?:\/\//i.test(to);
+          return (
+            <div
+              key={`own-${i}`}
+              className={`bb-promo-slide${i === idx % ownSlides.length ? ' bb-promo-slide--on' : ''}`}
+              aria-hidden={i !== idx % ownSlides.length}
+            >
+              {slide.glyph ? (
+                <span className="bb-promo-glyph" aria-hidden="true">{slide.glyph}</span>
+              ) : null}
+              {to ? (
+                external ? (
+                  <a href={to} className="bb-promo-text" rel="noopener noreferrer">{body}</a>
+                ) : (
+                  <Link to={to} className="bb-promo-text">{body}</Link>
+                )
+              ) : (
+                <span className="bb-promo-text">{body}</span>
+              )}
+            </div>
+          );
+        })}
         {ownSlides.length === 0 &&
           CAMPAIGNS.map((camp, i) => (
           <div

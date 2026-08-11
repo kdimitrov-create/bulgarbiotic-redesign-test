@@ -12,6 +12,7 @@ import {promoDiscountEur} from '~/lib/promo-codes';
 import {numericId} from '~/lib/analytics';
 import {CartOffersStrip} from './CartOffers';
 
+import {SHOW_BGN} from '~/lib/currency';
 export const EUR_TO_BGN = 1.95583;
 // Free-shipping target = the merchant's BumpCart `totalCartAmount` setting
 // (51 € on bulgarbiotic.bg as of 2026-05-21). This sits between the
@@ -146,7 +147,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
               </>
             ) : (
               <>
-                Поръчай за още <strong className="accent">{fmtEur(remainingEur)}</strong> <span className="bb-cd-shipping-bgn">({fmtBgn(remainingBgn)})</span> и доставката е безплатна
+                Поръчай за още <strong className="accent">{fmtEur(remainingEur)}</strong>{SHOW_BGN ? <span className="bb-cd-shipping-bgn"> ({fmtBgn(remainingBgn)})</span> : null} и доставката е безплатна
               </>
             )}
           </div>
@@ -239,7 +240,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
                   </div>
                 )}
                 <div className="bb-cd-grand-val">{fmtEur(total.eur)}</div>
-                <div className="bb-cd-grand-bgn">{fmtBgn(total.bgn)}</div>
+                {SHOW_BGN && <div className="bb-cd-grand-bgn">{fmtBgn(total.bgn)}</div>}
               </div>
             </div>
             <CheckoutButton cart={cart} className="bb-cd-checkout" />
@@ -425,12 +426,12 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
 
       <div className="bb-cd-item-price">
         <div className="bb-cd-item-price-eur">{fmtEur(saleEur)}</div>
-        <div className="bb-cd-item-price-bgn">{fmtBgn(saleBgn)}</div>
+        {SHOW_BGN && <div className="bb-cd-item-price-bgn">{fmtBgn(saleBgn)}</div>}
         {hasDiscount && (
           <>
             <div className="bb-cd-item-price-msrp">
               <span className="bb-cd-item-price-msrp-eur">{fmtEur(msrp.eur)}</span>
-              <span className="bb-cd-item-price-msrp-bgn">{fmtBgn(msrp.bgn)}</span>
+              {SHOW_BGN && <span className="bb-cd-item-price-msrp-bgn">{fmtBgn(msrp.bgn)}</span>}
             </div>
             {/* Per-item "Спестяваш …" removed per client request (kept only the
                 strikethrough MSRP above; savings still shown on the grand total). */}
@@ -678,14 +679,15 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
             <span className="bb-cd-upsell-price-msrp">{fmtEur(msrp.eur)}</span>
           )}
         </div>
-        {/* BGN row — ALWAYS visible (Bulgarian dual-currency display
-            is a legal requirement, not a "show when on sale" option). */}
-        <div className="bb-cd-upsell-price-bgn-row">
-          {fmtBgn(saleBgn)}
-          {hasDiscount && (
-            <span className="bb-cd-upsell-price-msrp-bgn"> · {fmtBgn(msrp.bgn)}</span>
-          )}
-        </div>
+        {/* Редът в лева пада по искане на клиента - виж `SHOW_BGN`. */}
+        {SHOW_BGN && (
+          <div className="bb-cd-upsell-price-bgn-row">
+            {fmtBgn(saleBgn)}
+            {hasDiscount && (
+              <span className="bb-cd-upsell-price-msrp-bgn"> · {fmtBgn(msrp.bgn)}</span>
+            )}
+          </div>
+        )}
         <add.Form method="post" action="/cart" className="bb-cd-upsell-add-form">
           <input type="hidden" name="action" value="ADD_TO_CART" />
           <input type="hidden" name="merchandiseId" value={suggestion.merchandiseId ?? ''} />

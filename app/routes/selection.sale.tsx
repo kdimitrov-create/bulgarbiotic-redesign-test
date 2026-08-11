@@ -286,7 +286,7 @@ export default function PromotionsPage() {
             <circle cx="7" cy="20" r="2" />
             <circle cx="17.5" cy="20" r="2" />
           </svg>
-          <span>Безплатна доставка над <strong>50 лв</strong></span>
+          <span>Безплатна доставка над <strong>50 €</strong></span>
         </div>
         <div className="bb-promo-trust-pill">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

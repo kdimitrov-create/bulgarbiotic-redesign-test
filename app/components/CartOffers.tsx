@@ -1,5 +1,6 @@
 import {giftProgress, cartOffers} from '~/lib/cart-offers';
 
+import {SHOW_BGN} from '~/lib/currency';
 const EUR_TO_BGN = 1.95583;
 
 const fmtEur = (n: number) =>
@@ -33,7 +34,7 @@ export function CartOffersStrip({subtotalEur}: {subtotalEur: number}) {
               <>
                 <span className="bb-offer-icon" aria-hidden="true">🎁</span>
                 Още <strong className="accent">{fmtEur(gift.remaining)}</strong>{' '}
-                <span className="bb-offer-bgn">({fmtEur(gift.remaining * EUR_TO_BGN).replace('€', 'лв')})</span>{' '}
+                {SHOW_BGN && <span className="bb-offer-bgn">({fmtEur(gift.remaining * EUR_TO_BGN).replace('€', 'лв')})</span>}{' '}
                 и получаваш <strong>{gift.productTitle}</strong>
               </>
             )}

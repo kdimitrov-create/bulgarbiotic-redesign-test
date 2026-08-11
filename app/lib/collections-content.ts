@@ -39,7 +39,7 @@ export const COLLECTION_INTROS: Record<string, CollectionIntro> = {
   },
   'probiotik-za-deca': {
     tag: 'За децата',
-    intro: 'Babies & Kids — нежни формули, които децата обичат на вкус. От 6 месеца нагоре.',
+    intro: 'Babies & Kids — нежни формули, които децата обичат на вкус.',
   },
   'probiotik-za-otslabvane': {
     tag: 'За плосък корем',

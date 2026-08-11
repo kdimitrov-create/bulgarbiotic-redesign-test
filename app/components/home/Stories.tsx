@@ -65,7 +65,7 @@ export function Stories() {
         <div className="bb-stories-head reveal">
           <div>
             <div className="section-tag">@bulgarbiotic · Instagram</div>
-            <h2 className="bb-stories-h2">Истории от хора,<br />които ни <span className="accent">доверяват.</span></h2>
+            <h2 className="bb-stories-h2">Истории от хора,<br />които ни се <span className="accent">доверяват.</span></h2>
             <p className="bb-stories-lead">Реални reels на @bulgarbiotic — публикуваме нови всяка седмица.</p>
           </div>
 

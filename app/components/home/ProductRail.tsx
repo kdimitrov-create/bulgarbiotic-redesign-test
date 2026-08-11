@@ -7,6 +7,7 @@ import {markPricing} from '~/lib/product-marks';
 import {ProductMarks} from '~/components/ProductMarks';
 import {useAside} from '~/components/Aside';
 
+import {SHOW_BGN} from '~/lib/currency';
 /**
  * The horizontal product slider used on the homepage — and by the page
  * builder's "Продуктова витрина" widget, so a showcase the merchant assembles
@@ -173,14 +174,16 @@ export function ProductRail({
                         </span>
                       )}
                     </div>
-                    <div className="bb-pcard-eur">
-                      {hasDiscount && effectiveMsrp && (
-                        <span className="bb-pcard-eur-old">
-                          {eurToBgnLabel(effectiveMsrp as any)}
-                        </span>
-                      )}
-                      {eurToBgnLabel(effectivePrice as any)}
-                    </div>
+                    {SHOW_BGN && (
+                      <div className="bb-pcard-eur">
+                        {hasDiscount && effectiveMsrp && (
+                          <span className="bb-pcard-eur-old">
+                            {eurToBgnLabel(effectiveMsrp as any)}
+                          </span>
+                        )}
+                        {eurToBgnLabel(effectivePrice as any)}
+                      </div>
+                    )}
                   </div>
                   {rating && rating.totalCount > 0 ? (
                     <div className="bb-pcard-rating" title={`${rating.totalCount} ревюта`}>

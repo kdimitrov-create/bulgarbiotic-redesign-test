@@ -19,7 +19,6 @@ const FRAMES = [
 export function CapsuleScience() {
   const sectionRef = useRef<HTMLElement>(null);
   const frameRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const callout1Ref = useRef<HTMLDivElement>(null);
   const callout2Ref = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
 
@@ -37,7 +36,6 @@ export function CapsuleScience() {
       frameRefs.current.forEach((f, i) => {
         if (f) f.style.opacity = i === FRAMES.length - 1 ? '1' : '0';
       });
-      callout1Ref.current?.classList.add('visible');
       callout2Ref.current?.classList.add('visible');
       setActiveIdx(COPY.length - 1);
       // Still listen for resize → re-evaluate if user rotates / DevTools resize
@@ -74,7 +72,6 @@ export function CapsuleScience() {
         else if (i === lo && i === hi) f.style.opacity = '1';
         else f.style.opacity = '0';
       });
-      callout1Ref.current?.classList.toggle('visible', animProgress > 0.15);
       callout2Ref.current?.classList.toggle('visible', animProgress > 0.55);
       const newIdx = Math.round(idx);
       setActiveIdx((prev) => (prev !== newIdx ? newIdx : prev));
@@ -132,10 +129,6 @@ export function CapsuleScience() {
            * sit as an inline 2-up row below the stage on small screens
            * (display: contents on desktop = wrapper is invisible to layout). */}
           <div className="bb-cap-stats">
-            <div ref={callout1Ref} className="bb-cap-callout bb-cap-callout-1">
-              <div className="bb-cap-num">12<span className="bb-cap-u">x</span></div>
-              <div className="bb-cap-text"><div className="bb-cap-l">Преживяемост</div>спрямо обикновени капсули</div>
-            </div>
             <div ref={callout2Ref} className="bb-cap-callout bb-cap-callout-2">
               <div className="bb-cap-num">50<span className="bb-cap-u">B</span></div>
               <div className="bb-cap-text"><div className="bb-cap-l">CFU на доза</div>5 живи щама + L. bulgaricus</div>
@@ -213,7 +206,9 @@ export function CapsuleScience() {
           animation: pulse-glow 2.4s ease infinite;
         }
         .bb-cap-h2 {
-          font-size: clamp(40px, 5.6vw, 76px);
+          /* Беше clamp(40px, 5.6vw, 76px) и заглавието излизаше извън рамката
+             на средни екрани (клиент, 2026-08-10). */
+          font-size: clamp(32px, 4.4vw, 60px);
           font-weight: 800; line-height: 0.96;
           letter-spacing: -2.2px;
           color: var(--color-ink);

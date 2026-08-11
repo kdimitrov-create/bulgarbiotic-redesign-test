@@ -22,7 +22,6 @@ import {MythBuster} from '~/components/pdp/MythBuster';
 import {ComparisonTable} from '~/components/pdp/ComparisonTable';
 import {ProductVideo} from '~/components/pdp/ProductVideo';
 import {SectionAnchorNav} from '~/components/pdp/SectionAnchorNav';
-import {ProductFormSwitcher} from '~/components/pdp/ProductFormSwitcher';
 import {ProductBenefits} from '~/components/pdp/ProductBenefits';
 import {parseProductDescription} from '~/lib/parse-product-description';
 import {getProductComparison} from '~/lib/pdp-comparison';
@@ -161,12 +160,8 @@ export default function ProductPage() {
         />
       </section>
 
-      {/* "В какви форми се предлагат" cross-form switcher — contextualized
-          to the current product (highlights its form, links to the others) */}
-      <ProductFormSwitcher
-        productHandle={product.handle}
-        productTitle={product.title}
-      />
+      {/* Блокът „В какви форми се предлагат" го няма нарочно: клиентът поиска
+          да падне от продуктовите страници (2026-08-10). На началната остава. */}
 
       {/* (Certifications strip moved up — now renders right after Key benefits.) */}
 

@@ -132,6 +132,34 @@ export function ProductVideo({
  * Each station is a circular icon with a label; a thin connector line carries
  * the moving capsule; pink dots "bloom" at the end station.
  */
+/**
+ * Подтекстът под всяка станция, нарязан на редове.
+ *
+ * Станциите стоят на 200 единици една от друга в лента широка 800, тоест един
+ * ред има около 190 единици място. При 10px шрифт това са ~30 знака. Дългите
+ * подтекстове („DRcaps™ капсула, устойчива на стомашната киселина") излизаха
+ * извън своя дял и се сливаха със съседния - точно това, което клиентът видя
+ * на 2026-08-10. Затова текстът се пренася, вместо да се разлива.
+ */
+const SUB_MAX_CHARS = 26;
+
+function wrapSub(text: string): string[] {
+  const words = String(text ?? '').split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = '';
+  for (const w of words) {
+    const next = line ? `${line} ${w}` : w;
+    if (next.length > SUB_MAX_CHARS && line) {
+      lines.push(line);
+      line = w;
+    } else {
+      line = next;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.slice(0, 3);
+}
+
 function CapsuleJourneyAnimation({handle}: {handle?: string}) {
   // Station positions (x coords in 800-wide viewbox)
   const STATIONS = [
@@ -261,15 +289,18 @@ function CapsuleJourneyAnimation({handle}: {handle?: string}) {
                 fill="#0a2540"
                 fontFamily="Manrope, sans-serif"
               >{s.label.replace(/^\d+\.\s*/, '')}</text>
-              <text
-                x="0" y="80"
-                textAnchor="middle"
-                fontSize="10"
-                fontWeight="600"
-                fill="#0a2540"
-                fillOpacity="0.55"
-                fontFamily="Manrope, sans-serif"
-              >{s.sub}</text>
+              {wrapSub(s.sub).map((line, li) => (
+                <text
+                  key={li}
+                  x="0" y={80 + li * 13}
+                  textAnchor="middle"
+                  fontSize="10"
+                  fontWeight="600"
+                  fill="#0a2540"
+                  fillOpacity="0.55"
+                  fontFamily="Manrope, sans-serif"
+                >{line}</text>
+              ))}
 
               {/* Pulsing glow on the final colonization station */}
               {isLast && (

@@ -1,7 +1,8 @@
 import {useEffect, useRef, useState} from 'react';
 import {AddToCartButton} from './AddToCartButton';
 import {markPricing} from '~/lib/product-marks';
-
+
+import {SHOW_BGN} from '~/lib/currency';
 interface Props {
   product: {
     title: string;
@@ -128,7 +129,7 @@ export function MobileStickyCart({product, variant}: Props) {
             {msrpPrice && (
               <span className="bb-pdp-sticky-old">{fmtEur(msrpEur)}</span>
             )}
-            <span className="bb-pdp-sticky-bgn">{fmtBgn(bgn)}</span>
+            {SHOW_BGN && <span className="bb-pdp-sticky-bgn">{fmtBgn(bgn)}</span>}
           </div>
         </div>
       </div>

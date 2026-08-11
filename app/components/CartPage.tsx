@@ -8,6 +8,7 @@ import {CartOffersStrip} from './CartOffers';
 import {bestDiscountForHandle} from '~/lib/active-discounts';
 import {promoDiscountEur} from '~/lib/promo-codes';
 import {numericId} from '~/lib/analytics';
+import {SHOW_BGN} from '~/lib/currency';
 import {
   EUR_TO_BGN,
   FREE_SHIPPING_THRESHOLD_EUR,
@@ -95,7 +96,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
               ) : (
                 <>
                   Поръчай за още <strong className="accent">{fmtEur(remainingEur)}</strong>{' '}
-                  <span className="bb-cart-shipping-bgn">({fmtBgn(remainingEur * EUR_TO_BGN)})</span>{' '}
+                  {SHOW_BGN && <span className="bb-cart-shipping-bgn">({fmtBgn(remainingEur * EUR_TO_BGN)})</span>}{' '}
                   и доставката е безплатна
                 </>
               )}
@@ -153,7 +154,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
                   <div className="bb-cart-total-msrp">{fmtEur(rawTotal.eur)}</div>
                 )}
                 <div className="bb-cart-total-eur">{fmtEur(totalEur)}</div>
-                <div className="bb-cart-total-bgn">{fmtBgn(totalBgn)}</div>
+                {SHOW_BGN && <div className="bb-cart-total-bgn">{fmtBgn(totalBgn)}</div>}
               </div>
             </div>
 
@@ -285,7 +286,7 @@ function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
 
       <div className="bb-cart-item-price">
         <div className="bb-cart-item-price-eur">{fmtEur(saleEur)}</div>
-        <div className="bb-cart-item-price-bgn">{fmtBgn(saleBgn)}</div>
+        {SHOW_BGN && <div className="bb-cart-item-price-bgn">{fmtBgn(saleBgn)}</div>}
         {hasDiscount && (
           <div className="bb-cart-item-price-msrp">{fmtEur(msrp.eur)}</div>
         )}

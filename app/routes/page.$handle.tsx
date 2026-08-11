@@ -239,7 +239,7 @@ function DisneylandGiveawayPage({page}: {page: any}) {
     <PageShell
       title="Спечели семейна екскурзия до Дисниленд в Париж"
       tag="✦ Кампания · Декември 2025"
-      lead="Купи продукти на стойност над 50 лв и автоматично участваш в томболата за семейна екскурзия до Дисниленд Париж — Bactology × Happy Family Travel."
+      lead="Купи продукти на стойност над 50 € и автоматично участваш в томболата за семейна екскурзия до Дисниленд Париж — Bactology × Happy Family Travel."
       breadcrumbs={[]}
       variant="wide"
     >
@@ -247,8 +247,8 @@ function DisneylandGiveawayPage({page}: {page: any}) {
         <div className="bb-giveaway-grid">
           <div className="bb-giveaway-card">
             <div className="bb-giveaway-num">1</div>
-            <h3>Поръчай за 50+ лв</h3>
-            <p>Сложи всичко, което те вълнува, в кошницата. Над 50 лв — поръчката участва.</p>
+            <h3>Поръчай за 50+ €</h3>
+            <p>Сложи всичко, което те вълнува, в кошницата. Над 50 € — поръчката участва.</p>
           </div>
           <div className="bb-giveaway-card">
             <div className="bb-giveaway-num">2</div>

@@ -1,6 +1,7 @@
 import {monthlyPackages} from '~/lib/quantity-packages';
 import {AddToCartButton} from '~/components/AddToCartButton';
 
+import {SHOW_BGN} from '~/lib/currency';
 const EUR_TO_BGN = 1.95583;
 
 const fmt = (n: number, currency: 'EUR' | 'BGN') =>
@@ -100,7 +101,7 @@ export function MonthlyPackages({
                 {fmt(pkg.unitPrice, 'EUR')} <em>/месец</em>
               </span>
               <span className="bb-month-total">
-                Общо: <strong>{fmt(pkg.total, 'EUR')}</strong> / {fmt(pkg.total * EUR_TO_BGN, 'BGN')}
+                Общо: <strong>{fmt(pkg.total, 'EUR')}</strong>{SHOW_BGN ? ` / ${fmt(pkg.total * EUR_TO_BGN, 'BGN')}` : ''}
               </span>
               {pkg.saving > 0 && (
                 <span className="bb-month-save">Спестяваш {fmt(pkg.saving, 'EUR')}</span>

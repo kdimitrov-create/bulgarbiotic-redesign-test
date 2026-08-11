@@ -60,6 +60,18 @@ export function PdpAwardBadge() {
           flex-wrap: wrap;
           margin: 10px 0 6px;
         }
+        /* На десктоп двете отличия стоят едно до друго (клиент, 2026-08-10).
+           Дотук се пренасяха едно под друго, защото и двете искаха повече
+           място, отколкото има кутията за купуване. Сега си делят реда, а
+           текстът вътре се пренася на два реда вместо цялата значка. */
+        @media (min-width: 768px) {
+          .bb-pdp-award-row { flex-wrap: nowrap; align-items: stretch; }
+          .bb-pdp-award-row > .bb-pdp-award,
+          .bb-pdp-award-row > .bb-pdp-award-forbes { flex: 1 1 0; min-width: 0; }
+          .bb-pdp-award-row .bb-pdp-award-text { min-width: 0; }
+          .bb-pdp-award-row .bb-pdp-award-line1,
+          .bb-pdp-award-row .bb-pdp-award-line2 { white-space: normal; }
+        }
         /* Matches the neighbouring EVA award pill: dark-navy fill, gold
            hairline border, soft rounding + shadow. */
         .bb-pdp-award-forbes {

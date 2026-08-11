@@ -115,6 +115,9 @@ export async function fetchHomeSectionData(ctx: any): Promise<SectionData> {
     )
     .filter((r) => r.rating >= 5 && typeof r.quote === 'string' && r.quote.trim().length >= 60)
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    // Един клиент, оставил отзив на два продукта, излизаше два пъти един до
+    // друг с почти същите думи (клиент, 2026-08-10). Държим по един на човек.
+    .filter((r, i, all) => all.findIndex((o) => o.name === r.name) === i)
     .slice(0, 6);
   return {featuredProducts, familyPack, homeReviews, articles};
 }

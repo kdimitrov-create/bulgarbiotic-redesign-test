@@ -259,9 +259,9 @@ function ShippingTabContent() {
         image="/images/pdp-lifestyle/shipping-arrival.png"
         alt="Пакет на дървен праг — бърза доставка до дома"
         eyebrow="Безплатна доставка"
-        title="При поръчка над 50 лв"
+        title="При поръчка над 50 €"
       >
-        <p>Получи поръчката си <strong>безплатно</strong> в цяла България при стойност над <strong>50 лв</strong>. Доставяме чрез <strong>Еконт</strong> или <strong>Спиди</strong> — до офис, до адрес или до автомат.</p>
+        <p>Получи поръчката си <strong>безплатно</strong> в цяла България при стойност над <strong>50 €</strong>. Доставяме чрез <strong>Еконт</strong> или <strong>Спиди</strong> — до офис, до адрес или до автомат.</p>
       </EditorialRow>
 
       <EditorialRow
@@ -271,7 +271,7 @@ function ShippingTabContent() {
         eyebrow="Бързо изпращане"
         title="24–48 часа в България"
       >
-        <p>Поръчай <strong>до 14:00</strong> в работен ден и изпращаме същия ден. Възможно е плащане при доставка (наложен платеж). За поръчки под 50 лв — куриерска такса <strong>5,99 лв</strong>.</p>
+        <p>Поръчай <strong>до 14:00</strong> в работен ден и изпращаме същия ден. Възможно е плащане при доставка (наложен платеж). За поръчки под 50 € — куриерска такса <strong>3,06 €</strong>.</p>
       </EditorialRow>
 
       <EditorialRow

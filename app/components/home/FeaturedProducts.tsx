@@ -18,7 +18,7 @@ export function FeaturedProducts({products}: {products: Product[]}) {
             <h2 className="section-h2">Здравето започва в <span className="accent">микробиома.</span><br />Грижата започва с <span className="accent">превенция.</span></h2>
           </div>
           <div>
-            <p className="bb-section-sub">Формули с научно доказани щамове за устойчива поддръжка на храносмилането, имунитета и женското здраве.</p>
+            <p className="bb-section-sub">Формули с научно доказани щамове за храносмилането, имунитета и женското здраве.</p>
             <Link to="/category/all-products" className="bb-text-link">
               Виж всички 25+ продукта
               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>

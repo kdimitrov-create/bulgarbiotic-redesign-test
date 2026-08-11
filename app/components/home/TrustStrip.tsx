@@ -5,13 +5,12 @@
 export function TrustStrip() {
   const items: Array<{
     title: string;
-    sub: string;
+    sub?: string;
     accent: 'pink' | 'blue' | 'cream' | 'pinkDark';
     icon: JSX.Element;
   }> = [
     {
       title: 'Произведено в България',
-      sub: 'Високо качество и проследим произход',
       accent: 'pink',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -22,7 +21,6 @@ export function TrustStrip() {
     },
     {
       title: 'Безплатна доставка над 50 €',
-      sub: 'До 24-48 часа за цяла България',
       accent: 'blue',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -35,7 +33,6 @@ export function TrustStrip() {
     },
     {
       title: 'Лабораторно тестван',
-      sub: 'Удостоверен брой бактерии (CFU) за всяка партида',
       accent: 'cream',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -47,7 +44,6 @@ export function TrustStrip() {
     },
     {
       title: '30-дневна гаранция',
-      sub: 'Без въпроси, връщаме парите',
       accent: 'pinkDark',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -68,7 +64,7 @@ export function TrustStrip() {
               <div className="bb-trust-icon">{item.icon}</div>
               <div className="bb-trust-text">
                 <div className="bb-trust-title">{item.title}</div>
-                <div className="bb-trust-sub">{item.sub}</div>
+                {item.sub ? <div className="bb-trust-sub">{item.sub}</div> : null}
               </div>
             </div>
           ))}

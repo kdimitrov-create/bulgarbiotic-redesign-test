@@ -22,7 +22,7 @@ export function ProductTrustRow() {
         </span>
         <span>
           <span className="bb-pdp-trust-strong">Безплатна доставка</span>
-          <span className="bb-pdp-trust-sub">При поръчка над 50 лв</span>
+          <span className="bb-pdp-trust-sub">При поръчка над 50 €</span>
         </span>
       </div>
 

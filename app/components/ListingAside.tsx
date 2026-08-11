@@ -229,7 +229,7 @@ export function ListingAside({filters = [], totalCount, collections}: Props) {
               <circle cx="7" cy="20" r="2" />
               <circle cx="17.5" cy="20" r="2" />
             </svg>
-            <span>Безплатна доставка над 50 лв</span>
+            <span>Безплатна доставка над 50 €</span>
           </div>
           <div className="bb-aside-trust-row">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

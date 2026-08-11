@@ -6,6 +6,7 @@ import {OptionSwatch} from './OptionSwatch';
 import {MonthlyPackages} from './pdp/MonthlyPackages';
 import {markPricing} from '~/lib/product-marks';
 
+import {SHOW_BGN} from '~/lib/currency';
 interface ProductFormProps {
   product: any;
   selectedVariant: any;
@@ -70,13 +71,13 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
             <span className="bb-pdp-price-eur">
               {hasMultiplePrices && !variant ? 'от ' : ''}{fmtBg(price.eur, 'EUR')}
             </span>
-            <span className="bb-pdp-price-bgn">{fmtBg(price.bgn, 'BGN')}</span>
+            {SHOW_BGN && <span className="bb-pdp-price-bgn">{fmtBg(price.bgn, 'BGN')}</span>}
           </>
         )}
         {isOnSale && compare && (
-          <span className="bb-pdp-price-old" aria-label={`Стара цена ${fmtBg(compare.eur, 'EUR')} (${fmtBg(compare.bgn, 'BGN')})`}>
+          <span className="bb-pdp-price-old" aria-label={`Стара цена ${fmtBg(compare.eur, 'EUR')}`}>
             <span className="bb-pdp-price-old-eur">{fmtBg(compare.eur, 'EUR')}</span>
-            <span className="bb-pdp-price-old-bgn">{fmtBg(compare.bgn, 'BGN')}</span>
+            {SHOW_BGN && <span className="bb-pdp-price-old-bgn">{fmtBg(compare.bgn, 'BGN')}</span>}
           </span>
         )}
         {/* The "−44%" pill that used to sit here is gone (client, 2026-08-03):

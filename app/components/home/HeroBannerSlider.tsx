@@ -23,6 +23,9 @@ const D = '&width=1800';
 const M = '&width=800';
 
 export const HERO_SLIDES: Slide[] = [
+  // Клиентът поиска този да е първи (2026-08-10). Локален е, защото го
+  // получих като файл, а не като адрес в CDN-а на магазина.
+  {desktop: '/images/banners/towel-desktop.jpg', mobile: '/images/banners/towel-mobile.jpg'},
   {desktop: `${CDN}/desktopksks.png?1784098033${D}`, mobile: `${CDN}/a3e1f7bf-e9ac-43ca-9757-3cdebf6e4b93.png?1784098050${M}`},
   {desktop: `${CDN}/853a794b-cb62-47f1-9598-6539e7c93105.png?1784103350${D}`, mobile: `${CDN}/6b0460c8-31a8-4fae-87b9-17edbc7a6a26.png?1784103375${M}`},
   {desktop: `${CDN}/17d8f089-eb9c-425f-a016-8413a307cbf4.png?1784184876${D}`, mobile: `${CDN}/c84cb9ae-7d62-4057-955e-20a6024bda9d.png?1784184901${M}`},
@@ -134,8 +137,7 @@ export function HeroStats() {
   return (
     <div className="bb-hslider-stats" aria-label="Постижения на Bactology">
       <div className="bb-hslider-stat"><span className="bb-hslider-stat-v">110<i>k+</i></span><span className="bb-hslider-stat-l">доволни клиенти</span></div>
-      <div className="bb-hslider-stat"><span className="bb-hslider-stat-v">260<i>k+</i></span><span className="bb-hslider-stat-l">поръчки</span></div>
-      <div className="bb-hslider-stat"><span className="bb-hslider-stat-v">7<i>y+</i></span><span className="bb-hslider-stat-l">опит от 2019</span></div>
+            <div className="bb-hslider-stat"><span className="bb-hslider-stat-v">7<i>y+</i></span><span className="bb-hslider-stat-l">опит от 2019</span></div>
       <div className="bb-hslider-stat"><span className="bb-hslider-stat-v">4.9<i>★</i></span><span className="bb-hslider-stat-l">от 3 303 ревюта</span></div>
 
       <style>{`

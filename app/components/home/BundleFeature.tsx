@@ -2,6 +2,7 @@ import {Link} from 'react-router';
 import {Image} from '@cloudcart/nitro-react';
 import type {Product} from '@cloudcart/nitro';
 
+import {SHOW_BGN} from '~/lib/currency';
 interface Props {
   /** Real Family Pack product from CloudCart (null → component hides). */
   product: Product | null;
@@ -36,7 +37,7 @@ export function BundlePrice({product}: {product: Product}) {
     <>
       <div className="bb-bundle-pricerow">
         <span className="bb-price-now">{fmt(eur, 'EUR')}</span>
-        <span className="bb-price-bgn">{fmt(bgn, 'BGN')}</span>
+        {SHOW_BGN && <span className="bb-price-bgn">{fmt(bgn, 'BGN')}</span>}
         {product.availableForSale === false && (
           <span className="bb-out">Изчерпан временно</span>
         )}
@@ -93,7 +94,7 @@ export function BundleFeature({product}: Props) {
       <div className="bb-container bb-bundle-grid reveal">
         <div>
           <div className="section-tag">Пакет на месеца</div>
-          <h2 className="bb-bundle-h2">Не става само с диета и коремни преси.<br /><span className="accent">Баланса започва отвътре.</span></h2>
+          <h2 className="bb-bundle-h2">Не става само с диета и коремни преси.<br /><span className="accent">Балансът започва отвътре.</span></h2>
           <p className="bb-bundle-p">
             Красивата фигура започва със здравия микробиом. Комбинация от продукти, създадени да
             подпомагат храносмилането, да намалят усещането за подуване и да ви помогнат да се

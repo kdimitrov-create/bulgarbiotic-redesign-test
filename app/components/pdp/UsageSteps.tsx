@@ -17,7 +17,7 @@ const DEFAULT_STEPS: Step[] = [
     num: '01',
     title: 'Сутрин с първото хранене',
     description:
-      'Приеми 1 капсула с първото си хранене. Храната буферира стомашната киселина и помага щамовете да достигнат живи до червата.',
+      'Приеми 1 капсула 30 мин след първото ти хранене. Храната буферира стомашната киселина и помага щамовете да достигнат живи до червата.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="9" />
@@ -29,7 +29,7 @@ const DEFAULT_STEPS: Step[] = [
     num: '02',
     title: 'Чаша вода',
     description:
-      'Поглъщай с минимум 200 мл вода (с/без газ — без значение). Водата помага равномерното разтваряне в червата.',
+      'Изпий с минимум 200 мл вода. Водата помага равномерното разтваряне в червата.',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 3c0 0 6 7 6 12a6 6 0 11-12 0c0-5 6-12 6-12z" />

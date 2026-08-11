@@ -34,8 +34,14 @@ type Slide = {
   medal: 'bgolden' | {src: string; alt: string};
 };
 
-/** The merchant's own Forbes badge, the same file used as a product banner. */
-const FORBES_BADGE = 'https://bulgarbiotic.bg/cdn/img/products_banners/7/%21%21%21%D1%81.png';
+/**
+ * Значката на Forbes.
+ *
+ * Досега идваше от CDN-а на магазина като продуктов банер - 100x100 пиксела,
+ * което на екрана се размазваше (клиент, 2026-08-10). Сега е локален файл
+ * 600x600, изрязан от оригинала, който клиентът прати.
+ */
+const FORBES_BADGE = '/images/awards/forbes-2026.png';
 
 const SLIDES: Slide[] = [
   {

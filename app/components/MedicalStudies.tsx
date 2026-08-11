@@ -75,7 +75,7 @@ export function MedicalStudies({title, subtitle, studies}: Props) {
           <circle cx="12" cy="12" r="9" />
           <path d="M12 8v5l3 2" />
         </svg>
-        Световни клинични проучвания за всяка съставка от формулата
+        Независими световни проучвания за всяка съставка от формулата
       </p>
 
       <style>{`
