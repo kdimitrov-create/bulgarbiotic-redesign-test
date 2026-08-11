@@ -328,9 +328,14 @@ export function LuckyWheel() {
                 })}
               </div>
               <div className="lw-hub">
-                {/* favicon.svg — the repo ships no .ico, so the old path 404'd
-                    and the hub rendered as a broken image. */}
-                <img src="/favicon.svg" alt="" />
+                {/* Емблемата на Bactology, същата която ползва и оригиналното
+                    колело (`data/wheel-hub-64.png` в неговото репо).
+
+                    Дотук сочеше `/favicon.svg`, а той е шаблонният файл на
+                    Nitrogen - просто буквата „N". Файлът се зареждаше, затова
+                    нямаше счупена картинка; в средата на колелото стоеше чужда
+                    буква и изглеждаше, че логото е изчезнало. */}
+                <img src="/images/wheel-hub.png" alt="" width={64} height={64} />
               </div>
             </div>
 
