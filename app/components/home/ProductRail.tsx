@@ -1,11 +1,10 @@
 import {Link, useFetcher} from 'react-router';
-import {useRef, useEffect} from 'react';
+import {useRef} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing} from '~/lib/product-marks';
 import {ProductMarks} from '~/components/ProductMarks';
-import {useAside} from '~/components/Aside';
 
 import {SHOW_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
@@ -25,11 +24,9 @@ import {CART_ACTION} from '~/lib/cart-action';
  */
 function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
   const fetcher = useFetcher();
-  const {open} = useAside();
   const isAdding = fetcher.state !== 'idle';
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) open('cart');
-  }, [fetcher.state, fetcher.data, open]);
+  // Чекмеджето вече не изскача: клиентът остава на страницата и получава
+  // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
   return (
     <button
       type="button"
@@ -91,8 +88,7 @@ function pickImage(p: Product): string {
 
 export function ProductRail({
   products,
-  limit = 10,
-}: {
+  limit = 10}: {
   products: Product[];
   limit?: number;
 }) {

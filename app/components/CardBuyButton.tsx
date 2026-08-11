@@ -1,6 +1,4 @@
 import {useFetcher} from 'react-router';
-import {useEffect} from 'react';
-import {useAside} from './Aside';
 import {CART_ACTION} from '~/lib/cart-action';
 
 /**
@@ -14,18 +12,15 @@ import {CART_ACTION} from '~/lib/cart-action';
  */
 export function CardBuyButton({
   merchandiseId,
-  handle,
-}: {
+  handle}: {
   merchandiseId?: string;
   handle: string;
 }) {
   const fetcher = useFetcher();
-  const {open} = useAside();
   const isAdding = fetcher.state !== 'idle';
 
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) open('cart');
-  }, [fetcher.state, fetcher.data, open]);
+  // Чекмеджето вече не изскача: клиентът остава на страницата и получава
+  // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
 
   return (
     <button

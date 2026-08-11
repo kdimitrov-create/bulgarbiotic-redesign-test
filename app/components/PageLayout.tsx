@@ -10,6 +10,7 @@ import {Analytics} from './Analytics';
 import {LuckyWheel} from './overlays/LuckyWheel';
 import {PendingPromo} from './PendingPromo';
 import {CartToast} from './CartToast';
+import {CartSync} from './CartSync';
 
 interface PageLayoutProps {
   shop: Shop;
@@ -39,6 +40,7 @@ export function PageLayout({shop, headerMenu, footerMenu, adminFooter, cart, chi
       {/* Слага спечеления промо код, щом количката получи първия си продукт.
           Стои в layout-а, защото колелото може отдавна да е затворено. */}
       <PendingPromo />
+      <CartSync />
       <CartToast />
       {/* Пали се при добавяне в количката — затова стои в layout-а, не в отделна страница. */}
       <LuckyWheel />
