@@ -5,6 +5,7 @@ import {useAside} from './Aside';
 import {SearchOverlay} from './SearchOverlay';
 import {MegaMenu} from './MegaMenu';
 import {productsNode} from '~/lib/navigation';
+import {syncCartToPlatform} from '~/lib/cart-sync';
 
 interface HeaderProps {
   shop: Shop;
@@ -253,20 +254,28 @@ export function Header({shop, menu, cart}: HeaderProps) {
                 <path d="M5.5 19.5c1.4-3.2 3.9-4.8 6.5-4.8s5.1 1.6 6.5 4.8" />
               </svg>
             </NavLink>
-            {/* Иконката води в количката на CloudCart (клиент, 2026-08-11).
-                `/cart` вече е резервиран в диспечера на Nova, тоест този адрес
-                се проксира към платформата и тя рисува своята количка - със
-                своя двигател за отстъпки, подаръци и правила.
+            {/* Иконката отваря количката на CloudCart.
 
-                ⚠️ Измерено 2026-08-11: без предварително „осиновяване" на
-                количката платформата не вижда продуктите, добавени през
-                Storefront API-то, и страницата излиза празна. Мостът е
-                `cart.checkoutUrl` (`/checkout/adopt/<jwt>`), който сега стои
-                неизползван по изрично искане - тества се дали е нужен. */}
+                `/cart` е резервиран в диспечера на Nova, тоест го рисува
+                платформата. Тя обаче не знае за количката, направена през
+                Storefront API-то, докато не я „осинови" - затова точно преди
+                излизането се вика `checkoutUrl` (`/checkout/adopt/<jwt>`).
+
+                ⚠️ Прехвърлянето е ТУК, а не при всяко добавяне. Пробвано на
+                всеки „Купи", то изпразваше количката: отговорът на adopt носи
+                сесийна бисквитка, която през проксито се пренаписва към нашия
+                домейн и застъпва нашата, заедно с ключа на количката. */}
             <a
               ref={cartBtnRef as any}
               href="/cart"
               className="bb-icon-btn bb-icon-cart"
+              onClick={async (e) => {
+                const resolved = await cart;
+                if (!resolved?.checkoutUrl || (resolved?.totalQuantity ?? 0) === 0) return;
+                e.preventDefault();
+                await syncCartToPlatform(resolved.checkoutUrl);
+                window.location.href = '/cart';
+              }}
               aria-label="Количка"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

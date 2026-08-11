@@ -1,7 +1,7 @@
 import {useEffect, useRef} from 'react';
 import {useFetchers} from 'react-router';
 import {CART_ACTION} from '~/lib/cart-action';
-import {syncCartToPlatform, announceCartAdd} from '~/lib/cart-sync';
+import {announceCartAdd} from '~/lib/cart-sync';
 
 /**
  * Прехвърля количката към платформата след ВСЯКО добавяне, откъдето и да идва.
@@ -15,7 +15,16 @@ import {syncCartToPlatform, announceCartAdd} from '~/lib/cart-sync';
  * количката и хваща приключилите `ADD_TO_CART`. Всеки нов бутон в бъдеще е
  * покрит, без да се сеща някой да добави ред.
  *
- * Пази последно обработената заявка, за да не прехвърля два пъти при
+ * ⚠️ Тук НЕ се прехвърля количката към платформата. Пробвано беше на всяко
+ * добавяне и изпразваше количката: отговорът на adopt носи своя сесийна
+ * бисквитка, а през прокситo тя се пренаписва към нашия домейн и застъпва
+ * нашата - заедно с ключа на количката. Резултатът беше празна количка и
+ * изчезнал брояч след всяко „Купи" (клиент, 2026-08-11).
+ *
+ * Прехвърлянето стана еднократно, при излизане към платформата - виж иконката
+ * на количката в `Header`.
+ *
+ * Пази последно обработената заявка, за да не се обади два пъти при
  * пререндериране.
  */
 export function CartSync() {
@@ -37,7 +46,6 @@ export function CartSync() {
   useEffect(() => {
     if (!stamp || handled.current === stamp) return;
     handled.current = stamp;
-    syncCartToPlatform(cart?.checkoutUrl);
     announceCartAdd();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp]);
