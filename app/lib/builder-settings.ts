@@ -77,17 +77,18 @@ export function listItems(html: string): Array<{label: string; text: string}> {
 /**
  * Въпроси и отговори, написани като заглавия и абзаци в един Текст блок.
  *
- * Всяко заглавие започва въпрос; всичко до следващото заглавие е отговорът.
- * Така ЧЗВ се пише в панела по най-очевидния начин, а акордеонът остава код.
+ * Въпрос е **Заглавие 3**; всичко до следващото такова заглавие е отговорът.
+ * Нарочно не по-горно ниво: в същия ред стои и заглавието на секцията (h2), а
+ * то не е въпрос - първият опит го превърна в първата затворена карта.
  */
 export function headingPairs(html: string): Array<{q: string; a: string}> {
   const out: Array<{q: string; a: string}> = [];
-  const parts = html.split(/<h[1-6][^>]*>/i).slice(1);
+  const parts = html.split(/<h[3-6][^>]*>/i).slice(1);
   for (const part of parts) {
-    const close = part.search(/<\/h[1-6]>/i);
+    const close = part.search(/<\/h[3-6]>/i);
     if (close < 0) continue;
     const q = plain(part.slice(0, close));
-    const a = plain(part.slice(close).replace(/<\/h[1-6]>/i, ''));
+    const a = plain(part.slice(close).replace(/<\/h[3-6]>/i, ''));
     if (q) out.push({q, a});
   }
   return out;
