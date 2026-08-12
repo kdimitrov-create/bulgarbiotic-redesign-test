@@ -1,53 +1,13 @@
-<!-- ============================================================
-     ПРОМО ЛЕНТА - за класическата тема на CloudCart
-     Дизайн » Модули » Горна част » Промо лента » Source code
-
-     Изглежда като лентата в новия дизайн: едно съобщение наведнъж,
-     сменя се на всеки 6 секунди, с плавно прехвърляне и точки отдолу.
-
-     ЗА РЕДАКЦИЯ:
-       • Текстовете са долу, всеки под заглавието СЪОБЩЕНИЕ 1, 2, 3
-       • Всяко съобщение е един ред span с клас bbpb-s
-       • Знакът отпред (✦ ◉ ⬢) е в i с клас bbpb-g
-       • Връзката накрая е обикновено a href
-
-     ЗА ДОБАВЯНЕ/МАХАНЕ НА СЪОБЩЕНИЕ - три места:
-       1. копираш или триеш един <span class="bbpb-s">
-       2. същото за точките <i class="bbpb-d">
-       3. в CSS-а долу: --n: 3  става броят съобщения,
-          и добавяш/махаш реда с animation-delay
-     ============================================================ -->
-
 <style>
-/* Всичко е с представка bbpb-, за да не се блъска с темата. */
-
-/* Лентата: същият розов градиент като в новия дизайн. */
 ._promo-bar-container { background: linear-gradient(95deg, #E3166C 0%, #c20d59 100%) !important; overflow: hidden; }
-._promo-bar-text p { margin: 0 !important; }
-
-/* Темата слага на текста `display: table-cell`. Клетка от таблица се разтяга
-   по най-дългия си ред, вместо да го пренася - затова на телефон текстът
-   излизаше извън екрана. Обикновен блок се държи както трябва. */
-._promo-bar-text { display: block !important; width: 100% !important; }
-
-/* Веригата над лентата минава през `display: table` и `table-cell`, а те се
-   разтягат по съдържанието си. Затова широчината се връзва към екрана, а не
-   към родителите - 100vw не зависи от тях. */
-._promo-bar, ._promo-bar-text, ._promo-bar-text ._textbox {
-  max-width: 100vw !important;
-  box-sizing: border-box;
-}
-
-.bbpb {
-  /* --n = брой съобщения, --sec = секунди на съобщение.
-     Пипнеш ли ги, всичко останало се нагажда само. */
+._promo-bar-text { display: block !important; width: 100% !important; max-width: 100vw !important; box-sizing: border-box; }
+._promo-bar-text ._textbox {
   --n: 3;
   --sec: 6s;
-  display: block;
   position: relative;
+  min-height: 22px;
   max-width: 100%;
   box-sizing: border-box;
-  min-height: 22px;
   text-align: center;
   color: #fff;
   font-size: 13.5px;
@@ -55,135 +15,43 @@
   letter-spacing: .2px;
   line-height: 1.35;
 }
-
-/* Съобщенията лежат едно върху друго и се редуват. */
-.bbpb-s {
+._promo-bar-text ._textbox p {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  left: 0; right: 0; top: 0;
+  margin: 0 !important;
   max-width: 100%;
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(6px);
   animation: bbpb-cycle calc(var(--n) * var(--sec)) infinite;
 }
-.bbpb-s:nth-of-type(1) { animation-delay: calc(0 * var(--sec)); }
-.bbpb-s:nth-of-type(2) { animation-delay: calc(1 * var(--sec)); }
-.bbpb-s:nth-of-type(3) { animation-delay: calc(2 * var(--sec)); }
-
-/* Първото стои на място и в потока, за да държи височината. */
-.bbpb-s:first-of-type { position: relative; }
-
-.bbpb-s a {
+._promo-bar-text ._textbox p:first-of-type { position: relative; }
+._promo-bar-text ._textbox p:nth-of-type(1) { animation-delay: calc(0 * var(--sec)); }
+._promo-bar-text ._textbox p:nth-of-type(2) { animation-delay: calc(1 * var(--sec)); }
+._promo-bar-text ._textbox p:nth-of-type(3) { animation-delay: calc(2 * var(--sec)); }
+._promo-bar-text ._textbox a {
   color: #fff !important;
   text-decoration: underline;
   text-underline-offset: 3px;
-  white-space: nowrap;
+  margin-left: 6px;
 }
-.bbpb-s a:hover { opacity: .85; }
-
-/* Знакът отпред пулсира леко, както в новия дизайн. */
-.bbpb-g {
-  font-style: normal;
-  font-size: 12px;
-  opacity: .85;
-  animation: bbpb-pulse 2.4s ease-in-out infinite;
-}
-
-/* Точките отдолу показват кое съобщение е на ред. */
-.bbpb-dots {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-.bbpb-d {
-  width: 5px; height: 5px;
-  border-radius: 999px;
-  background: #fff;
-  opacity: .38;
-  animation: bbpb-dot calc(var(--n) * var(--sec)) infinite;
-}
-.bbpb-d:nth-of-type(1) { animation-delay: calc(0 * var(--sec)); }
-.bbpb-d:nth-of-type(2) { animation-delay: calc(1 * var(--sec)); }
-.bbpb-d:nth-of-type(3) { animation-delay: calc(2 * var(--sec)); }
-
-/* Едно съобщение = 1/n от целия цикъл. Половин секунда влиза,
-   половин излиза, останалото стои. */
+._promo-bar-text ._textbox a:hover { opacity: .85; }
 @keyframes bbpb-cycle {
-  0%                              { opacity: 0; transform: translateY(6px); }
-  2.8%                            { opacity: 1; transform: translateY(0); }
-  30.5%                           { opacity: 1; transform: translateY(0); }
-  33.4%, 100%                     { opacity: 0; transform: translateY(-6px); }
+  0%          { opacity: 0; transform: translateY(6px); }
+  2.8%        { opacity: 1; transform: translateY(0); }
+  30.5%       { opacity: 1; transform: translateY(0); }
+  33.4%, 100% { opacity: 0; transform: translateY(-6px); }
 }
-@keyframes bbpb-dot {
-  0%, 33.3%                       { opacity: 1; transform: scale(1.25); }
-  34%, 100%                       { opacity: .38; transform: scale(1); }
-}
-@keyframes bbpb-pulse {
-  0%, 100%                        { opacity: .5; transform: scale(1); }
-  50%                             { opacity: 1;  transform: scale(1.15); }
-}
-
-/* На телефон: по-дребен текст, който има право да се пренася.
-   Редовете стават блокови, защото flex не пуска дългата дума да се
-   пречупи и текстът излизаше извън екрана. Височината се вдига, за да
-   има място на трите реда - те лежат един върху друг. */
 @media (max-width: 640px) {
-  /* Контейнерът на темата е Bootstrap с фиксирана широчина - на тесен
-     екран го връзваме към екрана, иначе лентата излиза извън него. */
-  ._promo-bar-container .container {
-    width: 100% !important; max-width: 100vw !important;
-    padding-left: 12px !important; padding-right: 34px !important;
-  }
-  .bbpb { font-size: 11.5px; min-height: 52px; line-height: 1.45; max-width: calc(100vw - 46px); }
-  /* Всичко се пренася - включително връзката, която на широк екран
-     нарочно стои на един ред. */
-  .bbpb-s, .bbpb-s * { white-space: normal !important; }
-  .bbpb-s { display: block; padding: 0; }
-  .bbpb-s strong { display: inline; font-weight: 700; }
-  .bbpb-g { margin-right: 5px; }
-  .bbpb-s a { display: inline; margin-left: 5px; white-space: normal; }
-  .bbpb-dots { margin-top: 4px; }
+  ._promo-bar-container .container { width: 100% !important; max-width: 100vw !important; padding-left: 12px !important; padding-right: 34px !important; }
+  ._promo-bar-text ._textbox { font-size: 11.5px; min-height: 48px; line-height: 1.45; max-width: calc(100vw - 46px); }
+  ._promo-bar-text ._textbox p, ._promo-bar-text ._textbox p * { white-space: normal !important; }
 }
-
-/* Който е изключил анимациите, вижда само първото съобщение. */
 @media (prefers-reduced-motion: reduce) {
-  .bbpb-s, .bbpb-d, .bbpb-g { animation: none; }
-  .bbpb-s { opacity: 0; transform: none; }
-  .bbpb-s:first-of-type { opacity: 1; }
-  .bbpb-d:first-of-type { opacity: 1; }
+  ._promo-bar-text ._textbox p { animation: none; opacity: 0; transform: none; }
+  ._promo-bar-text ._textbox p:first-of-type { opacity: 1; }
 }
 </style>
-
-<p><span class="bbpb">
-
-  <!-- СЪОБЩЕНИЕ 1 -->
-  <span class="bbpb-s">
-    <i class="bbpb-g">✦</i>
-    <strong>Спечели семейна екскурзия до Дисниленд в Париж</strong>
-    <a href="https://testnitrogen.live/page/pateshestvie">Виж как &rarr;</a>
-  </span>
-
-  <!-- СЪОБЩЕНИЕ 2 -->
-  <span class="bbpb-s">
-    <i class="bbpb-g">◉</i>
-    <strong>Активни промоции &mdash; цените са вече намалени, без код</strong>
-    <a href="https://testnitrogen.live/selection/sale">Виж промо продуктите &rarr;</a>
-  </span>
-
-  <!-- СЪОБЩЕНИЕ 3 -->
-  <span class="bbpb-s">
-    <i class="bbpb-g">⬢</i>
-    <strong>Безплатна доставка при поръчка над 51 &euro; (&asymp; 99,75 лв)</strong>
-    <a href="https://testnitrogen.live/category/all-products">Към продуктите &rarr;</a>
-  </span>
-
-  <span class="bbpb-dots">
-    <i class="bbpb-d"></i><i class="bbpb-d"></i><i class="bbpb-d"></i>
-  </span>
-
-</span></p>
+<p>✦ <strong>Спечели семейна екскурзия до Дисниленд в Париж</strong> <a href="https://testnitrogen.live/page/pateshestvie">Виж как →</a></p>
+<p>◉ <strong>Активни промоции — цените са вече намалени, без код</strong> <a href="https://testnitrogen.live/selection/sale">Виж промо продуктите →</a></p>
+<p>⬢ <strong>Безплатна доставка при поръчка над 51 € (≈ 99,75 лв)</strong> <a href="https://testnitrogen.live/category/all-products">Към продуктите →</a></p>
