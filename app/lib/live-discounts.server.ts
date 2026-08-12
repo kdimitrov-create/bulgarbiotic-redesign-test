@@ -46,7 +46,7 @@ let cache: {at: number; data: LiveDiscounts} | null = null;
  * Обхожда се докрай, а не само първата стотица: активните правила на живия
  * магазин са 94 и растат. Виж `admin-api.server.ts`.
  */
-const LIST_FIELDS = 'id name type typeValue orderOver dateStart dateEnd active color textColor';
+const LIST_FIELDS = 'id name type typeValue code orderOver dateStart dateEnd active color textColor';
 
 /** Step 3 — url handles for the targeted products, aliased into one request. */
 function handlesQuery(ids: string[]): string {
@@ -65,6 +65,8 @@ interface RawDiscount {
   name: string;
   type: string;
   typeValue: number | null;
+  /** Промо код, който клиентът трябва да въведе. `null` значи автоматично правило. */
+  code: string | null;
   orderOver: number | null;
   dateStart: string | null;
   dateEnd: string | null;
@@ -161,6 +163,18 @@ const PRODUCT_RULE_KINDS: Record<string, 'percent' | 'amount'> = {
 
 function isLiveOnStorefront(d: RawDiscount): boolean {
   if (!PRODUCT_RULE_KINDS[d.type]) return false;
+  // 🛑 Правило с код НЕ е автоматична отстъпка. Клиентът трябва да го въведе и
+  // касата го прилага чак тогава.
+  //
+  // Това беше най-скъпата грешка тук. На bulgarbiotic.bg 66 от 71 правила, които
+  // този филтър пропускаше, са промо кодове, и 65 от тях важат за целия каталог -
+  // тоест всеки продукт „имаше" 30% отстъпка. Страницата на количката вадеше този
+  // процент от сметката и показваше сума доста под тази, която касата събира, а
+  // „Промоции" изброяваше целия магазин.
+  //
+  // Кодовете си имат свой път: `promo-codes.server.ts` чете стойността им и тя
+  // се прилага чак когато кодът наистина е въведен.
+  if (d.code) return false;
   // Правило без стойност не сваля нищо. Платформата държи един такъв запис
   // („Default Fixed Discount", активен, без стойност и без цели) и той не бива
   // да маркира каквото и да е като промоция.

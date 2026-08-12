@@ -5,7 +5,8 @@ import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
 import {fallbackToPlaceholder} from './CartDrawer';
 import {CartOffersStrip} from './CartOffers';
-import {bestDiscountForHandle} from '~/lib/active-discounts';
+import {markPricingForLine} from '~/lib/product-marks';
+import {displayDiscountPercent} from '~/lib/active-discounts';
 import {promoDiscountEur} from '~/lib/promo-codes';
 import {numericId} from '~/lib/analytics';
 import {SHOW_BGN} from '~/lib/currency';
@@ -32,17 +33,20 @@ export function CartPage({cart}: {cart: CartData | null}) {
 
   if (isEmpty) return <CartPageEmpty />;
 
-  // Storefront cart.cost is MSRP — it does not fold in CloudCart's
-  // order-level auto-discounts, so mirror the drawer's recomputation.
+  // Спестеното е разликата между двете цени, които редът вече носи, точно както
+  // в чекмеджето (`markPricingForLine`).
+  //
+  // 🛑 Тук се умножаваше по процента на правило от админа. Това е грешно два
+  // пъти: правилата с промо код важат само след въвеждане, а каталожната цена
+  // вече съдържа автоматичната отстъпка, тоест процентът се сваляше втори път.
+  // Резултатът беше сметка под тази, която касата събира.
   const rawSubtotal = bothCurrencies(cart?.cost?.subtotalAmount);
   const rawTotal = bothCurrencies(cart?.cost?.totalAmount);
   let totalDiscountEur = 0;
   for (const l of lines as any[]) {
-    const lineEur = bothCurrencies(l.cost?.totalAmount).eur;
-    // Сумата ПРЕДИ отстъпки решава дали условните правила важат - точно както
-    // ги смята CloudCart на checkout-а.
-    const d = bestDiscountForHandle(l.merchandise?.product?.handle, {subtotalEur: rawSubtotal.eur});
-    if (d && d.percent > 0) totalDiscountEur += lineEur * (d.percent / 100);
+    const {price, compareAtPrice} = markPricingForLine(l);
+    if (!compareAtPrice) continue;
+    totalDiscountEur += bothCurrencies(compareAtPrice).eur - bothCurrencies(price).eur;
   }
   const subtotalEur = Math.max(0, rawSubtotal.eur - totalDiscountEur);
 
@@ -107,7 +111,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
 
           <ul className="bb-cart-items">
             {lines.map((line) => (
-              <CartPageRow key={line.id} line={line} subtotalEur={rawSubtotal.eur} />
+              <CartPageRow key={line.id} line={line} />
             ))}
           </ul>
 
@@ -201,7 +205,7 @@ function CartPageEmpty() {
 }
 
 /** One cart line on the page — roomier than the drawer row. */
-function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
+function CartPageRow({line}: {line: any}) {
   const update = useFetcher({key: `page-update-${line.id}`});
   const remove = useFetcher({key: `page-remove-${line.id}`});
 
@@ -220,17 +224,23 @@ function CartPageRow({line, subtotalEur}: {line: any; subtotalEur?: number}) {
   const img = enhanced || m.image?.url || m.product?.featuredImage?.url || '/noimage.svg';
   const variantTitle = m.title && m.title !== 'Default Title' ? m.title : null;
 
-  const msrp = bothCurrencies(line.cost?.totalAmount);
-  const discount = bestDiscountForHandle(handle, {subtotalEur});
-  const hasDiscount = !!discount && discount.percent > 0;
-  const saleEur = hasDiscount ? msrp.eur * (1 - discount.percent / 100) : msrp.eur;
-  const saleBgn = hasDiscount ? msrp.bgn * (1 - discount.percent / 100) : msrp.bgn;
+  // Двете цени, които редът вече носи - същият помощник, който ползва и
+  // чекмеджето, вместо тукашно умножаване по процент от админско правило.
+  const {price: linePrice, compareAtPrice: lineCompare} = markPricingForLine(line, qty);
+  const sale = bothCurrencies(linePrice);
+  const msrp = lineCompare ? bothCurrencies(lineCompare) : sale;
+  const hasDiscount = !!lineCompare && msrp.eur > sale.eur;
+  const rowPct = hasDiscount
+    ? displayDiscountPercent(null, sale.eur, msrp.eur)
+    : 0;
+  const saleEur = sale.eur;
+  const saleBgn = sale.bgn;
 
   return (
     <li className="bb-cart-item">
       <Link to={to} className="bb-cart-item-img" prefetch="intent">
         <img src={img} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
-        {hasDiscount && <span className="bb-cart-item-badge">−{discount.percent}%</span>}
+        {hasDiscount && rowPct > 0 && <span className="bb-cart-item-badge">−{rowPct}%</span>}
       </Link>
 
       <div className="bb-cart-item-info">
