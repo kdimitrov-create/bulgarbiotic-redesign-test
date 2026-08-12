@@ -5,10 +5,11 @@ import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {ProductMarks} from '~/components/ProductMarks';
-import {markPricing} from '~/lib/product-marks';
+import {markPricing, setProductMarks} from '~/lib/product-marks';
+import {fetchProductMarks} from '~/lib/product-marks.server';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
-import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, displayDiscountPercent} from '~/lib/active-discounts';
+import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, setFreeShippingOver, displayDiscountPercent} from '~/lib/active-discounts';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {fetchBestSellers, orderByRealSales} from '~/lib/best-sellers.server';
 
@@ -41,11 +42,19 @@ export const meta: Route.MetaFunction = ({data}) => {
  */
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
-  // This loader reads the discount rules directly, and route loaders run in
-  // parallel with root's — so it cannot assume root has already loaded the live
-  // ones. Without this the page silently lists the expired mirror instead.
-  const live = await fetchAutoDiscounts(ctx.env as Record<string, string | undefined>);
+  // Този loader чете правилата сам: route loader-ите вървят успоредно с root-а,
+  // тоест не може да разчита, че живите данни вече са пристигнали. Без това
+  // страницата тихо изброява огледалото.
+  //
+  // Каталожните марки се дърпат по същата причина. Те носят двойката цени за
+  // всеки продукт, а тъкмо по нея се решава кой е в промоция - без тях на
+  // студен worker филтърът пада обратно на правилата и пропуска отстъпките,
+  // които не са процентни.
+  const env = ctx.env as Record<string, string | undefined>;
+  const [live, marks] = await Promise.all([fetchAutoDiscounts(env), fetchProductMarks(env)]);
   setAutoDiscounts(live?.discounts, live?.handles);
+  setFreeShippingOver(live?.freeShippingOver);
+  setProductMarks(marks);
 
   const paginationVariables = getPaginationVariables(request, {pageBy: 60});
 
@@ -70,22 +79,28 @@ export async function loader({context, request}: Route.LoaderArgs) {
     reverse,
   });
 
-  // Apply enhanced images so the AI cards show up where available, then
-  // keep only products with at least one currently-active auto-discount
-  // targeting them in the real CloudCart admin (no synthetic fallback).
+  // Кой продукт е в промоция се решава от самите цени, не от вида на правилото.
+  //
+  // Дотук страницата разчиташе основно на огледалото от админа, а то познава
+  // само правила от вид „процент". Правило от вид „фиксирана сума" не вкарваше
+  // продукта тук, макар цената му на сайта вече да е намалена. Проверено на
+  // живо 2026-08-12: `compareAtPriceRange` идва вярно и в списъчната заявка за
+  // всеки вид правило, значи двойката цени е и по-точният, и по-простият
+  // критерий - и работи без Admin токен.
+  //
+  // Огледалото остава само за допълване: то носи handle-ите на целените
+  // продукти, тоест намира и такива извън първата страница по избраната
+  // подредба.
   const enhanced = enhanceProducts((products as any).nodes ?? []);
   const realDiscountIds = discountedProductIds();
-  // A store-wide rule (admin target "all") names no product ids, so the id filter
-  // would empty the page even though every product is on promotion.
   const storeWide = activeDiscounts().some((d) => d.appliesToAll);
   const discounted = enhanced.filter((p: any) => {
+    const {price, compareAtPrice} = markPricing(p);
+    if (price && compareAtPrice && parseFloat(compareAtPrice.amount) > parseFloat(price.amount)) {
+      return true;
+    }
     if (storeWide) return true;
-    // Prefer real Storefront-exposed discounts if/when CloudCart wires them
-    if (p.discount?.msrpPrice) return true;
-    if (p.variants?.nodes?.[0]?.compareAtPrice?.amount) return true;
-    // Otherwise rely on the admin-API mirror
-    const pidMatch = String(p.id).match(/Product\/(\d+)/);
-    const numericId = pidMatch?.[1];
+    const numericId = String(p.id).match(/Product\/(\d+)/)?.[1];
     return numericId ? realDiscountIds.has(numericId) : false;
   });
 
@@ -108,15 +123,18 @@ export async function loader({context, request}: Route.LoaderArgs) {
     }
   }
 
-  // Sort by biggest discount first so the deepest deals lead (overrides
-  // the CloudCart sort when the chosen sort is by price). Real discount
-  // percent comes from `bestDiscountFor` (admin mirror).
+  // Най-голямата отстъпка отпред. Процентът се извежда от цените, които картата
+  // после печата - същият помощник, същото число. Правилото от админа остава
+  // резерва за продукт, чиято двойка цени липсва в мига на зареждане.
   if (sort === 'price-asc' || sort === 'price-desc' || !sort) {
-    discounted.sort((a: any, b: any) => {
-      const pctA = a.discount?.percent ?? bestDiscountFor(a.id)?.percent ?? 0;
-      const pctB = b.discount?.percent ?? bestDiscountFor(b.id)?.percent ?? 0;
-      return pctB - pctA;
-    });
+    const pct = (p: any) => {
+      const {price, compareAtPrice} = markPricing(p);
+      if (price && compareAtPrice) {
+        return displayDiscountPercent(null, parseFloat(price.amount), parseFloat(compareAtPrice.amount));
+      }
+      return bestDiscountFor(p.id)?.percent ?? 0;
+    };
+    discounted.sort((a: any, b: any) => pct(b) - pct(a));
   }
 
   // "Най-продавани" means the same thing here as on the other listings: units

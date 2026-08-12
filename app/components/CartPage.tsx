@@ -11,7 +11,7 @@ import {numericId} from '~/lib/analytics';
 import {SHOW_BGN} from '~/lib/currency';
 import {
   EUR_TO_BGN,
-  FREE_SHIPPING_THRESHOLD_EUR,
+  freeShippingTargetEur,
   fmtEur,
   fmtBgn,
   bothCurrencies,
@@ -65,8 +65,9 @@ export function CartPage({cart}: {cart: CartData | null}) {
   const totalEur = Math.max(0, rawTotal.eur - savedEur);
   const totalBgn = Math.max(0, rawTotal.bgn - savedEur * EUR_TO_BGN);
 
-  const remainingEur = Math.max(0, FREE_SHIPPING_THRESHOLD_EUR - subtotalEur);
-  const shippingPct = Math.min(100, (subtotalEur / FREE_SHIPPING_THRESHOLD_EUR) * 100);
+  const shippingTarget = freeShippingTargetEur();
+  const remainingEur = Math.max(0, shippingTarget - subtotalEur);
+  const shippingPct = shippingTarget > 0 ? Math.min(100, (subtotalEur / shippingTarget) * 100) : 100;
   const isFreeShip = remainingEur <= 0.005; // tolerate sub-cent rounding
 
   const qty = cart.totalQuantity;

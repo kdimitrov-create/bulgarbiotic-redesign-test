@@ -2,7 +2,7 @@ import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, use
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
-import {setAutoDiscounts} from '~/lib/active-discounts';
+import {setAutoDiscounts, setFreeShippingOver} from '~/lib/active-discounts';
 import {fetchProductMarks} from '~/lib/product-marks.server';
 import {fetchMainMenu, fetchFooterMenu} from '~/lib/navigation.server';
 import {fetchThemeModules} from '~/lib/theme-modules.server';
@@ -68,6 +68,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
     fetchPromoCodes(env),
   ]);
   setAutoDiscounts(live?.discounts, live?.handles);
+  setFreeShippingOver(live?.freeShippingOver);
   setProductMarks(marks);
   setQuantityPackages(packages);
   setCartOffers(offers);
@@ -115,6 +116,7 @@ export default function App() {
   // Live discounts from the admin panel replace the static mirror, on the server
   // for SSR and again on the client after hydration.
   setAutoDiscounts(data?.live?.discounts, data?.live?.handles);
+  setFreeShippingOver(data?.live?.freeShippingOver);
   setProductMarks(data?.marks);
   setQuantityPackages(data?.packages);
   setCartOffers(data?.offers);

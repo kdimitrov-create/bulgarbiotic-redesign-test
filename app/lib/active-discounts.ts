@@ -27,7 +27,16 @@ export interface AutoDiscount {
   id: string;
   /** Human-readable name from CloudCart (merchant-authored). */
   name: string;
-  /** Discount percentage (0–100, e.g. 30 means 30% off). */
+  /**
+   * Каква е отстъпката по вид: `percent` сваля процент, `amount` сваля сума
+   * (правило от вид „fixed" или „flat" в панела).
+   *
+   * Нужно е, защото правило от вид „сума" няма процент и всяко число, което
+   * бихме сложили в `percent`, е измислено. Такова правило важи, продуктът е в
+   * промоция и излиза в „Промоции", а цифрите се четат от цените на API-то.
+   */
+  kind: 'percent' | 'amount';
+  /** Discount percentage (0–100, e.g. 30 means 30% off). `0` за правило от вид `amount`. */
   percent: number;
   /** ISO-like date string — null means open-ended. */
   dateEnd: string | null;
@@ -97,6 +106,23 @@ export function setAutoDiscounts(
 /** What the lookups currently resolve against — live list when available. */
 export function activeDiscounts(): AutoDiscount[] {
   return currentDiscounts;
+}
+
+/**
+ * Прагът за безплатна доставка от правило „shipping" в панела, ако има такова.
+ *
+ * Държи се отделно от списъка с отстъпки, защото не е продуктова отстъпка -
+ * никой продукт не поевтинява от него, а количката мери сумата срещу него.
+ */
+let currentFreeShippingOver: number | null = null;
+
+export function setFreeShippingOver(next: number | null | undefined) {
+  currentFreeShippingOver = typeof next === 'number' && next >= 0 ? next : null;
+}
+
+/** `null`, когато търговецът няма действащо правило за доставка. */
+export function freeShippingOver(): number | null {
+  return currentFreeShippingOver;
 }
 
 export const DISCOUNTED_PRODUCT_HANDLES: Record<string, string> = {

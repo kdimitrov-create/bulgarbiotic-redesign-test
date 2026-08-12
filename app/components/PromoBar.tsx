@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router';
-import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
+import {freeShippingTargetEur} from './CartDrawer';
 import {liveModule} from '~/lib/theme-modules';
 
 /**
@@ -25,7 +25,8 @@ type Campaign = {
   glyph: string;
 };
 
-const CAMPAIGNS: Campaign[] = [
+function campaigns(): Campaign[] {
+  return [
   {
     id: 'disneyland-giveaway',
     glyph: '✦',
@@ -43,15 +44,15 @@ const CAMPAIGNS: Campaign[] = [
   {
     id: 'free-shipping-bump',
     glyph: '⬢',
-    // Text + amount stay in sync with the merchant's BumpCart config —
-    // bump-cart-config.ts is the single source of truth (51 € as of
-    // 2026-05-21). When the merchant retunes the offer in admin, this
-    // copy follows automatically.
-    text: `Безплатна доставка при поръчка над ${BUMP_CART_CONFIG.totalCartAmount} €`,
+    // Сумата е същата, която количката показва в лентата за доставка: първо
+    // правилото от панела, иначе настройката на BumpCart. Функция, а не
+    // константа, защото правилото пристига през root loader-а.
+    text: `Безплатна доставка при поръчка над ${freeShippingTargetEur()} €`,
     cta: 'Към продуктите',
     to: '/category/all-products',
-  },
-];
+    },
+  ];
+}
 
 
 /**
@@ -143,7 +144,10 @@ export function PromoBar() {
     }
   }, []);
 
-  const slideCount = ownSlides.length || CAMPAIGNS.length;
+  // Изчислява се при рендиране, защото прагът за безплатна доставка идва през
+  // root loader-а и не се знае, докато модулът се зарежда.
+  const fallbackCampaigns = campaigns();
+  const slideCount = ownSlides.length || fallbackCampaigns.length;
   useEffect(() => {
     if (dismissed || slideCount < 2) return;
     const t = setInterval(() => {
@@ -209,7 +213,7 @@ export function PromoBar() {
           );
         })}
         {ownSlides.length === 0 &&
-          CAMPAIGNS.map((camp, i) => (
+          fallbackCampaigns.map((camp, i) => (
           <div
             key={camp.id}
             className={`bb-promo-slide${i === idx ? ' bb-promo-slide--on' : ''}`}
@@ -238,9 +242,9 @@ export function PromoBar() {
       </button>
 
       {/* Dot indicators (only render if there are multiple campaigns) */}
-      {CAMPAIGNS.length > 1 && (
+      {fallbackCampaigns.length > 1 && (
         <div className="bb-promo-dots" aria-hidden="true">
-          {CAMPAIGNS.map((_, i) => (
+          {fallbackCampaigns.map((_, i) => (
             <span key={i} className={`bb-promo-dot${i === idx ? ' on' : ''}`} />
           ))}
         </div>

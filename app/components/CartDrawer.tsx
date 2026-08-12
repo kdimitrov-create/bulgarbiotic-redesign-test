@@ -4,7 +4,7 @@ import type {CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
 import {getEnhancedFeatured} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
-import {displayDiscountPercent} from '~/lib/active-discounts';
+import {displayDiscountPercent, freeShippingOver} from '~/lib/active-discounts';
 import {markPricingForLine, marksForHandle} from '~/lib/product-marks';
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
@@ -15,15 +15,21 @@ import {CartOffersStrip} from './CartOffers';
 import {SHOW_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
 export const EUR_TO_BGN = 1.95583;
-// Free-shipping target = the merchant's BumpCart `totalCartAmount` setting
-// (51 € on bulgarbiotic.bg as of 2026-05-21). This sits between the
-// shipping providers' real thresholds — Спиди v2 starts free at ≥50 €,
-// Sameday at ≥51,13 € — so 51 € is the "round" goal the merchant chose
-// to pitch on the bump-cart upsell. Using the same constant everywhere
-// (CartDrawer progress + CartUpsell logic) keeps the message consistent.
-// To change: edit `app/lib/bump-cart-config.ts` (see file header for the
-// CloudCart Admin API source query).
-export const FREE_SHIPPING_THRESHOLD_EUR = BUMP_CART_CONFIG.totalCartAmount;
+/**
+ * Сумата, от която доставката е безплатна.
+ *
+ * Първо правилото от панела (Отстъпки → вид „доставка"), защото това е мястото,
+ * където търговецът наистина я сменя. Няма ли действащо такова, остава
+ * настройката на BumpCart - 51 € на bulgarbiotic.bg, между реалните прагове на
+ * куриерите (Спиди от 50 €, Sameday от 51,13 €). Тя се обновява ръчно в
+ * `app/lib/bump-cart-config.ts`.
+ *
+ * Функция, а не константа: правилото пристига през root loader-а, тоест
+ * стойността се знае чак при рендиране.
+ */
+export function freeShippingTargetEur(): number {
+  return freeShippingOver() ?? BUMP_CART_CONFIG.totalCartAmount;
+}
 
 export const fmtEur = (amount: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount) + ' €';
@@ -117,9 +123,10 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
   // Threshold + progress live in EUR because the store's base currency
   // is EUR (verified via generalSettings.currency). The Bulgarian-lev
   // value is shown alongside as a convenience.
-  const remainingEur = Math.max(0, FREE_SHIPPING_THRESHOLD_EUR - subtotal.eur);
+  const shippingTarget = freeShippingTargetEur();
+  const remainingEur = Math.max(0, shippingTarget - subtotal.eur);
   const remainingBgn = remainingEur * EUR_TO_BGN;
-  const shippingPct = Math.min(100, (subtotal.eur / FREE_SHIPPING_THRESHOLD_EUR) * 100);
+  const shippingPct = shippingTarget > 0 ? Math.min(100, (subtotal.eur / shippingTarget) * 100) : 100;
   const isFreeShip = remainingEur <= 0.005; // tolerate sub-cent rounding
 
   return (

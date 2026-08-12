@@ -2,6 +2,7 @@ import {useLoaderData, data, Link} from 'react-router';
 import type {Route} from './+types/product.$handle';
 import {getContext} from '~/lib/context';
 import {bestDiscountFor, displayDiscountPercent} from '~/lib/active-discounts';
+import {markPricing} from '~/lib/product-marks';
 import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
@@ -335,7 +336,16 @@ function LinkedProducts({products}: {products: any[]}) {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 bb-mobile-slider">
-        {products.map((p: any) => (
+        {products.map((p: any) => {
+          // Същата двойка цени, която всяка друга карта в магазина показва.
+          // Дотук тази решетка вземаше процента само от правило в админа, тоест
+          // за отстъпка от вид „сума" не се появяваше нищо, а старата цена
+          // липсваше навсякъде.
+          const {price: relPrice, compareAtPrice: relCompare} = markPricing(p);
+          const relPct = relCompare
+            ? displayDiscountPercent(null, parseFloat(relPrice?.amount ?? '0'), parseFloat(relCompare.amount))
+            : bestDiscountFor(p.id)?.percent ?? 0;
+          return (
           <Link
             key={p.id}
             to={`/product/${p.handle}`}
@@ -359,7 +369,7 @@ function LinkedProducts({products}: {products: any[]}) {
               <ProductMarks
                 product={p}
                 soldOut={p.availableForSale === false}
-                discountPct={bestDiscountFor(p.id)?.percent ?? 0}
+                discountPct={relPct}
                 size="sm"
               />
             </div>
@@ -368,11 +378,17 @@ function LinkedProducts({products}: {products: any[]}) {
             </h4>
             <div className="mt-1.5 flex items-baseline gap-2">
               <span className="text-[15px] font-bold text-[var(--color-ink)]" style={{fontFamily: 'var(--font-serif)', fontStyle: 'italic', fontWeight: 500}}>
-                <Money data={p.priceRange.minVariantPrice} />
+                <Money data={relPrice ?? p.priceRange.minVariantPrice} />
               </span>
+              {relCompare && (
+                <span className="text-[13px] line-through text-[rgba(10,37,64,0.45)]">
+                  <Money data={relCompare} />
+                </span>
+              )}
             </div>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

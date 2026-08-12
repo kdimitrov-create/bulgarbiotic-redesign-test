@@ -1,4 +1,4 @@
-import {envValue} from './env.server';
+import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server';
 
 /**
  * Стойността на промо кодовете, прочетена от админ панела.
@@ -21,7 +21,6 @@ import {envValue} from './env.server';
  */
 
 const CACHE_TTL_MS = 10 * 60 * 1000;
-const REQUEST_TIMEOUT_MS = 8000;
 
 export type PromoCondition = {
   /** percent | flat | shipping */
@@ -50,36 +49,10 @@ export type PromoCode = {
 
 export type PromoCodes = Record<string, PromoCode>;
 
-const RULES_QUERY = `query CodeProRules {
-  discounts(first: 100, active: yes) { edges { node { id type } } }
-}`;
-
-function adminOrigin(env: Record<string, string | undefined>): string | null {
-  const raw = envValue(env, 'PUBLIC_API_ORIGIN') || envValue(env, 'PUBLIC_STORE_DOMAIN');
-  if (!raw) return null;
-  return raw.startsWith('http') ? raw.replace(/\/$/, '') : `https://${raw}`;
-}
+/** Обхожда се докрай: сто активни отстъпки вече не стигат. */
+const RULES_FIELDS = 'id type';
 
 let cache: {at: number; data: PromoCodes} | null = null;
-
-async function gql<T>(origin: string, pat: string, query: string): Promise<T | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const res = await fetch(`${origin}/api/gql`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query}),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`admin api ${res.status}`);
-    const json = (await res.json()) as {data?: T; errors?: Array<{message: string}>};
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    return json.data ?? null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 /** id → urlHandle за продуктите, към които сочат кодовете. Една заявка с aliases. */
 async function resolveHandles(
@@ -89,7 +62,7 @@ async function resolveHandles(
 ): Promise<Record<string, string>> {
   if (!ids.length) return {};
   const fields = ids.map((id) => `p${id}: product(id: "${id}") { id urlHandle }`).join(' ');
-  const data = await gql<Record<string, {id: string; urlHandle: string} | null>>(
+  const data = await adminGql<Record<string, {id: string; urlHandle: string} | null>>(
     origin,
     pat,
     `query { ${fields} }`,
@@ -107,25 +80,25 @@ export async function fetchPromoCodes(
 ): Promise<PromoCodes> {
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
 
-  const pat = envValue(env, 'CLOUDCART_ADMIN_PAT') || envValue(env, 'CLOUDCARTADMINPAT');
+  const pat = adminPat(env);
   const origin = adminOrigin(env);
   if (!pat || !origin) return {};
 
   try {
-    const rules = await gql<{discounts: {edges: Array<{node: {id: string; type: string}}>}}>(
-      origin,
-      pat,
-      RULES_QUERY,
-    );
-    const codeProIds = (rules?.discounts?.edges ?? [])
-      .map((e) => e.node)
+    const rules = await adminListAll<{id: string; type: string}>(origin, pat, {
+      root: 'discounts',
+      args: 'active: yes',
+      nodeFields: RULES_FIELDS,
+      label: 'promo-codes',
+    });
+    const codeProIds = rules
       .filter((n) => n.type === 'code-pro')
       .map((n) => String(n.id));
     if (!codeProIds.length) return {};
 
     const out: PromoCodes = {};
     for (const discountId of codeProIds) {
-      const listed = await gql<{codes: {nodes: Array<{id: string; code: string}>}}>(
+      const listed = await adminGql<{codes: {nodes: Array<{id: string; code: string}>}}>(
         origin,
         pat,
         `query { codes: discountCodeProCodes(discountId: "${discountId}", first: 100) { nodes { id code } } }`,
@@ -140,7 +113,7 @@ export async function fetchPromoCodes(
             `c${n.id}: discountCodeProCode(discountId: "${discountId}", codeId: "${n.id}") { code active conditions { type setting value orderOver product { id } } }`,
         )
         .join(' ');
-      const detailed = await gql<Record<string, any>>(origin, pat, `query { ${fields} }`);
+      const detailed = await adminGql<Record<string, any>>(origin, pat, `query { ${fields} }`);
 
       // Целите идват като id-та, а количката познава само handle-и. Резолвваме
       // ги веднъж тук, вместо да търсим при всяко пресмятане.

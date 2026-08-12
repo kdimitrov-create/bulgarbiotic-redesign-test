@@ -1,4 +1,6 @@
 import {dedupeGifts, type CartOffers, type GiftOffer, type CartRuleNotice} from './cart-offers';
+import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server';
+import {envValue} from './env.server';
 
 /**
  * Reads the merchant's cart promotions from the Admin API.
@@ -13,16 +15,14 @@ import {dedupeGifts, type CartOffers, type GiftOffer, type CartRuleNotice} from 
  */
 
 const CACHE_TTL_MS = 30 * 1000;
-const REQUEST_TIMEOUT_MS = 8000;
 
-const LIST_QUERY = `query CartOfferIds($first: Int!) {
-  crossSells(first: $first) {
-    edges { node { id name status offerTitle activeFrom activeTo discountType freeProducts } }
-  }
-  cartRules(first: $first) {
-    edges { node { id name title status statusKey activeFrom activeTo } }
-  }
-}`;
+/**
+ * Двата списъка се обхождат докрай, всеки поотделно. Магазинът има 37 кръстосани
+ * оферти и 12 правила за количката днес; таван от сто е близо, а изчезнала
+ * оферта не казва нищо за себе си. Виж `admin-api.server.ts`.
+ */
+const CROSS_SELL_FIELDS = 'id name status offerTitle activeFrom activeTo discountType freeProducts';
+const CART_RULE_FIELDS = 'id name title status statusKey activeFrom activeTo';
 
 function detailQuery(crossSellIds: string[], cartRuleIds: string[]): string {
   const cs = crossSellIds.map(
@@ -65,34 +65,41 @@ let cache: {at: number; data: CartOffers} | null = null;
 export async function fetchCartOffers(
   env: Record<string, string | undefined>,
 ): Promise<CartOffers | null> {
-  const pat = env.CLOUDCART_ADMIN_PAT || env.CLOUDCARTADMINPAT;
-  const origin = apiOrigin(env);
+  const pat = adminPat(env);
+  const origin = adminOrigin(env);
   if (!pat || !origin) return null;
 
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
 
   try {
-    const listed = await gql<{
-      crossSells?: {edges?: Array<{node: RawCrossSell}>};
-      cartRules?: {edges?: Array<{node: RawCartRule}>};
-    }>(origin, pat, LIST_QUERY, {first: 100});
+    const [allCrossSells, allCartRules] = await Promise.all([
+      adminListAll<RawCrossSell>(origin, pat, {
+        root: 'crossSells',
+        nodeFields: CROSS_SELL_FIELDS,
+        label: 'cart-offers/crossSells',
+      }),
+      adminListAll<RawCartRule>(origin, pat, {
+        root: 'cartRules',
+        nodeFields: CART_RULE_FIELDS,
+        label: 'cart-offers/cartRules',
+      }),
+    ]);
 
-    const crossSells = (listed?.crossSells?.edges ?? [])
-      .map((e) => e.node)
-      .filter((c) => c.status === 1 && c.freeProducts && isRunning(c.activeFrom, c.activeTo));
-    const cartRules = (listed?.cartRules?.edges ?? [])
-      .map((e) => e.node)
-      .filter((r) => r.status === 1 && isRunning(r.activeFrom, r.activeTo));
+    const crossSells = allCrossSells.filter(
+      (c) => c.status === 1 && c.freeProducts && isRunning(c.activeFrom, c.activeTo),
+    );
+    const cartRules = allCartRules.filter(
+      (r) => r.status === 1 && isRunning(r.activeFrom, r.activeTo),
+    );
 
     if (!crossSells.length && !cartRules.length) {
       cache = {at: Date.now(), data: {gifts: [], rules: []}};
       return cache.data;
     }
 
-    const details = await gql<Record<string, any>>(
+    const details = await adminGql<Record<string, any>>(
       origin, pat,
       detailQuery(crossSells.map((c) => String(c.id)), cartRules.map((r) => String(r.id))),
-      {},
     );
 
     const gifts: GiftOffer[] = [];
@@ -142,38 +149,6 @@ function isRunning(from: string | null, to: string | null): boolean {
   return true;
 }
 
-async function gql<T>(
-  origin: string,
-  pat: string,
-  query: string,
-  variables: Record<string, unknown>,
-): Promise<T | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const res = await fetch(`${origin}/api/gql`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query, variables}),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`admin api ${res.status}`);
-    const json = (await res.json()) as {data?: T; errors?: Array<{message: string}>};
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    return json.data ?? null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/** Platform origin, never the public domain — otherwise the worker calls itself. */
-function apiOrigin(env: Record<string, string | undefined>): string | null {
-  const origin = env.PUBLIC_API_ORIGIN || env.PUBLIC_STORE_DOMAIN;
-  if (!origin) return null;
-  return origin.startsWith('http') ? origin.replace(/\/$/, '') : `https://${origin}`;
-}
-
-
 /**
  * The first variant of every rewarded product, in one request.
  *
@@ -185,8 +160,8 @@ async function attachVariants(
   gifts: GiftOffer[],
 ): Promise<void> {
   const ids = [...new Set(gifts.map((g) => g.productId).filter(Boolean))] as string[];
-  const origin = apiOrigin(env);
-  const token = env.PUBLIC_STOREFRONT_API_TOKEN;
+  const origin = adminOrigin(env);
+  const token = envValue(env, 'PUBLIC_STOREFRONT_API_TOKEN');
   if (!ids.length || !origin || !token) return;
 
   const fields = ids

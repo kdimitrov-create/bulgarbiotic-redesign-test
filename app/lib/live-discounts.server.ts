@@ -1,15 +1,16 @@
 import type {AutoDiscount} from './active-discounts';
+import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server';
 
 /**
- * LIVE auto-discounts, read from the CloudCart Admin API so the merchant can
- * change a promotion in the admin panel and see it on the storefront without a
- * redeploy.
+ * Действащите автоматични отстъпки, прочетени от Admin API-то, за да може
+ * търговецът да смени промоция от панела и да я види на сайта без нов deploy.
  *
- * Why the Admin API and not the Storefront API: order-level auto-apply discounts
- * are simply not exposed to the storefront — `product.discount.msrpPrice` and
- * `variant.compareAtPrice` both come back null for them (see the header of
- * `active-discounts.ts`). The hand-maintained mirror in that file stays as the
- * fallback for when this is unconfigured or the call fails.
+ * ⚠️ Това НЕ е източникът на цените. Цената и зачертаната цена идват от
+ * Storefront API-то (`priceRange` / `compareAtPriceRange`) и са верни за всеки
+ * вид отстъпка. Проверено на живо 2026-08-12: продукт 79 под правило от 40 %
+ * се връща 21,47 € срещу 35,79 €, и то дори в списъчната заявка. Оттук идва
+ * само това, което API-то не казва: кои продукти са в промоция изобщо и с кое
+ * правило, за страницата „Промоции" и за съобщенията в количката.
  *
  * SERVER ONLY — the `.server.ts` suffix keeps the PAT out of the client bundle.
  * The token never reaches the browser: the loader ships only the resulting
@@ -21,14 +22,17 @@ import type {AutoDiscount} from './active-discounts';
 // miss adds three admin round-trips to that page render. If pages ever feel slow,
 // the fix is serve-stale-then-refresh, not a longer window.
 const CACHE_TTL_MS = 30 * 1000;
-// 8s, not 4: a cold worker plus a slow admin response was timing out and
-// silently falling back, which is why some pages showed live data and others did not.
-const REQUEST_TIMEOUT_MS = 8000;
 
 export interface LiveDiscounts {
   discounts: AutoDiscount[];
   /** product id → url handle, for the surfaces that only know the handle (cart lines). */
   handles: Record<string, string>;
+  /**
+   * Прагът за безплатна доставка от действащо правило от вид „shipping",
+   * в основната валута. `0` значи безплатна доставка без праг, `null` значи
+   * че такова правило няма и важи настройката на BumpCart.
+   */
+  freeShippingOver: number | null;
 }
 
 let cache: {at: number; data: LiveDiscounts} | null = null;
@@ -38,12 +42,11 @@ let cache: {at: number; data: LiveDiscounts} | null = null;
  * verified 2026-07-31 that the LIST query always returns `targets: []`, while
  * `discount(id:)` returns the real rows for the same discount. Asking here would
  * quietly yield zero targeted products and the feature would never light up.
+ *
+ * Обхожда се докрай, а не само първата стотица: активните правила на живия
+ * магазин са 94 и растат. Виж `admin-api.server.ts`.
  */
-const LIST_QUERY = `query ActiveDiscounts($first: Int!) {
-  discounts(first: $first, active: yes) {
-    edges { node { id name type typeValue orderOver dateStart dateEnd active } }
-  }
-}`;
+const LIST_FIELDS = 'id name type typeValue orderOver dateStart dateEnd active';
 
 /** Step 3 — url handles for the targeted products, aliased into one request. */
 function handlesQuery(ids: string[]): string {
@@ -76,31 +79,39 @@ interface RawDiscount {
 export async function fetchAutoDiscounts(
   env: Record<string, string | undefined>,
 ): Promise<LiveDiscounts | null> {
-  // Accept both spellings: the panel's Custom Variables were saved once as
-  // CLOUDCARTADMINPAT, and a silently-unread token looks exactly like "the
-  // feature is off" — not worth losing an afternoon to again.
-  const pat = env.CLOUDCART_ADMIN_PAT || env.CLOUDCARTADMINPAT;
+  const pat = adminPat(env);
   const origin = adminOrigin(env);
   if (!pat || !origin) return null;
 
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
 
   try {
-    const listed = (await gql<{discounts?: {edges?: Array<{node: RawDiscount}>}}>(
-      origin, pat, LIST_QUERY, {first: 100},
-    ))?.discounts?.edges?.map((e) => e.node).filter(isLiveOnStorefront) ?? [];
+    const listed = (
+      await adminListAll<RawDiscount>(origin, pat, {
+        root: 'discounts',
+        args: 'active: yes',
+        nodeFields: LIST_FIELDS,
+        label: 'live-discounts',
+      })
+    );
 
-    if (listed.length === 0) {
-      cache = {at: Date.now(), data: {discounts: [], handles: {}}};
+    // Правилата за доставка не се отнасят до продукт, затова се вадят отделно,
+    // преди филтъра за продуктовите отстъпки.
+    const freeShippingOver = shippingThreshold(listed);
+
+    const productRules = listed.filter(isLiveOnStorefront);
+
+    if (productRules.length === 0) {
+      cache = {at: Date.now(), data: {discounts: [], handles: {}, freeShippingOver}};
       return cache.data;
     }
 
     // Step 2: targets, aliased into a single request (d<id>: discount(id:)).
-    const targets = await gql<Record<string, {targets?: Array<{type: string; itemId: string}>} | null>>(
-      origin, pat, targetsQuery(listed.map((d) => String(d.id))), {},
+    const targets = await adminGql<Record<string, {targets?: Array<{type: string; itemId: string}>} | null>>(
+      origin, pat, targetsQuery(productRules.map((d) => String(d.id))),
     );
 
-    const mapped = listed
+    const mapped = productRules
       .map((d) => toAutoDiscount(d, targets?.[`d${d.id}`]?.targets ?? []))
       .filter((d): d is AutoDiscount => d !== null);
 
@@ -109,8 +120,8 @@ export async function fetchAutoDiscounts(
     // found on product cards (they have the id) but not in the cart.
     const ids = [...new Set(mapped.flatMap((d) => d.productIds))];
     const handleRows = ids.length
-      ? await gql<Record<string, {id: string; urlHandle: string} | null>>(
-          origin, pat, handlesQuery(ids), {},
+      ? await adminGql<Record<string, {id: string; urlHandle: string} | null>>(
+          origin, pat, handlesQuery(ids),
         )
       : {};
     const handles: Record<string, string> = {};
@@ -119,7 +130,7 @@ export async function fetchAutoDiscounts(
       if (row?.urlHandle) handles[id] = row.urlHandle;
     }
 
-    cache = {at: Date.now(), data: {discounts: mapped, handles}};
+    cache = {at: Date.now(), data: {discounts: mapped, handles, freeShippingOver}};
     return cache.data;
   } catch (error) {
     console.error('live-discounts: falling back to the static mirror —', (error as Error).message);
@@ -128,37 +139,58 @@ export async function fetchAutoDiscounts(
   }
 }
 
-/** One Admin API call with a timeout; throws on transport or GraphQL errors. */
-async function gql<T>(
-  origin: string,
-  pat: string,
-  query: string,
-  variables: Record<string, unknown>,
-): Promise<T | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const res = await fetch(`${origin}/api/gql`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query, variables}),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`admin api ${res.status}`);
-    const json = (await res.json()) as {data?: T; errors?: Array<{message: string}>};
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    return json.data ?? null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
+/**
+ * Видовете правила, които свалят цена на продукт.
+ *
+ * `percent` е единственият, който носи процент. `fixed` и `flat` свалят сума и
+ * нямат такъв - за тях процентът остава 0 и всяка цифра пред клиента се смята
+ * от самите цени, които API-то връща. Така продуктът излиза в „Промоции" и
+ * получава badge, без да сме измислили процент, който не знаем.
+ *
+ * Дотук кодът приемаше само `percent` и мълчаливо изхвърляше останалите: правило
+ * от вид „фиксирана сума" беше невидимо за сайта, макар касата да го прилагаше.
+ */
+const PRODUCT_RULE_KINDS: Record<string, 'percent' | 'amount'> = {
+  percent: 'percent',
+  fixed: 'amount',
+  flat: 'amount',
+};
 
 function isLiveOnStorefront(d: RawDiscount): boolean {
-  if (d.type !== 'percent' || !d.typeValue) return false;
+  if (!PRODUCT_RULE_KINDS[d.type]) return false;
+  // Правило без стойност не сваля нищо. Платформата държи един такъв запис
+  // („Default Fixed Discount", активен, без стойност и без цели) и той не бива
+  // да маркира каквото и да е като промоция.
+  if (!d.typeValue) return false;
+  return isRunning(d);
+}
+
+function isRunning(d: RawDiscount): boolean {
   const now = Date.now();
   if (d.dateStart && Date.parse(d.dateStart) > now) return false;
   if (d.dateEnd && Date.parse(d.dateEnd) < now) return false;
   return true;
+}
+
+/**
+ * Прагът за безплатна доставка, ако търговецът е пуснал правило от вид
+ * „shipping". Сумата е в стотни, като всичко парично в този API.
+ *
+ * Правило без праг (цели `all`) значи безплатна доставка винаги, тоест 0.
+ * Няма ли действащо такова правило, връща `null` и количката остава на
+ * настройката на BumpCart.
+ *
+ * ⚠️ И двете правила в този магазин са изключени днес (№8 с праг 5113 = 51,13 €
+ * и №453 без праг), затова е проверено само разчитането им, не и поведението на
+ * живо. Сгреши ли, най-лошото е грешен праг в лентата „още X до безплатна
+ * доставка" - цената на доставката се решава от куриера на касата.
+ */
+function shippingThreshold(rules: RawDiscount[]): number | null {
+  const shipping = rules.filter((d) => d.type === 'shipping' && isRunning(d));
+  if (!shipping.length) return null;
+  const thresholds = shipping.map((d) => (d.orderOver ? d.orderOver / 100 : 0));
+  // Най-ниският праг важи: това е първата сума, от която доставката е безплатна.
+  return Math.min(...thresholds);
 }
 
 function toAutoDiscount(
@@ -175,11 +207,18 @@ function toAutoDiscount(
   const appliesToAll = targets.some((t) => t.type === 'all');
   const productIds = targets.filter((t) => t.type === 'product').map((t) => String(t.itemId));
   if (!appliesToAll && productIds.length === 0) return null;
-  const percent = toPercent(d.typeValue as number);
-  if (percent <= 0) return null;
+
+  const kind = PRODUCT_RULE_KINDS[d.type];
+  // Правило от вид „сума" няма процент. Нула тук не е загуба: badge-ът и
+  // зачертаната цена се смятат от цените на API-то, а тази стойност служи само
+  // да се избере „най-добрата" отстъпка, когато няма от какво да се изведе.
+  const percent = kind === 'percent' ? toPercent(d.typeValue as number) : 0;
+  if (kind === 'percent' && percent <= 0) return null;
+
   return {
     id: String(d.id),
     name: d.name,
+    kind,
     percent,
     dateEnd: d.dateEnd,
     orderOver: d.orderOver,
@@ -196,15 +235,4 @@ function toAutoDiscount(
 function toPercent(typeValue: number): number {
   const raw = typeValue > 100 ? typeValue / 100 : typeValue;
   return Math.max(0, Math.min(100, Math.round(raw)));
-}
-
-/**
- * Admin API host. Must be the platform service origin, never the public domain
- * once that is routed to this storefront — otherwise the worker calls itself.
- * Same rule as the Storefront API origin in `server.ts`.
- */
-function adminOrigin(env: Record<string, string | undefined>): string | null {
-  const origin = env.PUBLIC_API_ORIGIN || env.PUBLIC_STORE_DOMAIN;
-  if (!origin) return null;
-  return origin.startsWith('http') ? origin.replace(/\/$/, '') : `https://${origin}`;
 }

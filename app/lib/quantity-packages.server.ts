@@ -1,4 +1,5 @@
 import type {QuantityTier} from './quantity-packages';
+import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server';
 
 /**
  * Reads the merchant's quantity discounts from the CloudCart Admin API, so the
@@ -16,13 +17,12 @@ import type {QuantityTier} from './quantity-packages';
  */
 
 const CACHE_TTL_MS = 30 * 1000;
-const REQUEST_TIMEOUT_MS = 8000;
 
-/** Rules only; the tiers are fetched one level down. */
-const LIST_QUERY = `query QuantityRules($first: Int!) {
-  discounts(first: $first, active: yes) {
-    edges { node { id name type dateStart dateEnd } } }
-}`;
+/**
+ * Rules only; the tiers are fetched one level down. Обхожда се докрай, не само
+ * първата стотица - виж `admin-api.server.ts`.
+ */
+const LIST_FIELDS = 'id name type dateStart dateEnd';
 
 function tiersQuery(ids: string[]): string {
   const fields = ids.map(
@@ -52,7 +52,7 @@ let cache: {at: number; data: Record<string, QuantityTier[]>} | null = null;
 export async function fetchQuantityPackages(
   env: Record<string, string | undefined>,
 ): Promise<Record<string, QuantityTier[]> | null> {
-  const pat = env.CLOUDCART_ADMIN_PAT || env.CLOUDCARTADMINPAT;
+  const pat = adminPat(env);
   const origin = adminOrigin(env);
   if (!pat || !origin) return null;
 
@@ -60,16 +60,21 @@ export async function fetchQuantityPackages(
 
   try {
     const rules = (
-      await gql<{discounts?: {edges?: Array<{node: RawRule}>}}>(origin, pat, LIST_QUERY, {first: 100})
-    )?.discounts?.edges?.map((e) => e.node).filter(isRunningQuantityRule) ?? [];
+      await adminListAll<RawRule>(origin, pat, {
+        root: 'discounts',
+        args: 'active: yes',
+        nodeFields: LIST_FIELDS,
+        label: 'quantity-packages',
+      })
+    ).filter(isRunningQuantityRule);
 
     if (!rules.length) {
       cache = {at: Date.now(), data: {}};
       return cache.data;
     }
 
-    const rows = await gql<Record<string, {quantityDiscounts?: RawTier[]} | null>>(
-      origin, pat, tiersQuery(rules.map((r) => String(r.id))), {},
+    const rows = await adminGql<Record<string, {quantityDiscounts?: RawTier[]} | null>>(
+      origin, pat, tiersQuery(rules.map((r) => String(r.id))),
     );
 
     const out: Record<string, QuantityTier[]> = {};
@@ -101,35 +106,4 @@ function isRunningQuantityRule(d: RawRule): boolean {
   if (d.dateStart && Date.parse(d.dateStart) > now) return false;
   if (d.dateEnd && Date.parse(d.dateEnd) < now) return false;
   return true;
-}
-
-async function gql<T>(
-  origin: string,
-  pat: string,
-  query: string,
-  variables: Record<string, unknown>,
-): Promise<T | null> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  try {
-    const res = await fetch(`${origin}/api/gql`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query, variables}),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`admin api ${res.status}`);
-    const json = (await res.json()) as {data?: T; errors?: Array<{message: string}>};
-    if (json.errors?.length) throw new Error(json.errors[0].message);
-    return json.data ?? null;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-/** Platform origin, never the public domain — otherwise the worker calls itself. */
-function adminOrigin(env: Record<string, string | undefined>): string | null {
-  const origin = env.PUBLIC_API_ORIGIN || env.PUBLIC_STORE_DOMAIN;
-  if (!origin) return null;
-  return origin.startsWith('http') ? origin.replace(/\/$/, '') : `https://${origin}`;
 }
