@@ -66,7 +66,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
     BUILDER_HOME_HANDLE;
 
   const [builderPage, builderPageOn] = await Promise.all([
-    ctx.storefront.getPage(homeHandle).catch(() => null),
+    fetchHomePage(ctx, homeHandle),
     // The Storefront API serves a page's body even when the merchant has
     // switched it off, so the flag has to come from the admin.
     pageIsActive(ctx.env as Record<string, string | undefined>, homeHandle),
@@ -91,6 +91,31 @@ export async function loader({context, request}: Route.LoaderArgs) {
     homeDesign: builderHasContent(homeDesign) ? homeDesign : null,
     builderData,
   };
+}
+
+/**
+ * Композицията от панела, с един повторен опит.
+ *
+ * Storefront API-то от време на време връща грешка точно за тази страница -
+ * при около една от пет заявки на 2026-08-12. Провалът тук не чупи нищо, но
+ * връща КОДИРАНАТА начална, тоест посетителят вижда друга страница, а
+ * редакциите на клиента изглеждат сякаш не са се записали. Един повторен опит
+ * струва милисекунди и маха почти всички такива случаи.
+ */
+async function fetchHomePage(ctx: any, handle: string): Promise<any> {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const page = await ctx.storefront.getPage(handle);
+      if (page) return page;
+    } catch (error) {
+      console.warn(
+        'home: страницата от панела не се прочете (опит %d) — %s',
+        attempt + 1,
+        (error as Error).message,
+      );
+    }
+  }
+  return null;
 }
 
 export default function Homepage() {
