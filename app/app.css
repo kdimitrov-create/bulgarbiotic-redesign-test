@@ -5082,6 +5082,66 @@ img.pm-banner {
   border-top: 1px solid rgba(10, 37, 64, 0.1);
 }
 
+/* ── Българска традиция: снимка на целия ред и текст върху нея ──────────────
+   Снимката е фон на реда и се сменя от панела (Ред » Фон » Снимка). Тук стои
+   само булото върху нея и центрирането на съдържанието.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-brand {
+  position: relative;
+  overflow: hidden;
+  min-height: 540px;
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+}
+.bb-row-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(245, 239, 227, 0.5) 0%, rgba(253, 238, 243, 0.4) 100%);
+}
+.bb-row-brand > .bb-bd-col {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  padding: 60px 32px;
+}
+.bb-row-brand .section-tag { justify-content: center; }
+.bb-row-brand .bb-prose h3 {
+  font-family: inherit;
+  font-size: clamp(36px, 5vw, 60px);
+  font-weight: 700;
+  letter-spacing: -1.4px;
+  line-height: 1.05;
+  color: var(--color-ink);
+  margin: 0 0 22px;
+}
+.bb-row-brand .bb-prose h3 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-brand-pink);
+}
+.bb-row-brand .bb-prose p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(10, 37, 64, 0.78);
+  max-width: 560px;
+  margin: 0 auto 28px;
+}
+/* Тъмното хапче на дизайна, вместо розовия бутон по подразбиране. */
+.bb-row-brand .bb-bd-buttons { justify-content: center; margin: 0; }
+.bb-row-brand .bb-bd-button {
+  background: var(--color-ink);
+  color: var(--color-cream-1);
+  padding: 17px 32px;
+  font-size: 14px;
+}
+.bb-row-brand .bb-bd-button:hover {
+  background: var(--color-brand-pink);
+  color: #fff;
+}
+
 /* ── Медиите: една колона = едно издание ────────────────────────────────────
    Първата колона е надсловът, последната е връзката отдолу - и двете се
    разпъват по цялата ширина. Между тях всяка колона е по едно издание.
