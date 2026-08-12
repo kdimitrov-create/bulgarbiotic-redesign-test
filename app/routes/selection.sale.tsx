@@ -5,7 +5,8 @@ import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {ProductMarks} from '~/components/ProductMarks';
-import {markPricing, setProductMarks} from '~/lib/product-marks';
+import {markPricing, markDiscount, setProductMarks} from '~/lib/product-marks';
+import {DiscountCountdown} from '~/components/DiscountCountdown';
 import {fetchProductMarks} from '~/lib/product-marks.server';
 import {enhanceProducts} from '~/lib/product-images';
 import {synthDiscount, discountPctFor} from '~/lib/active-promo';
@@ -345,7 +346,10 @@ function PromoCard({product}: {product: any}) {
   const bgn = currency === 'BGN' ? displayPriceAmount : displayPriceAmount * EUR_TO_BGN;
   const compareEur = currency === 'EUR' ? compareAmount : compareAmount / EUR_TO_BGN;
   const isOnSale = discountPct > 0 && compareAmount > displayPriceAmount;
-  const savedEur = isOnSale ? compareEur - eur : 0;
+  // „Скрий цената на отстъпката" в панела: зачертаната цена и редът „Спестяваш"
+  // отпадат, самата отстъпка остава.
+  const hideOldPrice = markDiscount(product)?.hidePrice === true;
+  const savedEur = isOnSale && !hideOldPrice ? compareEur - eur : 0;
 
   return (
     <Link
@@ -374,10 +378,11 @@ function PromoCard({product}: {product: any}) {
         <div className="bb-promo-card-pricerow">
           <span className="bb-promo-card-now">{fmt(eur, 'EUR')}</span>
           <span className="bb-promo-card-bgn">{fmt(bgn, 'BGN')}</span>
-          {isOnSale && compareEur > 0 && (
+          {isOnSale && compareEur > 0 && !hideOldPrice && (
             <span className="bb-promo-card-old">{fmt(compareEur, 'EUR')}</span>
           )}
         </div>
+        <DiscountCountdown product={product} surface="listing" />
         {isOnSale && savedEur > 0 && (
           <div className="bb-promo-card-saved">
             Спестяваш <strong>{fmt(savedEur, 'EUR')}</strong>

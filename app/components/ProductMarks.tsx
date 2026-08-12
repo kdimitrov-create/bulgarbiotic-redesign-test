@@ -1,10 +1,12 @@
 import {
   markTags,
   markBanners,
+  markDiscount,
   bannerImageUrl,
   bannerFallbackUrl,
   type MarkCorner,
 } from '~/lib/product-marks';
+import {discountColors} from '~/lib/active-discounts';
 
 /**
  * The ONE renderer for product badges. Every surface — category grid, home
@@ -79,6 +81,13 @@ export function ProductMarkTags({
   const {inset} = SIZES[size];
   if (!tags.length && discountPct <= 0 && !soldOut) return null;
 
+  // Цветът на промо етикета идва от самата отстъпка в панела, ако търговецът е
+  // избрал такъв. Празно поле значи къщния розов, тоест днешният вид остава.
+  const {color, textColor} = discountColors(markDiscount(product)?.name);
+  const saleStyle = color || textColor
+    ? {background: color || undefined, color: textColor || undefined}
+    : undefined;
+
   return (
     <span className={`pm-stack pm-stack-${size}`} style={{top: inset, left: inset}}>
       {tags.map((tag) => (
@@ -86,7 +95,9 @@ export function ProductMarkTags({
           {tag.text}
         </span>
       ))}
-      {discountPct > 0 && <span className="pm-tag pm-tag-sale">−{discountPct}%</span>}
+      {discountPct > 0 && (
+        <span className="pm-tag pm-tag-sale" style={saleStyle}>−{discountPct}%</span>
+      )}
       {soldOut && <span className="pm-tag pm-tag-out">Изчерпан</span>}
     </span>
   );

@@ -5,8 +5,10 @@ import {StarRating} from './StarRating';
 import {CardBuyButton} from './CardBuyButton';
 import {ProductMarks} from './ProductMarks';
 import {displayDiscountPercent} from '~/lib/active-discounts';
-import {markPricing} from '~/lib/product-marks';
-
+import {markPricing, markDiscount} from '~/lib/product-marks';
+import {DiscountCountdown} from './DiscountCountdown';
+
+
 import {SHOW_BGN} from '~/lib/currency';
 const EUR_TO_BGN = 1.95583;
 
@@ -41,6 +43,9 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
   const currency = (priceObj?.currencyCode ?? 'EUR') as 'EUR' | 'BGN';
   const eur = currency === 'EUR' ? priceAmount : priceAmount / EUR_TO_BGN;
   const bgn = currency === 'BGN' ? priceAmount : priceAmount * EUR_TO_BGN;
+  // „Скрий цената на отстъпката" в панела: старата цена не се показва, а
+  // намалената остава. Отстъпката пак важи - само зачертаването изчезва.
+  const hideOldPrice = markDiscount(p)?.hidePrice === true;
   const isOnSale = compareAmount > priceAmount;
   const discountPct = displayDiscountPercent(null, priceAmount, compareAmount);
   const compareEur = currency === 'EUR' ? compareAmount : compareAmount / EUR_TO_BGN;
@@ -114,12 +119,14 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
               {fmt(bgn, 'BGN')}
             </span>
           )}
-          {isOnSale && compareEur > 0 && (
+          {isOnSale && compareEur > 0 && !hideOldPrice && (
             <span className="text-[12px] text-gray-400 line-through leading-none ml-0.5">
               {fmt(compareEur, 'EUR')}
             </span>
           )}
         </div>
+
+        <DiscountCountdown product={p} surface="listing" className="mt-1.5" />
 
         {/* "Купи" — same button as the home carousel (client request). */}
         <CardBuyButton merchandiseId={p.variants?.nodes?.[0]?.id} handle={product.handle} />

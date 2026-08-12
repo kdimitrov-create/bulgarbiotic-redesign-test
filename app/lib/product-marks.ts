@@ -43,6 +43,32 @@ export interface MarkMoney {
   currencyCode: string;
 }
 
+/**
+ * Как търговецът е поискал промоцията да ИЗГЛЕЖДА - настройките от самата
+ * отстъпка в панела, не от продукта.
+ *
+ * Storefront API-то ги връща и в списъчната заявка (проверено 2026-08-12), тоест
+ * картата в категорията може да ги спазва точно както продуктовата страница.
+ * Дотук нито едно от тези полета не се четеше: сайтът рисуваше свой розов
+ * „-N%" и винаги показваше старата цена, каквото и да е избрано в панела.
+ */
+export interface MarkDiscount {
+  /** Името на правилото, както го е кръстил търговецът. */
+  name: string | null;
+  /** „40.00%" - неговият собствен изказ на стойността. */
+  valueLabel: string | null;
+  /** Скрий зачертаната цена („Скрий цената на отстъпката" в панела). */
+  hidePrice: boolean;
+  /** Таймер в списъците / на продуктовата страница. */
+  countdownOnListing: boolean;
+  countdownOnDetail: boolean;
+  /** Докога върви промоцията. `null` значи безсрочна, тоест няма какво да брои. */
+  endDate: string | null;
+  /** Цвят на етикета от панела. `null` значи къщният розов. */
+  color: string | null;
+  textColor: string | null;
+}
+
 export interface ProductMark {
   /** URL handle — the only id a cart line carries. */
   handle: string | null;
@@ -54,6 +80,8 @@ export interface ProductMark {
   price: MarkMoney | null;
   /** The struck-through "was" price, straight from `compareAtPriceRange`. */
   compareAtPrice: MarkMoney | null;
+  /** Настройките за вид на действащата отстъпка, ако има такава. */
+  discount: MarkDiscount | null;
 }
 
 /** A text badge, already translated and coloured, ready to render. */
@@ -73,6 +101,7 @@ const EMPTY: ProductMark = {
   banners: [],
   price: null,
   compareAtPrice: null,
+  discount: null,
 };
 
 /**
@@ -128,7 +157,37 @@ export function marksFor(product: any): ProductMark {
     banners: ownBanners?.length ? ownBanners : shared.banners,
     price: shared.price,
     compareAtPrice: shared.compareAtPrice,
+    // Продуктовата заявка носи своя `discount`; каталожната снимка покрива
+    // повърхностите, чиято заявка го е пропуснала.
+    discount: toMarkDiscount(product?.discount) ?? shared.discount,
   };
+}
+
+/**
+ * `product.discount` от Storefront API-то, приведен към нашия вид.
+ *
+ * ⚠️ `percent` НЕ се взема оттук. CloudCart го закръгля по своя сметка и връща
+ * 19 за правило от 20 % и 14 за правило от 15 % - проверено на живо. Процентът
+ * се извежда от самите цени, които картата печата (`displayDiscountPercent`),
+ * за да не си противоречат числото и цените под него.
+ */
+export function toMarkDiscount(raw: any): MarkDiscount | null {
+  if (!raw) return null;
+  return {
+    name: raw.name ?? null,
+    valueLabel: raw.typeValueFormatted ?? null,
+    hidePrice: !!raw.hideDiscountPrice,
+    countdownOnListing: !!raw.countdownOnListing,
+    countdownOnDetail: !!raw.countdownOnDetail,
+    endDate: raw.endDate ?? null,
+    color: raw.color ?? null,
+    textColor: raw.textColor ?? null,
+  };
+}
+
+/** Настройките за вид на отстъпката, действаща за този продукт. */
+export function markDiscount(product: any): MarkDiscount | null {
+  return marksFor(product).discount;
 }
 
 /**

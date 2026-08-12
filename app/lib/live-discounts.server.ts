@@ -46,7 +46,7 @@ let cache: {at: number; data: LiveDiscounts} | null = null;
  * Обхожда се докрай, а не само първата стотица: активните правила на живия
  * магазин са 94 и растат. Виж `admin-api.server.ts`.
  */
-const LIST_FIELDS = 'id name type typeValue orderOver dateStart dateEnd active';
+const LIST_FIELDS = 'id name type typeValue orderOver dateStart dateEnd active color textColor';
 
 /** Step 3 — url handles for the targeted products, aliased into one request. */
 function handlesQuery(ids: string[]): string {
@@ -68,6 +68,9 @@ interface RawDiscount {
   orderOver: number | null;
   dateStart: string | null;
   dateEnd: string | null;
+  /** Цветовете на етикета от панела. Само Admin API-то ги дава. */
+  color: string | null;
+  textColor: string | null;
   targets: Array<{type: string; itemId: string}> | null;
 }
 
@@ -222,6 +225,8 @@ function toAutoDiscount(
     percent,
     dateEnd: d.dateEnd,
     orderOver: d.orderOver,
+    color: d.color ?? null,
+    textColor: d.textColor ?? null,
     productIds,
     appliesToAll,
   };

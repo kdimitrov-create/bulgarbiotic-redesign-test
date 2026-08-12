@@ -3,7 +3,8 @@ import {useRef} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {displayDiscountPercent} from '~/lib/active-discounts';
-import {markPricing} from '~/lib/product-marks';
+import {markPricing, markDiscount} from '~/lib/product-marks';
+import {DiscountCountdown} from '~/components/DiscountCountdown';
 import {ProductMarks} from '~/components/ProductMarks';
 
 import {SHOW_BGN} from '~/lib/currency';
@@ -127,6 +128,9 @@ export function ProductRail({
           // not drawn.
           const hasDiscount = !!effectiveMsrp?.currencyCode;
           const showPrice = !!effectivePrice?.currencyCode;
+          // „Скрий цената на отстъпката" от панела - зачертаната цена пада,
+          // намалената остава.
+          const showMsrp = hasDiscount && markDiscount(p)?.hidePrice !== true;
           return (
             <Link
               key={p.id}
@@ -165,7 +169,7 @@ export function ProductRail({
                           <Money data={effectivePrice as any} />
                         </span>
                       )}
-                      {hasDiscount && effectiveMsrp && (
+                      {showMsrp && effectiveMsrp && (
                         <span className="bb-pcard-msrp">
                           <Money data={effectiveMsrp as any} />
                         </span>
@@ -173,7 +177,7 @@ export function ProductRail({
                     </div>
                     {SHOW_BGN && (
                       <div className="bb-pcard-eur">
-                        {hasDiscount && effectiveMsrp && (
+                        {showMsrp && effectiveMsrp && (
                           <span className="bb-pcard-eur-old">
                             {eurToBgnLabel(effectiveMsrp as any)}
                           </span>
@@ -181,6 +185,7 @@ export function ProductRail({
                         {eurToBgnLabel(effectivePrice as any)}
                       </div>
                     )}
+                    <DiscountCountdown product={p} surface="listing" />
                   </div>
                   {rating && rating.totalCount > 0 ? (
                     <div className="bb-pcard-rating" title={`${rating.totalCount} ревюта`}>

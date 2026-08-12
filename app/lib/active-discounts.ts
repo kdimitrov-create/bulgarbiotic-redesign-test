@@ -38,6 +38,12 @@ export interface AutoDiscount {
   kind: 'percent' | 'amount';
   /** Discount percentage (0–100, e.g. 30 means 30% off). `0` за правило от вид `amount`. */
   percent: number;
+  /**
+   * Цветовете на етикета, както са зададени в панела. `null` значи, че
+   * търговецът не е избрал нищо и важи къщният розов.
+   */
+  color?: string | null;
+  textColor?: string | null;
   /** ISO-like date string — null means open-ended. */
   dateEnd: string | null;
   /** Optional min cart total in store currency (EUR) to qualify. */
@@ -106,6 +112,20 @@ export function setAutoDiscounts(
 /** What the lookups currently resolve against — live list when available. */
 export function activeDiscounts(): AutoDiscount[] {
   return currentDiscounts;
+}
+
+/**
+ * Цветовете за етикета на дадена отстъпка, намерена по име.
+ *
+ * По име, а не по продукт: `product.discount` от Storefront API-то казва точно
+ * кое правило е приложено, но не носи неговия идентификатор. Изборът по
+ * „най-голям процент" би оцветил етикета по друго правило, различно от това,
+ * което е свалило цената.
+ */
+export function discountColors(name: string | null | undefined): {color: string | null; textColor: string | null} {
+  if (!name) return {color: null, textColor: null};
+  const rule = currentDiscounts.find((d) => d.name === name);
+  return {color: rule?.color ?? null, textColor: rule?.textColor ?? null};
 }
 
 /**

@@ -4,7 +4,8 @@ import {VariantSelector} from '@cloudcart/nitro-react';
 import {AddToCartButton} from './AddToCartButton';
 import {OptionSwatch} from './OptionSwatch';
 import {MonthlyPackages} from './pdp/MonthlyPackages';
-import {markPricing} from '~/lib/product-marks';
+import {markPricing, markDiscount} from '~/lib/product-marks';
+import {DiscountCountdown} from './DiscountCountdown';
 
 import {SHOW_BGN} from '~/lib/currency';
 interface ProductFormProps {
@@ -58,6 +59,10 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
   const savings =
     isOnSale && price && compare ? compare.eur - price.eur : 0;
 
+  // „Скрий цената на отстъпката" в панела. Скрива само зачертаната цена и реда
+  // „Спестяваш" - намалената цена и самата отстъпка си остават.
+  const hideOldPrice = markDiscount(product)?.hidePrice === true;
+
   const maxQty = variant?.quantityAvailable && variant.quantityAvailable < 99
     ? variant.quantityAvailable
     : 99;
@@ -74,7 +79,7 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
             {SHOW_BGN && <span className="bb-pdp-price-bgn">{fmtBg(price.bgn, 'BGN')}</span>}
           </>
         )}
-        {isOnSale && compare && (
+        {isOnSale && compare && !hideOldPrice && (
           <span className="bb-pdp-price-old" aria-label={`Стара цена ${fmtBg(compare.eur, 'EUR')}`}>
             <span className="bb-pdp-price-old-eur">{fmtBg(compare.eur, 'EUR')}</span>
             {SHOW_BGN && <span className="bb-pdp-price-old-bgn">{fmtBg(compare.bgn, 'BGN')}</span>}
@@ -84,7 +89,8 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
             the same percentage already sits on the product photo, and two
             identical badges within one glance read as two different offers. */}
       </div>
-      {isOnSale && savings > 0 && (
+      <DiscountCountdown product={product} surface="detail" className="bb-pdp-cdown" />
+      {isOnSale && savings > 0 && !hideOldPrice && (
         <div className="bb-pdp-savings">
           {/* Was the 💸 emoji, which renders in each platform's own cartoon
               style and clashed with the monoline icons around it. */}

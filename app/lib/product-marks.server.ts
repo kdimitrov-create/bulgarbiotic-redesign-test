@@ -1,4 +1,4 @@
-import type {ProductMark} from './product-marks';
+import {toMarkDiscount, type ProductMark} from './product-marks';
 
 /**
  * Pulls the label + banner marks for the WHOLE catalogue in one go, so every
@@ -34,6 +34,14 @@ const QUERY = `query ProductMarks($first: Int!, $after: String) {
       banners { id name imageUrl position }
       priceRange { minVariantPrice { amount currencyCode } }
       compareAtPriceRange { minVariantPrice { amount currencyCode } }
+      discount {
+        name
+        typeValueFormatted
+        hideDiscountPrice
+        countdownOnListing
+        countdownOnDetail
+        endDate
+      }
     }
     pageInfo { hasNextPage endCursor }
   }
@@ -53,6 +61,14 @@ interface RawNode {
   banners: Array<{id: string; name: string | null; imageUrl: string; position: string}> | null;
   priceRange: {minVariantPrice: RawMoney | null} | null;
   compareAtPriceRange: {minVariantPrice: RawMoney | null} | null;
+  discount: {
+    name: string | null;
+    typeValueFormatted: string | null;
+    hideDiscountPrice: boolean | null;
+    countdownOnListing: boolean | null;
+    countdownOnDetail: boolean | null;
+    endDate: string | null;
+  } | null;
 }
 
 let cache: {at: number; data: Record<string, ProductMark>} | null = null;
@@ -105,6 +121,10 @@ export async function fetchProductMarks(
           // from a regular one. That gap is what produced a second 44 % cut.
           price: node.priceRange?.minVariantPrice ?? null,
           compareAtPrice: node.compareAtPriceRange?.minVariantPrice ?? null,
+          // Как търговецът е поискал промоцията да изглежда. Списъчната заявка
+          // го връща (проверено 2026-08-12), значи картата в категорията може да
+          // спазва същите настройки като продуктовата страница.
+          discount: toMarkDiscount(node.discount),
         };
       }
 
