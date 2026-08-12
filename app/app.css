@@ -4901,6 +4901,90 @@ img.pm-banner {
   --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-9.5A3.9 3.9 0 0112 8a3.9 3.9 0 017 2.5C19 15.6 12 20 12 20z'/%3E%3C/svg%3E");
 }
 
+/* ── Доверие: голямото число и текстът до него ──────────────────────────────
+   Две колони: в първата един абзац с класа `stat-big`, във втората заглавие,
+   абзац и списък. Списъкът излиза като белите хапчета - така се добавя ново
+   число, без да се пипа код.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-doverie {
+  background: linear-gradient(135deg, var(--color-pink-1), var(--color-blue-1));
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 50px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+.bb-row-doverie > .bb-bd-col { grid-column: auto; }
+@media (max-width: 880px) {
+  .bb-row-doverie {
+    grid-template-columns: 1fr;
+    row-gap: 24px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+.bb-row-doverie .bb-bd-text { margin: 0; }
+.bb-row-doverie .bb-prose .stat-big {
+  font-family: var(--font-serif);
+  font-size: clamp(70px, 12vw, 160px);
+  font-weight: 500;
+  font-style: italic;
+  line-height: 0.9;
+  letter-spacing: -4px;
+  color: var(--color-brand-pink);
+  margin: 0;
+  white-space: nowrap;
+}
+.bb-row-doverie .bb-prose .stat-big sup {
+  font-size: 0.4em;
+  opacity: 0.7;
+  top: -0.5em;
+}
+.bb-row-doverie .bb-prose h3 {
+  font-family: inherit;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+  color: var(--color-ink);
+  margin: 0 0 14px;
+}
+.bb-row-doverie .bb-prose p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(10, 37, 64, 0.78);
+  max-width: 520px;
+  margin: 0 0 18px;
+}
+/* Списъкът са хапчетата: точката е на самото хапче, затова няма водачи. */
+.bb-row-doverie .bb-prose ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.bb-row-doverie .bb-prose li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.bb-row-doverie .bb-prose li::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--color-brand-pink);
+  flex-shrink: 0;
+}
+
 /* ── Статии от блога: заглавие + блок „Статии" ──────────────────────────────
    Заглавната част е Текст блок вляво и Бутон вдясно; картите са блокът
    „Статии" на панела, който сам взима най-новите статии на блога. Затова
