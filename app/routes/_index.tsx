@@ -94,19 +94,29 @@ export async function loader({context, request}: Route.LoaderArgs) {
 }
 
 /**
- * Композицията от панела, с един повторен опит.
+ * Композицията от панела: три опита, а при провал - последната прочетена.
  *
- * Storefront API-то от време на време връща грешка точно за тази страница -
- * при около една от пет заявки на 2026-08-12. Провалът тук не чупи нищо, но
- * връща КОДИРАНАТА начална, тоест посетителят вижда друга страница, а
- * редакциите на клиента изглеждат сякаш не са се записали. Един повторен опит
- * струва милисекунди и маха почти всички такива случаи.
+ * Storefront API-то от време на време не връща точно тази страница. Провалът
+ * не чупи нищо, но показва КОДИРАНАТА начална - друга страница, при това
+ * изглеждаща като „редакциите ми не са се записали". Измерено на 2026-08-12
+ * с паузи между заявките: една от четири. Само повторните опити не стигат,
+ * защото проблемът трае и през трите.
+ *
+ * Затова последната успешно прочетена композиция се пази за 10 минути и се
+ * ползва, когато четенето падне. Редакция в панела се вижда веднага щом едно
+ * четене мине - кешът покрива само провалите.
  */
+const HOME_PAGE_TTL_MS = 10 * 60 * 1000;
+let lastGoodHomePage: {at: number; handle: string; page: any} | null = null;
+
 async function fetchHomePage(ctx: any, handle: string): Promise<any> {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       const page = await ctx.storefront.getPage(handle);
-      if (page) return page;
+      if (page) {
+        lastGoodHomePage = {at: Date.now(), handle, page};
+        return page;
+      }
     } catch (error) {
       console.warn(
         'home: страницата от панела не се прочете (опит %d) — %s',
@@ -114,6 +124,17 @@ async function fetchHomePage(ctx: any, handle: string): Promise<any> {
         (error as Error).message,
       );
     }
+    // Секунда почивка: същият милисекунден момент обикновено пада пак.
+    if (attempt < 2) await new Promise((done) => setTimeout(done, 150));
+  }
+
+  if (
+    lastGoodHomePage &&
+    lastGoodHomePage.handle === handle &&
+    Date.now() - lastGoodHomePage.at < HOME_PAGE_TTL_MS
+  ) {
+    console.warn('home: показвам последната прочетена композиция');
+    return lastGoodHomePage.page;
   }
   return null;
 }
