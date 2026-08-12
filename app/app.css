@@ -4812,6 +4812,95 @@ img.pm-banner {
   font-size: 13px; opacity: 0.9; margin: 0; max-width: 320px; line-height: 1.5; color: #fff;
 }
 
+/* ── Лентата с гаранции: една колона = едно обещание ────────────────────────
+   В колоната стои един Текст блок с един абзац. Иконата се избира с клас на
+   абзаца (`ico-shield`, `ico-truck`…): рисува се от CSS, за да няма SVG в
+   редактора - редакция на текста през WYSIWYG-а щеше да го изяде рано или
+   късно. Цветът на квадратчето идва от мястото на колоната, така че нова
+   гаранция сама си взима следващия цвят.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-trust {
+  background: #fff;
+  border-bottom: 1px solid rgba(10, 37, 64, 0.1);
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  /* Колоните са четири на ред, а не по ширината, която панелът им дава:
+     четири равни колони са 1.5 дванадесети всяка, а такава ширина в панела
+     няма. Пета гаранция минава на нов ред и си взима следващия цвят. */
+  grid-template-columns: repeat(4, 1fr);
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+  column-gap: 30px;
+}
+@media (max-width: 720px) { .bb-row-trust { padding-left: 20px; padding-right: 20px; } }
+@media (max-width: 880px) { .bb-row-trust { grid-template-columns: 1fr 1fr; row-gap: 20px; } }
+.bb-row-trust > .bb-bd-col { grid-column: auto; display: flex; align-items: center; }
+.bb-row-trust .bb-bd-text { margin: 0; }
+.bb-row-trust .bb-prose p {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 0 6px 58px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--color-ink);
+}
+/* Квадратчето и глифът са два слоя: единият е фонът, другият - формата,
+   изрязана от иконата. Едно псевдо не може да носи и двете. */
+.bb-row-trust .bb-prose p::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: var(--bb-ico-bg, var(--color-pink-1));
+}
+.bb-row-trust .bb-prose p::after {
+  content: "";
+  position: absolute;
+  left: 11px; top: 50%;
+  transform: translateY(-50%);
+  width: 22px; height: 22px;
+  background: var(--bb-ico-fg, var(--color-brand-pink));
+  -webkit-mask: var(--bb-ico) center / contain no-repeat;
+  mask: var(--bb-ico) center / contain no-repeat;
+}
+/* Цветовете се въртят по мястото на колоната. */
+.bb-row-trust > .bb-bd-col:nth-child(4n + 1) .bb-prose p {
+  --bb-ico-bg: var(--color-pink-1); --bb-ico-fg: var(--color-brand-pink);
+}
+.bb-row-trust > .bb-bd-col:nth-child(4n + 2) .bb-prose p {
+  --bb-ico-bg: var(--color-blue-1); --bb-ico-fg: var(--color-brand-blue);
+}
+.bb-row-trust > .bb-bd-col:nth-child(4n + 3) .bb-prose p {
+  --bb-ico-bg: var(--color-cream-3); --bb-ico-fg: var(--color-brand-blue-dark);
+}
+.bb-row-trust > .bb-bd-col:nth-child(4n + 4) .bb-prose p {
+  --bb-ico-bg: var(--color-pink-2); --bb-ico-fg: var(--color-brand-pink-dark);
+}
+/* Иконите. Нова икона = нов ред тук, после класът се дава на абзаца. */
+.ico-shield {
+  --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2l9 4v6c0 5.5-3.5 9.5-9 10-5.5-.5-9-4.5-9-10V6l9-4z'/%3E%3Cpath d='M9 12.5l2 2 4.5-4.5'/%3E%3C/svg%3E");
+}
+.ico-truck {
+  --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='6' width='14' height='12' rx='2'/%3E%3Cpath d='M17 10h3l1.5 3v5h-4.5'/%3E%3Ccircle cx='7' cy='20' r='2'/%3E%3Ccircle cx='17.5' cy='20' r='2'/%3E%3C/svg%3E");
+}
+.ico-lab {
+  --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 4h6l-1 4h-4z'/%3E%3Cpath d='M14 8c2.5 1.5 4 4 4 7v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4c0-3 1.5-5.5 4-7'/%3E%3Cpath d='M10 14h4M10 17h4'/%3E%3C/svg%3E");
+}
+.ico-guarantee {
+  --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3Cpath d='M3.5 9h17M3.5 15h17'/%3E%3Cpath d='M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.5-3.5-9s1-6.5 3.5-9z'/%3E%3C/svg%3E");
+}
+.ico-leaf {
+  --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 4c0 9-5.5 14-13 14H4c0-8 5-13 12-13h4z'/%3E%3Cpath d='M4 20c2-4 5-7 9-9'/%3E%3C/svg%3E");
+}
+.ico-heart {
+  --bb-ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 20s-7-4.4-7-9.5A3.9 3.9 0 0112 8a3.9 3.9 0 017 2.5C19 15.6 12 20 12 20z'/%3E%3C/svg%3E");
+}
+
 /* ── Статии от блога: заглавие + блок „Статии" ──────────────────────────────
    Заглавната част е Текст блок вляво и Бутон вдясно; картите са блокът
    „Статии" на панела, който сам взима най-новите статии на блога. Затова
