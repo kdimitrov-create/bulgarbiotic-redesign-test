@@ -373,11 +373,19 @@ export function PromoBar() {
             line-height: 1.3;
             text-align: left;
           }
-          .bb-promo-track { min-height: 18px; }
+          /* ⚠️ min-width: 0 е задължително и на двете.
+             Пътечката е grid, а grid елемент по подразбиране не се свива под
+             съдържанието си. Затова редът излизаше извън екрана и бутонът
+             „Виж …" се режеше отдясно, вместо дългият текст да се съкрати
+             с многоточие (клиент, снимки от телефон 2026-08-12). */
+          .bb-promo-track { min-height: 18px; min-width: 0; }
           .bb-promo-slide {
             gap: 6px;
             justify-content: flex-start;
             width: 100%;
+            min-width: 0;
+            max-width: 100%;
+            white-space: normal;
           }
           /* On mobile we hide the explicit pill CTA — the whole text becomes
            * tappable via the bare <a>, saving horizontal space so the title
