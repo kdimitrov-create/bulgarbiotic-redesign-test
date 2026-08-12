@@ -21,7 +21,7 @@ const CACHE_TTL_MS = 30 * 1000;
  * оферти и 12 правила за количката днес; таван от сто е близо, а изчезнала
  * оферта не казва нищо за себе си. Виж `admin-api.server.ts`.
  */
-const CROSS_SELL_FIELDS = 'id name status offerTitle activeFrom activeTo discountType freeProducts';
+const CROSS_SELL_FIELDS = 'id name status event offerTitle activeFrom activeTo discountType freeProducts';
 const CART_RULE_FIELDS = 'id name title status statusKey activeFrom activeTo';
 
 function detailQuery(crossSellIds: string[], cartRuleIds: string[]): string {
@@ -42,6 +42,8 @@ interface RawCrossSell {
   id: string;
   name: string;
   status: number;
+  /** Кога се задейства офертата: add_to_cart | cart | checkout | … */
+  event: string | null;
   offerTitle: string | null;
   activeFrom: string | null;
   activeTo: string | null;
@@ -85,9 +87,20 @@ export async function fetchCartOffers(
       }),
     ]);
 
-    const crossSells = allCrossSells.filter(
+    const running = allCrossSells.filter(
       (c) => c.status === 1 && c.freeProducts && isRunning(c.activeFrom, c.activeTo),
     );
+    const crossSells = running.filter((c) => firesOnNitrogen(c.event));
+
+    // Оферта, която платформата няма как да задейства, се пропуска нарочно, но
+    // не мълчаливо: иначе изглежда, че кодът е счупен, а разликата е една
+    // настройка в панела.
+    for (const skipped of running.filter((c) => !firesOnNitrogen(c.event))) {
+      console.warn(
+        `cart-offers: офертата „${skipped.offerTitle || skipped.name}" (№${skipped.id}) е с изполване „${skipped.event}" и не се обявява. ` +
+          `Това е събитие на класическата тема; в Nitrogen смени изполването на „checkout".`,
+      );
+    }
     const cartRules = allCartRules.filter(
       (r) => r.status === 1 && isRunning(r.activeFrom, r.activeTo),
     );
@@ -140,6 +153,31 @@ export async function fetchCartOffers(
     console.error('cart-offers: could not load promotions —', (error as Error).message);
     return cache?.data ?? null;
   }
+}
+
+/**
+ * Ще види ли платформата тази оферта, когато количката стигне до нея.
+ *
+ * `add_to_cart` и `cart` са събития на КЛАСИЧЕСКАТА тема - неин скрипт ги праща
+ * при добавяне и при отваряне на количката. Nitrogen рисува свой DOM и такова
+ * събитие никога не стига до платформата, значи подарък по такава оферта не се
+ * дава. Проверено на живо 2026-08-12 и на двата магазина: с „checkout" редът
+ * идва с `cross_sell_id` и 0,00 €, с „add_to_cart" не идва изобщо.
+ *
+ * Затова офертата не само не работи - тя не бива и да се ОБЯВЯВА. Лентата
+ * „Печелиш хавлия за 0,00 €" върху оферта, която няма да се задейства, е
+ * обещание, което касата не изпълнява.
+ *
+ * Събитията вътре в самата каса минават: там платформата води клиента.
+ */
+const NITROGEN_EVENTS = new Set([
+  'checkout',
+  'checkout_select_payment',
+  'checkout_select_shipping',
+]);
+
+function firesOnNitrogen(event: string | null | undefined): boolean {
+  return NITROGEN_EVENTS.has(String(event ?? ''));
 }
 
 function isRunning(from: string | null, to: string | null): boolean {
