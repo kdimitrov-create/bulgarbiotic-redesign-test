@@ -5053,6 +5053,163 @@ img.pm-banner {
 }
 .bb-row-forms > .bb-bd-col:hover .bb-prose p.who::after { transform: translateX(4px); }
 
+/* Бутонът „Прочети повече" на текст с хоризонтална черта в него. */
+.bb-bd-readmore {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--color-brand-pink);
+  background: none;
+  padding: 8px 14px;
+  border: 1px solid rgba(227, 22, 108, 0.25);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.bb-bd-readmore:hover {
+  background: var(--color-brand-pink);
+  color: #fff;
+  border-color: var(--color-brand-pink);
+}
+.bb-bd-readmore svg { width: 13px; height: 13px; }
+.bb-bd-folded {
+  margin-top: 22px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(10, 37, 64, 0.1);
+}
+
+/* ── Основателят: портрет и разказ ──────────────────────────────────────────
+   Лявата колона е снимката плюс едно етикетче над нея; дясната е един Текст
+   блок с целия разказ. Дългата част стои между двете хоризонтални черти и се
+   разгъва с бутон, а подписът е след втората черта и остава видим.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-founder {
+  position: relative;
+  overflow: hidden;
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: 1fr 1.2fr;
+  align-items: center;
+  column-gap: 70px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+.bb-row-founder > .bb-bd-col { grid-column: auto; position: relative; z-index: 2; }
+@media (max-width: 980px) {
+  .bb-row-founder { grid-template-columns: 1fr; row-gap: 30px; }
+}
+@media (max-width: 720px) { .bb-row-founder { padding-left: 20px; padding-right: 20px; } }
+/* Розовото сияние в ъгъла, както в кодираната секция. */
+.bb-row-founder::before {
+  content: "";
+  position: absolute;
+  top: -10%; right: -10%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, var(--color-pink-1) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+.bb-row-founder .bb-bd-banners { margin: 0; }
+.bb-row-founder .bb-bd-banner,
+.bb-row-founder .bb-bd-banner-link {
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -16px rgba(10, 37, 64, 0.2);
+}
+.bb-row-founder .bb-bd-banner-img { width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
+/* Етикетчето стои върху снимката, затова колоната му е опората. */
+.bb-row-founder .bb-prose .stamp {
+  position: absolute;
+  top: 22px; right: 22px;
+  z-index: 2;
+  margin: 0;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  color: var(--color-ink);
+}
+.bb-row-founder .bb-prose h2 {
+  font-family: inherit;
+  font-size: clamp(30px, 4.4vw, 48px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -1.2px;
+  color: var(--color-ink);
+  margin: 14px 0 18px;
+}
+.bb-row-founder .bb-prose h2 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-brand-pink);
+}
+.bb-row-founder .bb-prose h3 {
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--color-ink);
+  margin: 0 0 14px;
+}
+.bb-row-founder .bb-prose p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(10, 37, 64, 0.78);
+  max-width: 560px;
+  margin: 0 0 22px;
+}
+.bb-row-founder .bb-prose blockquote {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(19px, 2.1vw, 25px);
+  line-height: 1.4;
+  letter-spacing: -0.3px;
+  color: var(--color-ink);
+  max-width: 560px;
+  margin: 0 0 26px;
+  padding-left: 18px;
+  border-left: 3px solid var(--color-brand-pink);
+}
+/* Подписът: кръгчето с инициалите, името и длъжността. */
+.bb-row-founder .bb-prose .sign {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 22px 0 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+.bb-row-founder .bb-prose .sign em {
+  width: 44px; height: 44px;
+  border-radius: 999px;
+  background: var(--color-brand-pink);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.bb-row-founder .bb-prose .sign span {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.6;
+}
+
 /* ── Доверие: голямото число и текстът до него ──────────────────────────────
    Две колони: в първата един абзац с класа `stat-big`, във втората заглавие,
    абзац и списък. Списъкът излиза като белите хапчета - така се добавя ново

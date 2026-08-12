@@ -1,4 +1,4 @@
-import {Fragment, useEffect, useRef} from 'react';
+import {Fragment, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {entries, isOn, listItems, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
@@ -189,6 +189,44 @@ function CodeBlock({html}: {html: string}) {
   }, [html]);
 
   return <div ref={host} className="bb-bd-code" dangerouslySetInnerHTML={{__html: html}} />;
+}
+
+/**
+ * Дълъг текст, който се разгъва - съдържанието идва от панела, поведението от
+ * тук.
+ *
+ * Правилото е видимо в редактора: каквото е между **двете хоризонтални черти**
+ * стои скрито зад „Прочети повече". Една черта означава „оттук нататък скрий".
+ * Без черта блокът е обикновен текст.
+ */
+function FoldedText({html}: {html: string}) {
+  const [open, setOpen] = useState(false);
+  const parts = html.split(/<hr\s*\/?>/i);
+  if (parts.length < 2) {
+    return <div className="bb-bd-text bb-prose" dangerouslySetInnerHTML={{__html: html}} />;
+  }
+  const [head, folded, ...rest] = parts;
+  const tail = rest.join('');
+
+  return (
+    <div className="bb-bd-text bb-prose">
+      <div dangerouslySetInnerHTML={{__html: head}} />
+      <button
+        type="button"
+        className="bb-bd-readmore"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        {open ? 'Скрий' : 'Прочети повече'}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </button>
+      {open && <div className="bb-bd-folded" dangerouslySetInnerHTML={{__html: folded}} />}
+      {tail && <div dangerouslySetInnerHTML={{__html: tail}} />}
+    </div>
+  );
 }
 
 function Banner({block}: {block: BuilderNode}) {
@@ -423,6 +461,8 @@ function renderBlock(
       if (rowHasClass(rowClass, 'bb-row-marquee')) {
         return <Marquee key={idx} items={listItems(html)} />;
       }
+      // Текст с хоризонтална черта в него се разгъва - виж FoldedText.
+      if (/<hr\s*\/?>/i.test(html)) return <FoldedText key={idx} html={html} />;
       return (
         <div key={idx} className="bb-bd-text bb-prose" dangerouslySetInnerHTML={{__html: html}} />
       );
