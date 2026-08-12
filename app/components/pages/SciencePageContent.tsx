@@ -2,6 +2,20 @@ import {Link} from 'react-router';
 
 const MAYER_PHOTO = 'https://cdncloudcart.com/26377/files/image/ea_mayer.jpeg';
 const ENDERS_PHOTO = 'https://cdncloudcart.com/26377/files/image/giulia_enders_2015.jpg';
+/**
+ * Корицата на научния труд до разказа за L. bulgaricus.
+ *
+ * Дотук сочеше `babies-lactobacillus-bulgaricus.png` - това всъщност НЕ е
+ * снимка на щама, а сканирана първа страница на стар обзор („…for the
+ * treatment of diarrhea", Frontiers). Клиентът поиска да се смени с актуалния
+ * (2026-08-12).
+ *
+ * Новият е „Probiotic significance of Lactobacillus strains" (Gut Microbes,
+ * 2024). Корицата е първата му страница, изрисувана локално - CDN-ът раздава
+ * PDF-а, но не и негово изображение.
+ */
+const STUDY_PDF = 'https://cdncloudcart.com/26377/files/doc/gastro-strains-general.pdf?1768999322';
+const STUDY_COVER = '/images/gastro-strains-cover.png';
 const BULGARICUS_IMG = 'https://cdncloudcart.com/26377/files/image/babies-lactobacillus-bulgaricus.png';
 
 // 9 strain icons (real CDN — same set used by the legacy site)
@@ -183,7 +197,13 @@ export function SciencePageContent() {
           </div>
           <div className="bb-sci-bulg-visual">
             <div className="bb-sci-bulg-glow" />
-            <img src={BULGARICUS_IMG} alt="Lactobacillus bulgaricus" loading="lazy" />
+            {/* Корицата отваря самия труд в нов таб - дотук беше няма картинка,
+                а читателят нямаше как да стигне до източника. */}
+            <a href={STUDY_PDF} target="_blank" rel="noopener noreferrer"
+               className="bb-sci-bulg-study" aria-label="Отвори научния труд (PDF)">
+              <img src={STUDY_COVER} alt="Probiotic significance of Lactobacillus strains — Gut Microbes, 2024" loading="lazy" width={657} height={856} />
+              <span className="bb-sci-bulg-study-badge">PDF · Gut Microbes 2024</span>
+            </a>
           </div>
         </div>
       </section>
@@ -770,6 +790,36 @@ export function SciencePageContent() {
           position: relative;
           max-width: 75%; height: auto;
           filter: drop-shadow(0 28px 50px rgba(244, 213, 133, 0.42));
+        }
+
+        /* Корицата на труда е лист хартия, не светеща емблема: правоъгълна
+           сянка вместо златното сияние, и лек ръб, за да се чете като документ. */
+        .bb-sci-bulg-study {
+          position: relative;
+          display: inline-block;
+          text-decoration: none;
+          transition: transform .3s ease;
+        }
+        .bb-sci-bulg-study:hover { transform: translateY(-6px); }
+        .bb-sci-bulg-study:focus-visible {
+          outline: 2px solid #f4d585; outline-offset: 6px; border-radius: 8px;
+        }
+        .bb-sci-bulg-visual .bb-sci-bulg-study img {
+          max-width: min(100%, 320px);
+          max-height: 440px;
+          width: auto; height: auto;
+          border-radius: 4px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+          filter: none;
+        }
+        .bb-sci-bulg-study-badge {
+          position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+          white-space: nowrap;
+          padding: 6px 14px; border-radius: 999px;
+          background: #f4d585; color: #12233f;
+          font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+          box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
         }
 
         /* ──────────────── PROCESS TIMELINE ──────────────── */
