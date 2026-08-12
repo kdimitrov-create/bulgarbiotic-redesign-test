@@ -28,7 +28,14 @@ export function CartOffersStrip({subtotalEur}: {subtotalEur: number}) {
             {gift.earned ? (
               <>
                 <span className="bb-offer-icon" aria-hidden="true">🎁</span>
-                Печелиш <strong>{gift.productTitle}</strong> — добавя се към поръчката
+                Печелиш <strong>{gift.productTitle}</strong>
+                {gift.free ? (
+                  <>
+                    {' '}— добавя се към поръчката за <strong className="accent">0,00 €</strong>
+                  </>
+                ) : (
+                  <> — добавя се към поръчката</>
+                )}
               </>
             ) : (
               <>

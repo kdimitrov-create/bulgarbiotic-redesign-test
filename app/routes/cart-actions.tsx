@@ -1,7 +1,7 @@
 import {redirect, data as routeData} from 'react-router';
 import type {Route} from './+types/cart-actions';
 import {getContext} from '~/lib/context';
-import {reconcileGifts} from '~/lib/cart-gifts.server';
+import {dropOfferGifts} from '~/lib/cart-gifts.server';
 import type {CartData} from '@cloudcart/nitro';
 
 /**
@@ -93,10 +93,11 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   const headers = new Headers();
-  // Подаръкът от кръстосаните оферти влиза и излиза сам, според сумата.
-  // Прави се тук, а не в браузъра, за да важи и когато количката се променя от
-  // няколко места (карта, продуктова страница, колело).
-  cart = await reconcileGifts(cart, ctx.cart);
+  // Подаръкът от кръстосаните оферти НЕ се слага оттук - слага го платформата
+  // при прехвърлянето на количката и само тя може да му напише нулевата цена.
+  // Тук се чистят редовете, които стар билд е добавил, иначе платформата вижда
+  // продукта вече вътре и не подарява нищо. Виж `cart-gifts.server.ts`.
+  cart = await dropOfferGifts(cart, ctx.cart);
 
   if (ctx.session.isPending) {
     headers.set('Set-Cookie', await ctx.session.commit());

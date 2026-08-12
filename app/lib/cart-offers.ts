@@ -27,15 +27,15 @@ export interface GiftOffer {
   /**
    * Офертата дава продукта БЕЗПЛАТНО (`discountType: free_product` в панела).
    *
-   * Класическата тема нулира реда сама. Nitrogen строи количката през
-   * Storefront API-то, което не минава през тази логика, затова редът идваше с
-   * пълната си цена и подаръкът не беше подарък.
+   * Нулирането е работа на платформата: тя слага реда при прехвърлянето на
+   * количката и му пише `cross_sell_id`, а оттам идват 100-те процента. Наш
+   * ред със същия продукт остава с редовната си цена, каквото и да му подадем -
+   * измерено на живо, таблицата е в `cart-gifts.server.ts`.
    */
   free: boolean;
   /**
-   * What the cart actually needs to add. CloudCart's checkout does NOT add the
-   * gift for a cart built through the Storefront API (verified 2026-08-09), so
-   * the storefront puts the line in and takes it out itself.
+   * Вариантът на наградата. Не се добавя - служи, за да разпознаем и махнем
+   * подаръчен ред, останал от по-стар билд, преди количката да иде на касата.
    */
   variantId: string | null;
 }
