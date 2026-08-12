@@ -5082,6 +5082,56 @@ img.pm-banner {
   border-top: 1px solid rgba(10, 37, 64, 0.1);
 }
 
+/* ── ЧЗВ: заглавието вляво, въпросите вдясно ────────────────────────────────
+   Вторият Текст блок се пише като заглавия (въпросите) и текст под тях
+   (отговорите); кодът ги подрежда в акордеона.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-faq {
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: 1fr 1.4fr;
+  align-items: start;
+  column-gap: 60px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+.bb-row-faq > .bb-bd-col { grid-column: auto; }
+@media (max-width: 880px) { .bb-row-faq { grid-template-columns: 1fr; row-gap: 30px; } }
+@media (max-width: 720px) { .bb-row-faq { padding-left: 20px; padding-right: 20px; } }
+.bb-row-faq .bb-bd-text { margin: 0; }
+.bb-row-faq .bb-prose h2 { margin-top: 18px; }
+.bb-row-faq .bb-prose p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(10, 37, 64, 0.7);
+  max-width: 360px;
+  margin: 18px 0 22px;
+}
+/* Връзката „Пиши ни директно" изглежда като хапче, а не като дума в текста. */
+.bb-row-faq .bb-prose .faq-link a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: 1px solid rgba(10, 37, 64, 0.16);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: all 0.18s;
+}
+.bb-row-faq .bb-prose .faq-link a:hover {
+  color: var(--color-brand-pink);
+  border-color: var(--color-brand-pink);
+}
+.bb-row-faq .bb-prose .faq-link a::after {
+  content: "";
+  width: 13px; height: 13px;
+  background: currentColor;
+  -webkit-mask: var(--bb-ico-arrow) center / contain no-repeat;
+  mask: var(--bb-ico-arrow) center / contain no-repeat;
+}
+
 /* ── Долните призиви: една колона = една голяма карта ───────────────────────
    Като плочките: Снимка с линк (тя прави картата кликаема) и Текст блок върху
    нея. Последният абзац с класа `cta-btn` изглежда като бутон.

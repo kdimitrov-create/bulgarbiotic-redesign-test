@@ -11,11 +11,19 @@ import {announceOffer, platformAdd} from '~/lib/platform-cart';
  * картата, без да се вложат две връзки.
  *
  * Слага в количката на магазина, същият път като на продуктовата страница
- * (`app/lib/platform-cart.ts`). Няма ли вариант - листинговата заявка ги маха -
- * води до продуктовата страница, където той се знае. Дотук такава карта
- * пращаше handle-а на нашия сървър, който намираше варианта; количката на
- * платформата приема само вариант, а изпращането на клиента към страницата на
- * продукта е по-честно от мълчалив избор на разновидност вместо него.
+ * (`app/lib/platform-cart.ts`).
+ *
+ * Листинговата заявка не носи `variants`, затова в решетките `merchandiseId`
+ * идва празен и бутонът дотук отваряше продуктовата страница вместо да добавя
+ * (клиент 2026-08-12: „просто да добави продукта, без да отваря детайлната").
+ * Сега вариантът се пита от `/api/variant` в момента на натискането - листингът
+ * не плаща нищо, докато никой не е натиснал.
+ *
+ * Продуктовата страница не минава оттук и не е пипана.
+ *
+ * Едно нещо остава както си беше: продукт с повече от една разновидност пак
+ * води до продуктовата страница. Количката на платформата приема само вариант,
+ * а мълчаливият избор вместо клиента е по-лош от едно кликване повече.
  */
 export function CardBuyButton({
   merchandiseId,
@@ -27,13 +35,34 @@ export function CardBuyButton({
   const [isAdding, setAdding] = useState(false);
   const navigate = useNavigate();
 
+  /**
+   * Вариантът на продукта, ако картата не го е получила.
+   *
+   * Връща `null`, когато няма как да се добави без избор от клиента: продукт с
+   * няколко разновидности, продукт без вариант, или отговор, който не дойде.
+   * И в трите случая правилният ход е продуктовата страница.
+   */
+  async function resolveVariant(): Promise<string | null> {
+    try {
+      const res = await fetch(`/api/variant?handle=${encodeURIComponent(handle)}`);
+      if (!res.ok) return null;
+      const body = (await res.json()) as {variantId?: string | null; variantCount?: number};
+      if (!body.variantId || (body.variantCount ?? 0) > 1) return null;
+      return body.variantId;
+    } catch {
+      return null;
+    }
+  }
+
   async function add() {
-    if (!merchandiseId) {
+    setAdding(true);
+    const variant = merchandiseId ?? (await resolveVariant());
+    if (!variant) {
+      setAdding(false);
       navigate(`/product/${handle}`);
       return;
     }
-    setAdding(true);
-    const result = await platformAdd(merchandiseId, 1);
+    const result = await platformAdd(variant, 1);
     setAdding(false);
     if (!result.ok) {
       announceCartAdd(result.message ?? 'Продуктът не можа да бъде добавен');

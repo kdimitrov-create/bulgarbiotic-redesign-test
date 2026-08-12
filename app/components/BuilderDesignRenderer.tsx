@@ -1,11 +1,12 @@
 import {Fragment, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
-import {entries, isOn, listItems, number, text} from '~/lib/builder-settings';
+import {entries, headingPairs, isOn, listItems, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
 import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
 import {BannerSlider} from '~/components/home/HeroBannerSlider';
 import {BlogCards} from '~/components/home/BlogHighlights';
+import {FaqAccordion} from '~/components/home/FAQ';
 import {Marquee} from '~/components/home/Marquee';
 import {ProductRail} from '~/components/home/ProductRail';
 import {BundlePrice} from '~/components/home/BundleFeature';
@@ -460,6 +461,12 @@ function renderBlock(
       // за него текстът се дублира - нещо, което CSS не може сам.
       if (rowHasClass(rowClass, 'bb-row-marquee')) {
         return <Marquee key={idx} items={listItems(html)} />;
+      }
+      // ЧЗВ: заглавията стават въпроси, текстът под тях - отговори. Списъкът с
+      // въпроси се пише в панела, акордеонът остава в кода.
+      if (rowHasClass(rowClass, 'bb-row-faq')) {
+        const pairs = headingPairs(html);
+        if (pairs.length) return <FaqAccordion key={idx} items={pairs} />;
       }
       // Текст с хоризонтална черта в него се разгъва - виж FoldedText.
       if (/<hr\s*\/?>/i.test(html)) return <FoldedText key={idx} html={html} />;

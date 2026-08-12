@@ -102,14 +102,85 @@ const FAQ_ITEMS: QA[] = [
   },
 ];
 
-export function FAQ() {
+/**
+ * Самият акордеон - изнесен, защото същия го рисува и секцията, сглобена в
+ * панела: там въпросите и отговорите се пишат като заглавия и абзаци, а
+ * поведението (един отворен наведнъж, „Виж още") остава тук.
+ *
+ * Client: show the first 5 questions, then a "Виж още" button reveals the rest.
+ */
+export function FaqAccordion({items, visibleCount = 5}: {items: QA[]; visibleCount?: number}) {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   const [expanded, setExpanded] = useState(false);
-  // Client: show the first 5 questions (through "…подуване на корема и газове?"),
-  // then a "Виж още" button reveals the rest; "Скрий" collapses them again.
-  const VISIBLE_COUNT = 5;
-  const shown = expanded ? FAQ_ITEMS : FAQ_ITEMS.slice(0, VISIBLE_COUNT);
+  if (!items.length) return null;
+  const shown = expanded ? items : items.slice(0, visibleCount);
 
+  return (
+    <div className="bb-faq-list">
+      {shown.map((item, i) => {
+        const isOpen = openIdx === i;
+        return (
+          <div key={item.q} className={`bb-faq-item${isOpen ? ' open' : ''}`}>
+            <button
+              type="button"
+              className="bb-faq-q"
+              aria-expanded={isOpen}
+              onClick={() => setOpenIdx(isOpen ? null : i)}
+            >
+              <span className="bb-faq-q-text">{item.q}</span>
+              <span className="bb-faq-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </span>
+            </button>
+            <div className="bb-faq-a">
+              <div className="bb-faq-a-inner">{item.a}</div>
+            </div>
+          </div>
+        );
+      })}
+
+      {items.length > visibleCount && (
+        <button
+          type="button"
+          className="bb-faq-toggle"
+          aria-expanded={expanded}
+          onClick={() => {
+            const next = !expanded;
+            setExpanded(next);
+            // When collapsing, close an answer that's about to be hidden.
+            if (!next && openIdx !== null && openIdx >= visibleCount) setOpenIdx(null);
+          }}
+        >
+          {expanded ? 'Скрий' : 'Виж още'}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <polyline points={expanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
+          </svg>
+        </button>
+      )}
+
+      <style>{`
+        .bb-faq-toggle {
+          align-self: flex-start;
+          display: inline-flex; align-items: center; gap: 8px;
+          margin-top: 16px;
+          padding: 12px 24px;
+          background: var(--color-brand-pink); color: #fff;
+          border: 0; border-radius: 999px;
+          font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
+          cursor: pointer; transition: background 0.18s, transform 0.12s;
+        }
+        .bb-faq-toggle:hover { background: #c20d59; }
+        .bb-faq-toggle:active { transform: scale(0.98); }
+        .bb-faq-toggle svg { width: 15px; height: 15px; }
+      `}</style>
+    </div>
+  );
+}
+
+export function FAQ() {
   return (
     <section className="bb-faq">
       <div className="bb-container bb-faq-grid reveal">
@@ -131,68 +202,8 @@ export function FAQ() {
           </Link>
         </div>
 
-        <div className="bb-faq-list">
-          {shown.map((item, i) => {
-            const isOpen = openIdx === i;
-            return (
-              <div key={item.q} className={`bb-faq-item${isOpen ? ' open' : ''}`}>
-                <button
-                  type="button"
-                  className="bb-faq-q"
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenIdx(isOpen ? null : i)}
-                >
-                  <span className="bb-faq-q-text">{item.q}</span>
-                  <span className="bb-faq-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                  </span>
-                </button>
-                <div className="bb-faq-a">
-                  <div className="bb-faq-a-inner">{item.a}</div>
-                </div>
-              </div>
-            );
-          })}
-
-          {FAQ_ITEMS.length > VISIBLE_COUNT && (
-            <button
-              type="button"
-              className="bb-faq-toggle"
-              aria-expanded={expanded}
-              onClick={() => {
-                const next = !expanded;
-                setExpanded(next);
-                // When collapsing, close an answer that's about to be hidden.
-                if (!next && openIdx !== null && openIdx >= VISIBLE_COUNT) setOpenIdx(null);
-              }}
-            >
-              {expanded ? 'Скрий' : 'Виж още'}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <polyline points={expanded ? '18 15 12 9 6 15' : '6 9 12 15 18 9'} />
-              </svg>
-            </button>
-          )}
-        </div>
+        <FaqAccordion items={FAQ_ITEMS} />
       </div>
-
-      <style>{`
-        .bb-faq-toggle {
-          align-self: flex-start;
-          display: inline-flex; align-items: center; gap: 8px;
-          margin-top: 16px;
-          padding: 12px 24px;
-          background: var(--color-brand-pink); color: #fff;
-          border: 0; border-radius: 999px;
-          font-family: inherit; font-size: 14px; font-weight: 700; letter-spacing: 0.2px;
-          cursor: pointer; transition: background 0.18s, transform 0.12s;
-        }
-        .bb-faq-toggle:hover { background: #c20d59; }
-        .bb-faq-toggle:active { transform: scale(0.98); }
-        .bb-faq-toggle svg { width: 15px; height: 15px; }
-      `}</style>
     </section>
   );
 }

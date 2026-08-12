@@ -74,6 +74,25 @@ export function listItems(html: string): Array<{label: string; text: string}> {
   return out;
 }
 
+/**
+ * Въпроси и отговори, написани като заглавия и абзаци в един Текст блок.
+ *
+ * Всяко заглавие започва въпрос; всичко до следващото заглавие е отговорът.
+ * Така ЧЗВ се пише в панела по най-очевидния начин, а акордеонът остава код.
+ */
+export function headingPairs(html: string): Array<{q: string; a: string}> {
+  const out: Array<{q: string; a: string}> = [];
+  const parts = html.split(/<h[1-6][^>]*>/i).slice(1);
+  for (const part of parts) {
+    const close = part.search(/<\/h[1-6]>/i);
+    if (close < 0) continue;
+    const q = plain(part.slice(0, close));
+    const a = plain(part.slice(close).replace(/<\/h[1-6]>/i, ''));
+    if (q) out.push({q, a});
+  }
+  return out;
+}
+
 /** Tags out, the entities a panel editor actually writes decoded. */
 function plain(html: string): string {
   return html
