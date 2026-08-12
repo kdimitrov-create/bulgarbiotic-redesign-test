@@ -1,19 +1,18 @@
 import {useEffect} from 'react';
-import {useFetcher, useFetchers} from 'react-router';
-import {CART_ACTION} from '~/lib/cart-action';
+import {CART_CHANGED_EVENT, platformApplyDiscount} from '~/lib/platform-cart';
 
 /**
  * Пази спечелен промо код, докато количката получи първия си продукт.
  *
- * Проверено срещу живото API на 2026-08-09: `updateDiscountCodes` върху ПРАЗНА
- * количка минава без грешка, но кодът не се запазва - добавиш ли после продукт,
- * кодът вече го няма. Колелото на късмета пуска кода веднага след завъртане, а
- * в този момент количката е празна в почти всеки случай. Затова спечеленият код
- * тихо изчезваше.
+ * Проверено срещу живото API на 2026-08-09: прилагане на код върху ПРАЗНА
+ * количка минава без грешка, но не се запазва - добавиш ли после продукт, кодът
+ * вече го няма. Колелото на късмета пуска кода веднага след завъртане, а в този
+ * момент количката е празна в почти всеки случай. Затова спечеленият код тихо
+ * изчезваше.
  *
- * Тук кодът се записва в localStorage и се прилага при първото успешно
- * добавяне. Записът се трие чак когато количката наистина го покаже - ако
- * прилагането се провали, следващото добавяне пробва отново.
+ * Тук кодът се записва в localStorage и се прилага при първото добавяне.
+ * Записът се трие чак когато платформата потвърди, че го е приела - откаже ли,
+ * следващото добавяне пробва отново.
  */
 
 const PENDING_KEY = 'bb-pending-promo';
@@ -42,45 +41,26 @@ function clearPendingPromo() {
   }
 }
 
-function cartHasCode(cart: any, code: string): boolean {
-  return ((cart?.discountCodes ?? []) as Array<{code: string}>).some((d) => d.code === code);
-}
-
 export function PendingPromo() {
-  const fetcher = useFetcher({key: 'bb-pending-promo'});
-  const fetchers = useFetchers();
-
-  // Всяко ЧУЖДО действие към /cart, което е приключило с непразна количка.
-  // Ловим го през fetcher-ите, а не през loader-а, защото отговорът на
-  // действието носи най-пресния вид на количката.
-  const settled = fetchers.find(
-    (f) =>
-      f.key !== 'bb-pending-promo' &&
-      f.formAction === CART_ACTION &&
-      f.state === 'idle' &&
-      ((f.data as any)?.cart?.totalQuantity ?? 0) > 0,
-  );
-  const settledCart = (settled?.data as any)?.cart;
-
+  /**
+   * Дотук се гледаха fetcher-ите към нашия адрес за количката. „Купи" вече
+   * говори направо с количката на магазина и такъв fetcher няма - сигналът е
+   * общият `CART_CHANGED_EVENT`, който всеки бутон изпраща след добавяне.
+   */
   useEffect(() => {
-    if (!settledCart) return;
-    const code = readPendingPromo();
-    if (!code) return;
-    if (cartHasCode(settledCart, code)) {
-      clearPendingPromo();
-      return;
+    let busy = false;
+    async function apply() {
+      if (busy) return;
+      const code = readPendingPromo();
+      if (!code) return;
+      busy = true;
+      const ok = await platformApplyDiscount(code);
+      busy = false;
+      if (ok) clearPendingPromo();
     }
-    if (fetcher.state !== 'idle') return;
-    fetcher.submit({action: 'APPLY_DISCOUNT', code}, {method: 'post', action: CART_ACTION});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settledCart]);
-
-  // Трием записа само след като количката потвърди кода.
-  useEffect(() => {
-    if (fetcher.state !== 'idle' || !fetcher.data) return;
-    const code = readPendingPromo();
-    if (code && cartHasCode((fetcher.data as any)?.cart, code)) clearPendingPromo();
-  }, [fetcher.state, fetcher.data]);
+    window.addEventListener(CART_CHANGED_EVENT, apply);
+    return () => window.removeEventListener(CART_CHANGED_EVENT, apply);
+  }, []);
 
   return null;
 }

@@ -201,6 +201,9 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
             quantity={qty}
             disabled={!variant.availableForSale}
             className="bb-pdp-add"
+            productTitle={product?.title}
+            productHandle={product?.handle}
+            priceEur={price?.eur}
           >
             <span className="bb-pdp-add-inner">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="bb-pdp-add-icon" aria-hidden="true">

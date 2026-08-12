@@ -5,7 +5,7 @@ import {useAside} from './Aside';
 import {SearchOverlay} from './SearchOverlay';
 import {MegaMenu} from './MegaMenu';
 import {productsNode} from '~/lib/navigation';
-import {syncCartToPlatform} from '~/lib/cart-sync';
+import {CART_CHANGED_EVENT, platformCartCount} from '~/lib/platform-cart';
 
 interface HeaderProps {
   shop: Shop;
@@ -57,6 +57,25 @@ export function Header({shop, menu, cart}: HeaderProps) {
   const {open} = useAside();
   const headerRef = useRef<HTMLElement>(null);
   const cartBtnRef = useRef<HTMLButtonElement>(null);
+
+  /* Броят идва от количката на магазина, защото „Купи" вече слага в нея.
+     Чете се в браузъра: сървърът рисува една и съща страница за всички, а
+     количката е на посетителя. Затова първоначално е 0 и се появява веднага
+     след първото четене - иначе кешираната страница щеше да показва чужд брой. */
+  const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const read = async () => {
+      const n = await platformCartCount();
+      if (alive && typeof n === 'number') setCartCount(n);
+    };
+    void read();
+    window.addEventListener(CART_CHANGED_EVENT, read);
+    return () => {
+      alive = false;
+      window.removeEventListener(CART_CHANGED_EVENT, read);
+    };
+  }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
@@ -269,28 +288,13 @@ export function Header({shop, menu, cart}: HeaderProps) {
               ref={cartBtnRef as any}
               href="/cart"
               className="bb-icon-btn bb-icon-cart"
-              onClick={async (e) => {
-                const resolved = await cart;
-                if (!resolved?.checkoutUrl || (resolved?.totalQuantity ?? 0) === 0) return;
-                e.preventDefault();
-                await syncCartToPlatform(resolved.checkoutUrl);
-                window.location.href = '/cart';
-              }}
               aria-label="Количка"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5.5 8h13l-1.2 10.5a1.6 1.6 0 01-1.6 1.5H8.3a1.6 1.6 0 01-1.6-1.5L5.5 8z" />
                 <path d="M9 8a3 3 0 016 0" />
               </svg>
-              <Suspense>
-                <Await resolve={cart}>
-                  {(resolvedCart) =>
-                    resolvedCart && resolvedCart.totalQuantity > 0 ? (
-                      <span className="bb-cart-count">{resolvedCart.totalQuantity}</span>
-                    ) : null
-                  }
-                </Await>
-              </Suspense>
+              {cartCount > 0 && <span className="bb-cart-count">{cartCount}</span>}
             </a>
           </div>
         </div>

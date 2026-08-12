@@ -1,26 +1,47 @@
-import {useFetcher} from 'react-router';
-import {CART_ACTION} from '~/lib/cart-action';
+import {useState} from 'react';
+import {useNavigate} from 'react-router';
+import {announceCartAdd} from '~/lib/cart-sync';
+import {announceOffer, platformAdd} from '~/lib/platform-cart';
 
 /**
- * "Купи" button for product cards — the home carousel AND the category/listing
- * grids share this so they look and behave identically (client request).
+ * „Купи" на продуктова карта - витрината на началната и решетките в категориите
+ * ползват един и същ, за да изглеждат и се държат еднакво.
  *
- * It's always a <button> (never an <a>) so it can sit inside the card's own
- * <Link> without nesting anchors. If the product has a variant id it adds to
- * cart via a fetcher (no <form>) and opens the cart drawer; if the listing
- * query stripped variants, it navigates to the PDP instead.
+ * Винаги е `<button>`, никога `<a>`, за да може да стои вътре в `<Link>`-а на
+ * картата, без да се вложат две връзки.
+ *
+ * Слага в количката на магазина, същият път като на продуктовата страница
+ * (`app/lib/platform-cart.ts`). Няма ли вариант - листинговата заявка ги маха -
+ * води до продуктовата страница, където той се знае. Дотук такава карта
+ * пращаше handle-а на нашия сървър, който намираше варианта; количката на
+ * платформата приема само вариант, а изпращането на клиента към страницата на
+ * продукта е по-честно от мълчалив избор на разновидност вместо него.
  */
 export function CardBuyButton({
   merchandiseId,
-  handle}: {
+  handle,
+}: {
   merchandiseId?: string;
   handle: string;
 }) {
-  const fetcher = useFetcher();
-  const isAdding = fetcher.state !== 'idle';
+  const [isAdding, setAdding] = useState(false);
+  const navigate = useNavigate();
 
-  // Чекмеджето вече не изскача: клиентът остава на страницата и получава
-  // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
+  async function add() {
+    if (!merchandiseId) {
+      navigate(`/product/${handle}`);
+      return;
+    }
+    setAdding(true);
+    const result = await platformAdd(merchandiseId, 1);
+    setAdding(false);
+    if (!result.ok) {
+      announceCartAdd(result.message ?? 'Продуктът не можа да бъде добавен');
+      return;
+    }
+    announceCartAdd();
+    if (result.offer) announceOffer(result.offer);
+  }
 
   return (
     <button
@@ -30,16 +51,7 @@ export function CardBuyButton({
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        // Always ADD to cart (client: the card image/title is for opening the
-        // product; the button adds it). On listing/collection cards the variants
-        // are stripped from the query, so we send the product `handle` instead —
-        // the /cart action resolves its first variant server-side.
-        fetcher.submit(
-          merchandiseId
-            ? {action: 'ADD_TO_CART', merchandiseId, quantity: '1'}
-            : {action: 'ADD_TO_CART', handle, quantity: '1'},
-          {method: 'post', action: CART_ACTION},
-        );
+        void add();
       }}
     >
       {isAdding ? (

@@ -1,87 +1,107 @@
-import {useFetcher} from 'react-router';
-import {useEffect, type ReactNode} from 'react';
+import {useState, type ReactNode} from 'react';
 import {pushEcommerce, idForHandle} from '~/lib/analytics';
-import {CART_ACTION} from '~/lib/cart-action';
+import {announceCartAdd} from '~/lib/cart-sync';
+import {announceOffer, platformAdd} from '~/lib/platform-cart';
 
+/**
+ * „Купи" - слага продукта в количката НА МАГАЗИНА, не в наша отделна.
+ *
+ * Дотук добавянето минаваше през Storefront API-то, а платформата научаваше за
+ * количката наведнъж, при прехвърлянето към касата. Тя виждаше готова количка,
+ * не виждаше добавяне - затова кръстосаните оферти, правилата за количката и
+ * подаръците не се задействаха: те висят на събитието „добави в количката",
+ * което така и не се случваше. Виж `app/lib/platform-cart.ts`.
+ *
+ * Сега заявката отива на `/cart/add` - резервиран път, тоест платформата, но от
+ * нашия домейн. Тя решава всичко останало и връща офертата, ако е сметнала, че
+ * има такава.
+ */
 export function AddToCartButton({
   merchandiseId,
   quantity = 1,
   children = 'Добави в количката',
   className,
   disabled,
+  productTitle,
+  productHandle,
+  priceEur,
 }: {
   merchandiseId: string;
   quantity?: number;
   children?: ReactNode;
   className?: string;
   disabled?: boolean;
+  /** За измерването. Количката на платформата не връща тези полета. */
+  productTitle?: string;
+  productHandle?: string;
+  priceEur?: number;
 }) {
-  const fetcher = useFetcher();
-  const isAdding = fetcher.state !== 'idle';
+  const [isAdding, setAdding] = useState(false);
 
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
-      // Прехвърлянето и потвърждението са централни, виж CartSync.
+  async function add() {
+    setAdding(true);
+    const result = await platformAdd(merchandiseId, quantity);
+    setAdding(false);
 
-      // `add_to_cart` е второто по важност събитие след purchase: от него се
-      // хранят и Google Ads, и Meta аудиториите "заряза количката".
-      // Данните се четат от върнатата количка, за да не се налага всяко място,
-      // което ползва този бутон, да ги подава отделно.
-      const line = ((fetcher.data as any)?.cart?.lines?.nodes ?? []).find(
-        (l: any) => l?.merchandise?.id === merchandiseId,
-      );
-      if (line) {
-        const price = parseFloat(
-          line.cost?.amountPerQuantity?.amount ?? line.merchandise?.price?.amount ?? '0',
-        );
-        pushEcommerce('add_to_cart', {
-          currency:
-            line.cost?.amountPerQuantity?.currencyCode ??
-            line.merchandise?.price?.currencyCode ??
-            'EUR',
-          value: price * quantity,
-          items: [
-            {
-              item_id: idForHandle(line.merchandise?.product?.handle),
-              item_name: line.merchandise?.product?.title ?? '',
-              price,
-              quantity,
-            },
-          ],
-        });
-      }
+    if (!result.ok) {
+      announceCartAdd(result.message ?? 'Продуктът не можа да бъде добавен');
+      return;
     }
-  }, [fetcher.state, fetcher.data, merchandiseId, quantity]);
+
+    announceCartAdd();
+
+    // `add_to_cart` е второто по важност събитие след purchase: от него се
+    // хранят и Google Ads, и Meta аудиториите „заряза количката". Данните идват
+    // от извикващия, защото отговорът на платформата не носи каталожните полета
+    // в нашия вид.
+    if (productHandle) {
+      pushEcommerce('add_to_cart', {
+        currency: 'EUR',
+        value: (priceEur ?? 0) * quantity,
+        items: [
+          {
+            item_id: idForHandle(productHandle),
+            item_name: productTitle ?? '',
+            price: priceEur ?? 0,
+            quantity,
+          },
+        ],
+      });
+    }
+
+    // Платформата предлага оферта само когато условията ѝ са изпълнени.
+    if (result.offer) announceOffer(result.offer);
+  }
 
   return (
-    <fetcher.Form method="post" action={CART_ACTION}>
-      <input type="hidden" name="action" value="ADD_TO_CART" />
-      <input type="hidden" name="merchandiseId" value={merchandiseId} />
-      <input type="hidden" name="quantity" value={quantity} />
-      <button
-        type="submit"
-        className={className}
-        disabled={disabled || isAdding}
-      >
-        {isAdding ? (
-          <span className="inline-flex items-center gap-2">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              className="size-4 animate-spin"
-              aria-hidden="true"
-            >
-              <path d="M12 3a9 9 0 11-6.3 2.6" />
-            </svg>
-            Добавям…
-          </span>
-        ) : (
-          children
-        )}
-      </button>
-    </fetcher.Form>
+    <button
+      type="button"
+      className={className}
+      disabled={disabled || isAdding}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        void add();
+      }}
+    >
+      {isAdding ? (
+        <span className="inline-flex items-center gap-2">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            className="size-4 animate-spin"
+            aria-hidden="true"
+          >
+            <path d="M12 3a9 9 0 11-6.3 2.6" />
+          </svg>
+          Добавям…
+        </span>
+      ) : (
+        children
+      )}
+    </button>
   );
 }
