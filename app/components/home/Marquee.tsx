@@ -1,8 +1,17 @@
-export function Marquee() {
+interface MarqueeItem {
+  label?: string;
+  text: string;
+}
+
+/**
+ * Бягащата лента. Съдържанието може да дойде от списък, написан в панела
+ * (`items`); без него важи списъкът отдолу, с който секцията живее в кода.
+ */
+export function Marquee({items: given}: {items?: MarqueeItem[]} = {}) {
   // Client (2026-07-24): removed "веган"/"растителен" (not accurate → just
   // "DR-Caps™ капсули"), removed free-shipping + made-in-Bulgaria lines; added
   // natural-ingredients / unique-strain-combo / 100%-natural claims.
-  const items = [
+  const fallback = [
     {label: 'НАУКА', text: 'Автентичен Lactobacillus bulgaricus'},
     {label: '', text: '50 милиарда активни бактерии'},
     {label: '', text: 'Уникални комбинации от пробиотични щамове, пребиотик и постбиотик'},
@@ -12,6 +21,7 @@ export function Marquee() {
     {label: '', text: 'Гарантирано 100% натурално'},
     {label: '', text: '30 дни гаранция — връщаме парите'},
   ];
+  const items = given && given.length ? given : fallback;
   // Duplicate for seamless infinite scroll
   const all = [...items, ...items];
   return (

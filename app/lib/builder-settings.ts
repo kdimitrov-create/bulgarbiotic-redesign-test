@@ -54,6 +54,44 @@ export function entries(value: unknown): BuilderEntry[] {
   return [];
 }
 
+/**
+ * The `<li>`s of a Текст block, as plain text.
+ *
+ * Sections whose content is a list but whose behaviour is code — the running
+ * band, for one — let the merchant type an ordinary list in the panel and read
+ * it back here. A leading `<strong>` is kept apart, because that is what the
+ * band draws as a badge instead of a dot.
+ */
+export function listItems(html: string): Array<{label: string; text: string}> {
+  const out: Array<{label: string; text: string}> = [];
+  for (const match of html.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)) {
+    const item = match[1];
+    const strong = item.match(/<(?:strong|b)[^>]*>([\s\S]*?)<\/(?:strong|b)>/i);
+    const label = strong ? plain(strong[1]) : '';
+    const rest = plain(strong ? item.replace(strong[0], ' ') : item);
+    if (rest) out.push({label, text: rest});
+  }
+  return out;
+}
+
+/** Tags out, the entities a panel editor actually writes decoded. */
+function plain(html: string): string {
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&rarr;/g, '→')
+    .replace(/&euro;/g, '€')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function isRecord(v: unknown): boolean {
   return typeof v === 'object' && v !== null && !Array.isArray(v);
 }

@@ -1,11 +1,12 @@
 import {Fragment, useEffect, useRef} from 'react';
 import {Link} from 'react-router';
-import {entries, isOn, number, text} from '~/lib/builder-settings';
+import {entries, isOn, listItems, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
 import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
 import {BannerSlider} from '~/components/home/HeroBannerSlider';
 import {BlogCards} from '~/components/home/BlogHighlights';
+import {Marquee} from '~/components/home/Marquee';
 import {ProductRail} from '~/components/home/ProductRail';
 import {BundlePrice} from '~/components/home/BundleFeature';
 import {
@@ -416,6 +417,12 @@ function renderBlock(
     case 'text': {
       const html = text(settings.text);
       if (!html) return null;
+      // Бягащата лента е списък в панела и движение в кода: съдържанието се
+      // пише като обикновен списък, а безкрайното въртене остава тук, защото
+      // за него текстът се дублира - нещо, което CSS не може сам.
+      if (rowHasClass(rowClass, 'bb-row-marquee')) {
+        return <Marquee key={idx} items={listItems(html)} />;
+      }
       return (
         <div key={idx} className="bb-bd-text bb-prose" dangerouslySetInnerHTML={{__html: html}} />
       );
