@@ -5082,6 +5082,132 @@ img.pm-banner {
   border-top: 1px solid rgba(10, 37, 64, 0.1);
 }
 
+/* ── Долните призиви: една колона = една голяма карта ───────────────────────
+   Като плочките: Снимка с линк (тя прави картата кликаема) и Текст блок върху
+   нея. Последният абзац с класа `cta-btn` изглежда като бутон.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-ctas {
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: 1fr 1fr;
+  column-gap: 18px;
+  row-gap: 18px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+@media (max-width: 880px) {
+  .bb-row-ctas { grid-template-columns: 1fr; column-gap: 14px; row-gap: 14px;
+                 padding-left: 16px; padding-right: 16px; }
+}
+.bb-row-ctas > .bb-bd-col {
+  grid-column: auto;
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 26px;
+  overflow: hidden;
+  color: #fff;
+  transition: transform 0.4s ease;
+}
+.bb-row-ctas > .bb-bd-col:hover { transform: translateY(-6px); }
+.bb-row-ctas .bb-bd-banners,
+.bb-row-ctas .bb-bd-banner,
+.bb-row-ctas .bb-bd-banner-link { position: absolute; inset: 0; display: block; margin: 0; }
+.bb-row-ctas .bb-bd-banner-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+  transition: transform 0.7s ease;
+}
+.bb-row-ctas > .bb-bd-col:hover .bb-bd-banner-img { transform: scale(1.05); }
+.bb-row-ctas .bb-bd-banner-link::after { content: ""; position: absolute; inset: 0; z-index: 3; }
+.bb-row-ctas .bb-bd-text {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(180deg, transparent 30%, rgba(10, 37, 64, 0.85) 100%);
+}
+.bb-row-ctas .bb-prose .cta-tag {
+  display: inline-block;
+  width: max-content;
+  margin: 0 0 16px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  color: #fff;
+}
+.bb-row-ctas .bb-prose h3 {
+  font-family: inherit;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -1px;
+  color: #fff;
+  margin: 0 0 16px;
+}
+.bb-row-ctas .bb-prose h3 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-pink-3);
+}
+.bb-row-ctas .bb-prose p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #fff;
+  opacity: 0.85;
+  max-width: 380px;
+  margin: 0 0 22px;
+}
+.bb-row-ctas .bb-prose .cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  margin: 0;
+  padding: 13px 24px;
+  background: var(--color-cream-1);
+  color: var(--color-ink);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  opacity: 1;
+  transition: all 0.2s;
+}
+.bb-row-ctas .bb-prose .cta-btn::after {
+  content: "";
+  width: 13px; height: 13px;
+  background: currentColor;
+  transition: transform 0.3s;
+  -webkit-mask: var(--bb-ico-arrow) center / contain no-repeat;
+  mask: var(--bb-ico-arrow) center / contain no-repeat;
+}
+.bb-row-ctas > .bb-bd-col:hover .bb-prose .cta-btn { background: var(--color-brand-pink); color: #fff; }
+.bb-row-ctas > .bb-bd-col:hover .bb-prose .cta-btn::after { transform: translateX(3px); }
+/* Телефон: изправен кадър и по-плътно було, за да се чете всяка дума. */
+@media (max-width: 720px) {
+  .bb-row-ctas > .bb-bd-col { aspect-ratio: 4 / 5; border-radius: 20px; }
+  .bb-row-ctas .bb-bd-text {
+    padding: 22px 22px 24px;
+    justify-content: space-between;
+    background: linear-gradient(180deg,
+      rgba(10, 37, 64, 0.35) 0%,
+      rgba(10, 37, 64, 0.05) 35%,
+      rgba(10, 37, 64, 0.45) 60%,
+      rgba(10, 37, 64, 0.92) 100%);
+  }
+  .bb-row-ctas .bb-prose .cta-tag { margin-bottom: 0; font-size: 10px; padding: 4px 10px; letter-spacing: 1.2px; }
+  .bb-row-ctas .bb-prose h3 { margin-top: auto; font-size: 26px; letter-spacing: -0.6px; margin-bottom: 10px; }
+  .bb-row-ctas .bb-prose p { font-size: 13px; opacity: 1; margin-bottom: 16px; max-width: none; }
+  .bb-row-ctas .bb-prose .cta-btn { padding: 11px 20px; font-size: 12.5px; }
+}
+
 /* ── Българска традиция: снимка на целия ред и текст върху нея ──────────────
    Снимката е фон на реда и се сменя от панела (Ред » Фон » Снимка). Тук стои
    само булото върху нея и центрирането на съдържанието.
