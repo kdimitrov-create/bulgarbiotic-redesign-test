@@ -5082,6 +5082,131 @@ img.pm-banner {
   border-top: 1px solid rgba(10, 37, 64, 0.1);
 }
 
+/* ── Медиите: една колона = едно издание ────────────────────────────────────
+   Първата колона е надсловът, последната е връзката отдолу - и двете се
+   разпъват по цялата ширина. Между тях всяка колона е по едно издание.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-press {
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: repeat(4, 1fr);
+  align-items: stretch;
+  column-gap: 14px;
+  row-gap: 14px;
+  border-top: 1px solid rgba(10, 37, 64, 0.06);
+  border-bottom: 1px solid rgba(10, 37, 64, 0.06);
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+@media (max-width: 880px) { .bb-row-press { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) {
+  .bb-row-press { grid-template-columns: repeat(2, 1fr); padding-left: 22px; padding-right: 22px; }
+}
+.bb-row-press > .bb-bd-col {
+  grid-column: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 84px;
+  padding: 18px 16px;
+  background: #fff;
+  border: 1px solid rgba(10, 37, 64, 0.08);
+  border-radius: 14px;
+  text-align: center;
+  transition: all 0.2s;
+}
+.bb-row-press > .bb-bd-col:hover {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-cream-1);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -12px rgba(10, 37, 64, 0.25);
+}
+/* Надсловът и връзката отдолу не са картички - те носят реда. */
+.bb-row-press > .bb-bd-col:first-child,
+.bb-row-press > .bb-bd-col:last-child {
+  grid-column: 1 / -1;
+  display: block;
+  min-height: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  box-shadow: none;
+  color: inherit;
+}
+.bb-row-press > .bb-bd-col:first-child { margin-bottom: 14px; }
+.bb-row-press > .bb-bd-col:last-child { margin-top: 8px; }
+.bb-row-press .bb-bd-text { margin: 0; }
+.bb-row-press .bb-prose .press-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: rgba(10, 37, 64, 0.4);
+}
+.bb-row-press .bb-prose .press-head strong {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: rgba(10, 37, 64, 0.55);
+}
+.bb-row-press .bb-prose .outlet {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1;
+  color: inherit;
+}
+.bb-row-press .bb-prose .outlet.serif {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.bb-row-press .bb-prose .outlet a { color: inherit; text-decoration: none; }
+/* Връзката в изданието прави цялата картичка кликаема. */
+.bb-row-press .bb-prose .outlet a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.bb-row-press .bb-prose .outlet span {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-sans, inherit);
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.bb-row-press .bb-prose .press-cta {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(10, 37, 64, 0.6);
+}
+.bb-row-press .bb-prose .press-cta a {
+  color: var(--color-brand-pink);
+  text-decoration: none;
+  letter-spacing: 0.2px;
+}
+.bb-row-press .bb-prose .press-cta a:hover { text-decoration: underline; }
+
 /* ── Основателят: портрет и разказ ──────────────────────────────────────────
    Лявата колона е снимката плюс едно етикетче над нея; дясната е един Текст
    блок с целия разказ. Дългата част стои между двете хоризонтални черти и се
