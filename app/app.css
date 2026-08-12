@@ -4812,6 +4812,74 @@ img.pm-banner {
   font-size: 13px; opacity: 0.9; margin: 0; max-width: 320px; line-height: 1.5; color: #fff;
 }
 
+/* ── Статии от блога: заглавие + блок „Статии" ──────────────────────────────
+   Заглавната част е Текст блок вляво и Бутон вдясно; картите са блокът
+   „Статии" на панела, който сам взима най-новите статии на блога. Затова
+   секцията се обновява без намеса - публикувана статия влиза в началната
+   страница сама.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-bloghead,
+.bb-row-blog { --bb-row-gutter: max(0px, (100% - 1380px) / 2); }
+.bb-row-bloghead {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  column-gap: 32px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+.bb-row-bloghead > .bb-bd-col { grid-column: auto; }
+@media (max-width: 880px) {
+  .bb-row-bloghead {
+    grid-template-columns: 1fr;
+    row-gap: 18px;
+    text-align: center;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
+.bb-row-bloghead .bb-prose p {
+  margin: 14px 0 0;
+  font-size: 15px;
+  color: rgba(10, 37, 64, 0.7);
+  line-height: 1.65;
+  max-width: 520px;
+}
+@media (max-width: 880px) {
+  .bb-row-bloghead .bb-prose p { margin-left: auto; margin-right: auto; }
+  .bb-row-bloghead .section-tag { justify-content: center; }
+  .bb-row-bloghead .bb-bd-buttons { justify-content: center; }
+}
+/* Бутонът на панела носи вида на „Виж всички статии" от кодираната секция. */
+.bb-row-bloghead .bb-bd-buttons { margin: 0; }
+.bb-row-bloghead .bb-bd-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #fff;
+  border: 1px solid rgba(10, 37, 64, 0.12);
+  border-radius: 999px;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  transition: all 0.18s;
+}
+.bb-row-bloghead .bb-bd-button:hover {
+  background: var(--color-ink);
+  color: var(--color-cream-1);
+  border-color: var(--color-ink);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+/* Картите носят собствените си стилове - тук остава само ширината на реда,
+   защото решетката вътре вече слага своите 36px. */
+.bb-row-blog {
+  padding-left: var(--bb-row-gutter);
+  padding-right: var(--bb-row-gutter);
+}
+
 /* Продуктовата снимка стои, докато дясната колона се движи покрай нея.
    Sticky е върху ЛЯВАТА колона нарочно: така снимката остава пред очите, а
    името, цената, бутонът и ползите се изнасят нагоре. Снимката се откача сама

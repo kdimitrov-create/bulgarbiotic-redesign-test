@@ -5,6 +5,7 @@ import {readMarker, renderMarker, type SectionData} from '~/components/home/Sect
 import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
 import {BannerSlider} from '~/components/home/HeroBannerSlider';
+import {BlogCards} from '~/components/home/BlogHighlights';
 import {ProductRail} from '~/components/home/ProductRail';
 import {BundlePrice} from '~/components/home/BundleFeature';
 import {
@@ -138,6 +139,17 @@ function rowClasses(node: BuilderNode): string {
   if (own) classes.push(own.trim());
 
   return classes.join(' ');
+}
+
+/**
+ * Does the row carry exactly this class?
+ *
+ * `includes` would be enough today and wrong tomorrow: `bb-row-bloghead`
+ * contains `bb-row-blog`, so a substring test makes the head row answer for the
+ * cards row.
+ */
+function rowHasClass(rowClass: string, name: string): boolean {
+  return rowClass.split(/\s+/).includes(name);
 }
 
 function colSpan(width: string | undefined): string {
@@ -331,13 +343,28 @@ function Carousel({block}: {block: BuilderNode}) {
 }
 
 /** Recent blog articles. */
-function Articles({block, data}: {block: BuilderNode; data: BuilderData}) {
+function Articles({
+  block,
+  data,
+  rowClass,
+}: {
+  block: BuilderNode;
+  data: BuilderData;
+  rowClass: string;
+}) {
   const settings = block.settings ?? {};
   const count = Math.max(1, Math.min(12, number(settings.count) ?? 3));
   const list = data.articles.slice(0, count);
   if (!list.length) return null;
   const perRow = Math.max(1, Math.min(4, number(settings.per_row) ?? 3));
   const title = text(settings.title);
+
+  // In a row the merchant marked as the blog section, the same cards the coded
+  // homepage draws — cover, rubric, excerpt, „Прочети“ — instead of the plain
+  // list a generic page gets.
+  if (rowHasClass(rowClass, 'bb-row-blog')) {
+    return <BlogCards articles={list as any} perRow={perRow} />;
+  }
 
   return (
     <div className="bb-bd-articles">
@@ -415,14 +442,14 @@ function renderBlock(
     case 'bundle-products':
       // "Пакет на месеца" is one product shown as a feature, not as a card:
       // the row says so, the block only says which product.
-      if (rowClass.includes('bb-row-bundle')) {
+      if (rowHasClass(rowClass, 'bb-row-bundle')) {
         return <BundlePick key={idx} block={block} data={data} />;
       }
       return <Showcase key={idx} block={block} data={data} />;
     case 'carousel':
       return <Carousel key={idx} block={block} />;
     case 'recent-articles':
-      return <Articles key={idx} block={block} data={data} />;
+      return <Articles key={idx} block={block} data={data} rowClass={rowClass} />;
     case 'button':
       return <Buttons key={idx} block={block} />;
     case 'separator': {

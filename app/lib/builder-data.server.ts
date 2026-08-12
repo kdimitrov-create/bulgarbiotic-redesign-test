@@ -1,5 +1,7 @@
 import {number} from './builder-settings';
 import {enhanceProducts} from '~/lib/product-images';
+import {enhanceArticleImages, setArticleImages} from '~/lib/article-images';
+import {fetchArticleImages} from '~/lib/blog-images.server';
 import {primaryBlogHandle} from '~/lib/blog.server';
 
 /**
@@ -77,14 +79,21 @@ export async function fetchBuilderData(
   const wantsProducts = needs.productIds.size > 0 || needs.poolSize > 0;
   if (!wantsProducts && !needs.articleCount) return EMPTY_BUILDER_DATA;
 
-  const [picked, pool, articles] = await Promise.all([
+  const [picked, pool, articles, articleImages] = await Promise.all([
     needs.productIds.size ? fetchByIds(env, [...needs.productIds]) : Promise.resolve([]),
     needs.poolSize ? storefront.getProducts(needs.poolSize).catch(() => []) : Promise.resolve([]),
+    // The API returns the blog in its own order, not by date — the whole blog
+    // comes back and the newest are taken here, the same way the blog listing
+    // does it. Asking it for three would have given three arbitrary articles.
     needs.articleCount
       ? primaryBlogHandle(storefront)
-          .then((h) => storefront.getArticles(h, needs.articleCount))
+          .then((h) => storefront.getArticles(h, ARTICLE_POOL))
           .catch(() => [])
       : Promise.resolve([]),
+    // Covers live in the admin: the Storefront API hands back an empty
+    // `image.url` for every article, so a block built in the panel would show
+    // three blank frames without this.
+    needs.articleCount ? fetchArticleImages(env) : Promise.resolve(null),
   ]);
 
   const productsById: Record<string, any> = {};
@@ -95,12 +104,26 @@ export async function fetchBuilderData(
     if (id) productsById[id] = product;
   }
 
+  setArticleImages(articleImages);
+  const newestFirst = [...normaliseList(articles)].sort((a, b) => {
+    // An article with no date goes last instead of jumping to the top.
+    const ta = a?.publishedAt ? Date.parse(a.publishedAt) : 0;
+    const tb = b?.publishedAt ? Date.parse(b.publishedAt) : 0;
+    return tb - ta;
+  });
+
   return {
     productsById,
     productPool: enhanceProducts(normaliseList(pool) as any),
-    articles: normaliseList(articles),
+    articles: enhanceArticleImages(newestFirst.slice(0, needs.articleCount), {
+      width: 800,
+      height: 600,
+    }),
   };
 }
+
+/** One request covers the blog; the merchant's `count` picks from the newest. */
+const ARTICLE_POOL = 100;
 
 // Every money field carries its currency: `Money` throws without one, and a
 // single missing `currencyCode` on a struck-through price took the whole page

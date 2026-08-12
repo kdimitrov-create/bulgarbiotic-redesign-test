@@ -65,42 +65,7 @@ export function BlogHighlights({articles}: Props) {
           </Link>
         </div>
 
-        <div className="bb-blog-grid bb-mobile-slider">
-          {articles.map((a) => (
-            <Link
-              key={a.id}
-              to={`/article/${a.handle}`}
-              className="bb-blog-card"
-              prefetch="intent"
-            >
-              <div className="bb-blog-img">
-                {a.image?.url ? (
-                  <Image data={a.image} alt={a.title} />
-                ) : (
-                  <div className="bb-blog-img-fallback" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
-                      <path d="M4 5h16v14H4z" />
-                      <path d="M4 15l5-5 4 4 3-3 4 4" />
-                      <circle cx="9" cy="9" r="1.4" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <div className="bb-blog-body">
-                <span className="bb-blog-tag">{categoryFor(a.handle)}</span>
-                <h3 className="bb-blog-title">{a.title}</h3>
-                <p className="bb-blog-excerpt">{previewText(a.excerpt || '')}</p>
-                <span className="bb-blog-readmore">
-                  Прочети
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <BlogCards articles={articles} />
       </div>
 
       <style>{`
@@ -159,10 +124,65 @@ export function BlogHighlights({articles}: Props) {
           transform: translateY(-1px);
         }
         .bb-blog-allcta svg { width: 14px; height: 14px; }
+      `}</style>
+    </section>
+  );
+}
 
+/**
+ * Самите карти - изнесени, защото същите ги рисува и блокът „Статии" от
+ * конструктора. Стиловете пътуват с компонента, за да изглежда еднакво и
+ * когато секцията е сглобена в панела, а не в кода.
+ */
+export function BlogCards({articles, perRow = 3}: {articles: Article[]; perRow?: number}) {
+  if (!articles || articles.length === 0) return null;
+
+  return (
+    <>
+      <div
+        className="bb-blog-grid bb-mobile-slider"
+        style={{'--bb-blog-per-row': perRow} as React.CSSProperties}
+      >
+        {articles.map((a) => (
+          <Link
+            key={a.id ?? a.handle}
+            to={`/article/${a.handle}`}
+            className="bb-blog-card"
+            prefetch="intent"
+          >
+            <div className="bb-blog-img">
+              {a.image?.url ? (
+                <Image data={a.image} alt={a.title} />
+              ) : (
+                <div className="bb-blog-img-fallback" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+                    <path d="M4 5h16v14H4z" />
+                    <path d="M4 15l5-5 4 4 3-3 4 4" />
+                    <circle cx="9" cy="9" r="1.4" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="bb-blog-body">
+              <span className="bb-blog-tag">{categoryFor(a.handle)}</span>
+              <h3 className="bb-blog-title">{a.title}</h3>
+              <p className="bb-blog-excerpt">{previewText(a.excerpt || '')}</p>
+              <span className="bb-blog-readmore">
+                Прочети
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <style>{`
         .bb-blog-grid {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(var(--bb-blog-per-row, 3), 1fr);
           gap: 28px;
           padding: 0 36px;
         }
@@ -271,6 +291,6 @@ export function BlogHighlights({articles}: Props) {
           transform: translateX(3px);
         }
       `}</style>
-    </section>
+    </>
   );
 }
