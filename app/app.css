@@ -5371,6 +5371,47 @@ img.pm-banner {
   object-fit: contain;
   box-shadow: none;
 }
+/* Лентата с номера и стикерите със съставките стоят върху сцената: пишат се
+   като абзаци в колоната на снимката, затова се сменят от панела. */
+.bb-row-founder.bb-bty > .bb-bd-col { position: relative; }
+.bb-row-founder.bb-bty .bb-prose .ribbon {
+  position: absolute;
+  top: 24px; left: 24px;
+  z-index: 2;
+  margin: 0;
+  padding: 6px 14px;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--color-brand-pink);
+  box-shadow: 0 8px 18px -4px rgba(10, 37, 64, 0.2);
+}
+.bb-row-founder.bb-bty .bb-prose .stickers {
+  position: absolute;
+  bottom: -20px; right: -16px;
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  white-space: nowrap;
+  margin: 0;
+}
+.bb-row-founder.bb-bty .bb-prose .stickers span {
+  padding: 7px 14px;
+  background: #fff;
+  border: 1px solid rgba(10, 37, 64, 0.08);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-ink);
+  box-shadow: 0 10px 22px -10px rgba(10, 37, 64, 0.25);
+}
+@media (max-width: 420px) {
+  .bb-row-founder.bb-bty .bb-prose .stickers span { padding: 5px 10px; font-size: 11.5px; }
+  .bb-row-founder.bb-bty .bb-prose .stickers { gap: 4px; right: 0; }
+}
 .bb-row-founder.bb-bty .bb-prose h2 {
   font-family: var(--font-serif);
   font-weight: 400;
