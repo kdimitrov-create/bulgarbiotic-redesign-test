@@ -23,6 +23,18 @@
  * ли се служебният домейн, бисквитката отпада и количката се губи.
  */
 
+/**
+ * ⚠️ Всичко тук зависи от това `/cart/*` да е РЕЗЕРВИРАН път в диспечера на
+ * Nova. Това е настройка на платформата, не наша, и се мени без да ни пита:
+ * на 2026-08-13 сутринта беше резервиран и кръстосаните оферти работеха, а
+ * следобед вече не беше - `/cart/add` идваше при нашия worker и връщаше 404,
+ * тоест бутонът „Купи" тихо спираше да добавя.
+ *
+ * Затова всяка функция тук връща „не мога", вместо да гадае, а извикващият
+ * пада обратно на Storefront API-то (`CART_ACTION`). Магазинът продължава да
+ * продава; губи се само кръстосаната оферта, докато пътят се върне.
+ */
+
 /** Пътищата на платформата. Държат се тук, за да не се разпилеят из кода. */
 const ADD = '/cart/add';
 const COMPACT = '/cart/compact';
@@ -30,6 +42,8 @@ const COMPACT = '/cart/compact';
 const TOKEN_SOURCE = '/cart';
 /** Промо кодът се прилага от платформата, не от Storefront API-то. */
 const DISCOUNT = '/checkout/discount-code';
+/** Нашият адрес за действия с количката - резервният път. */
+const CART_ACTION = '/cart-actions';
 
 /** Съобщение, че количката се е променила. Броячът в хедъра слуша за него. */
 export const CART_CHANGED_EVENT = 'bb:cart-changed';
@@ -51,6 +65,34 @@ export interface PlatformAddResult {
   message: string | null;
   /** Офертата, която платформата предлага след това добавяне, ако има такава. */
   offer: CrossSellOffer | null;
+}
+
+/**
+ * Добавяне през Storefront API-то - пътят, по който магазинът работеше преди
+ * количката да мине на платформата.
+ *
+ * Ползва се само когато платформената количка е недостъпна. Кръстосаните оферти
+ * не се задействат по него, но продуктът влиза в количката, а това е разликата
+ * между работещ и мъртъв бутон.
+ */
+async function storefrontAdd(variantGid: string, quantity: number): Promise<boolean> {
+  try {
+    const res = await fetch(CART_ACTION, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+      body: new URLSearchParams({
+        action: 'ADD_TO_CART',
+        merchandiseId: variantGid,
+        quantity: String(quantity),
+      }).toString(),
+    });
+    if (!res.ok) return false;
+    const data = (await res.json().catch(() => null)) as any;
+    return !!data?.cart;
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -146,14 +188,22 @@ export async function platformAdd(
       forgetToken();
       data = await postForm({variant_id: variant, quantity: String(quantity)});
     }
-    if (!data) return {ok: false, message: 'Количката не отговори', offer: null};
+    if (!data) {
+      // Количката на платформата е недостъпна - най-често защото `/cart/*` не е
+      // резервиран в момента. Продуктът влиза по стария път.
+      const ok = await storefrontAdd(variantIdOrGid, quantity);
+      if (ok) notifyCartChanged();
+      return {ok, message: ok ? null : 'Количката не отговори', offer: null};
+    }
     if (data.status === 'error') {
       return {ok: false, message: readError(data), offer: null};
     }
     notifyCartChanged();
     return {ok: true, message: null, offer: readOffer(data)};
   } catch (error) {
-    return {ok: false, message: (error as Error).message, offer: null};
+    const ok = await storefrontAdd(variantIdOrGid, quantity);
+    if (ok) notifyCartChanged();
+    return {ok, message: ok ? null : (error as Error).message, offer: null};
   }
 }
 

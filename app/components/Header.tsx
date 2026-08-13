@@ -66,8 +66,16 @@ export function Header({shop, menu, cart}: HeaderProps) {
   useEffect(() => {
     let alive = true;
     const read = async () => {
+      // Първо количката на магазина. Върне ли `null`, тя е недостъпна - най-често
+      // защото `/cart/*` не е резервиран в момента - и броят идва от нашата.
       const n = await platformCartCount();
-      if (alive && typeof n === 'number') setCartCount(n);
+      if (!alive) return;
+      if (typeof n === 'number') {
+        setCartCount(n);
+        return;
+      }
+      const own = await cart.catch(() => null);
+      if (alive && own) setCartCount(own.totalQuantity ?? 0);
     };
     void read();
     window.addEventListener(CART_CHANGED_EVENT, read);
@@ -75,6 +83,7 @@ export function Header({shop, menu, cart}: HeaderProps) {
       alive = false;
       window.removeEventListener(CART_CHANGED_EVENT, read);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
