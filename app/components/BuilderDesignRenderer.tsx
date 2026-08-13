@@ -62,6 +62,11 @@ interface Props {
   sections?: SectionData;
   /** Catalogue data the route loaded for the showcase and article blocks. */
   data?: BuilderData;
+  /**
+   * Вдига първото заглавие до H1. Включва се на началната, защото тя няма
+   * друго заглавие от първо ниво; целевите страници си имат свое.
+   */
+  firstHeadingIsH1?: boolean;
 }
 
 /** Blocks that are recognised but wait on data we do not load yet. */
@@ -650,11 +655,55 @@ export function parseBuilderDesign(body: string | null | undefined): BuilderNode
   }
 }
 
-export function BuilderDesignRenderer({design, sections, data}: Props) {
+/**
+ * Първото заглавие на сглобената страница става H1.
+ *
+ * ⚠️ Началната нямаше H1 - нито едно заглавие от първо ниво на най-важния
+ * адрес на магазина. Причината не е в кода: заглавието „Здравето започва в
+ * микробиома" се пише в панела, в текстов блок на конструктора, и мърчантът
+ * съвсем естествено го е сложил като H2. Тоест колкото и да се пипа
+ * компонентът, страницата пак излизаше без H1.
+ *
+ * Затова повишението става тук, върху дървото, преди рисуването - така H1-ът
+ * е в HTML-а, който получава търсачката, а не се дописва после в браузъра.
+ * Пипа се САМО първото срещнато заглавие и само нивото на тага: класът остава,
+ * значи на екрана нищо не помръдва. Панелът може да се пренаписва свободно -
+ * следващият текст пак ще получи своя H1.
+ */
+function promoteFirstHeadingToH1(node: BuilderNode, done: {yes: boolean}): BuilderNode {
+  if (done.yes || !node) return node;
+
+  if (node.settings) {
+    for (const [key, value] of Object.entries(node.settings)) {
+      if (done.yes || typeof value !== 'string') continue;
+      const open = value.search(/<h2\b/i);
+      if (open === -1) continue;
+      const close = value.toLowerCase().indexOf('</h2>', open);
+      if (close === -1) continue;
+      done.yes = true;
+      const patched =
+        value.slice(0, open) +
+        value.slice(open, close).replace(/^<h2\b/i, '<h1') +
+        '</h1>' +
+        value.slice(close + '</h2>'.length);
+      node = {...node, settings: {...node.settings, [key]: patched}};
+      break;
+    }
+  }
+
+  if (node.children?.length) {
+    node = {...node, children: node.children.map((c) => promoteFirstHeadingToH1(c, done))};
+  }
+  return node;
+}
+
+export function BuilderDesignRenderer({design, sections, data, firstHeadingIsH1}: Props) {
   if (!design || !design.children) return null;
+  const tree = firstHeadingIsH1 ? promoteFirstHeadingToH1(design, {yes: false}) : design;
+  if (!tree.children) return null;
   return (
     <div className="bb-bd">
-      {design.children.map((row, i) => renderRow(row, i, sections, data))}
+      {tree.children.map((row, i) => renderRow(row, i, sections, data))}
     </div>
   );
 }

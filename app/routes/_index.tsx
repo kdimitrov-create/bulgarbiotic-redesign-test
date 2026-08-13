@@ -182,6 +182,7 @@ export default function Homepage() {
     return (
       <>
         <BuilderDesignRenderer
+          firstHeadingIsH1
           design={homeDesign}
           sections={{featuredProducts, familyPack, homeReviews, articles}}
           data={builderData}
