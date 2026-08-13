@@ -8,6 +8,7 @@ import {BannerSlider} from '~/components/home/HeroBannerSlider';
 import {BlogCards} from '~/components/home/BlogHighlights';
 import {FaqAccordion} from '~/components/home/FAQ';
 import {Marquee} from '~/components/home/Marquee';
+import {Reviews} from '~/components/home/Reviews';
 import {ProductRail} from '~/components/home/ProductRail';
 import {BundlePrice} from '~/components/home/BundleFeature';
 import {
@@ -69,7 +70,6 @@ const DATA_BLOCKS = new Set([
   'product',
   'add-to-cart',
   'text-carousel',
-  'product_review',
   'request_review',
   'order-details',
   'store_locations',
@@ -502,6 +502,13 @@ function renderBlock(
       return <Showcase key={idx} block={block} data={data} />;
     case 'carousel':
       return <Carousel key={idx} block={block} />;
+    // „Продуктови отзиви" от панела: рисува се секцията с отзивите на магазина.
+    // Имената се приемат и в двата вида, защото панелът пише едните с долна
+    // черта (`request_review`), а другите с тире.
+    case 'product_review':
+    case 'product-review':
+    case 'product-reviews':
+      return <Reviews key={idx} reviews={sections?.homeReviews as any} />;
     case 'recent-articles':
       return <Articles key={idx} block={block} data={data} rowClass={rowClass} />;
     case 'button':

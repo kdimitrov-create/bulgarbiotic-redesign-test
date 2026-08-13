@@ -225,8 +225,10 @@ export function articleImageUrl(
   options: {width?: number; height?: number} = {},
 ): string | null {
   if (!handle) return null;
-  const entry = live[handle] ?? ARTICLE_IMAGES[handle];
-  if (entry) {
+  // Запис с празно име не е корица, а само реда на статията - тогава важи
+  // статичната карта.
+  const entry = (live[handle]?.filename ? live[handle] : undefined) ?? ARTICLE_IMAGES[handle];
+  if (entry?.filename) {
     const {width = 800, height = 600} = options;
     const filename = encodeURIComponent(entry.filename);
     return `${CDN_BASE}/${entry.id}/${filename}?width=${width}&height=${height}`;

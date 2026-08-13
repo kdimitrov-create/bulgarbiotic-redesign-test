@@ -58,9 +58,12 @@ export async function fetchArticleImages(
       const data: any = await gql(origin, pat, QUERY, {first: PAGE_SIZE, after});
       const rows: RawArticle[] = (data?.articles?.edges ?? []).map((e: any) => e.node);
       for (const row of rows) {
-        // An article with no uploaded cover falls through to the static map.
-        if (!row?.urlHandle || !row?.image || !row?.id) continue;
-        out[row.urlHandle] = {id: Number(row.id), filename: row.image};
+        if (!row?.urlHandle || !row?.id) continue;
+        // Статия без качена корица също влиза - с празно име на файла. Тя няма
+        // да получи снимка (за нея важи статичната карта), но записът ѝ носи
+        // id-то, а по него се разпознава коя статия е по-нова: датата на
+        // публикуване в панела често е празна.
+        out[row.urlHandle] = {id: Number(row.id), filename: row.image ?? ''};
       }
       const info = data?.articles?.pageInfo;
       if (!info?.hasNextPage || !info?.endCursor) break;

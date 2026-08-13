@@ -105,11 +105,28 @@ export async function fetchBuilderData(
   }
 
   setArticleImages(articleImages);
+  // Подредбата идва от админа, не от датата на публикуване.
+  //
+  // Шестте най-скоро добавени статии на този магазин нямат попълнена дата на
+  // публикуване, затова подредбата по дата ги слагаше най-отдолу и началната
+  // показваше статии отпреди месеци - други от тези, които клиентът вижда в
+  // панела (2026-08-13). По-голямото id значи по-скоро добавена статия, точно
+  // както ги подрежда и самият панел; датата остава резерва.
+  const adminId = (article: any): number | null => {
+    const id = articleImages?.[article?.handle]?.id;
+    return typeof id === 'number' && Number.isFinite(id) ? id : null;
+  };
+  const published = (article: any): number =>
+    article?.publishedAt ? Date.parse(article.publishedAt) : 0;
   const newestFirst = [...normaliseList(articles)].sort((a, b) => {
-    // An article with no date goes last instead of jumping to the top.
-    const ta = a?.publishedAt ? Date.parse(a.publishedAt) : 0;
-    const tb = b?.publishedAt ? Date.parse(b.publishedAt) : 0;
-    return tb - ta;
+    // Двете мерки не се смесват: id-то и датата са различни скали и една
+    // статия без id щеше да изпревари всички само защото датата е голямо число.
+    const ia = adminId(a);
+    const ib = adminId(b);
+    if (ia !== null && ib !== null) return ib - ia;
+    if (ia !== null) return -1;
+    if (ib !== null) return 1;
+    return published(b) - published(a);
   });
 
   return {

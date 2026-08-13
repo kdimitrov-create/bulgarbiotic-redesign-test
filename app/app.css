@@ -5130,6 +5130,140 @@ img.pm-banner {
   border-top: 1px solid rgba(10, 37, 64, 0.1);
 }
 
+/* ── Наградите: една колона = една награда ──────────────────────────────────
+   Тъмна лента, в която всяка награда е колона със значка (Снимка) и текст.
+   Досега двете награди се въртяха една след друга; вече стоят една до друга,
+   защото така се добавя трета, без да се пипа код (клиент, 2026-08-13).
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-awards {
+  position: relative;
+  overflow: hidden;
+  color: var(--color-cream-1);
+  background: linear-gradient(135deg, #0a2540 0%, #112c4d 100%);
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  column-gap: 60px;
+  row-gap: 40px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+.bb-row-awards::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 35%, rgba(212, 175, 106, 0.16) 0%, transparent 38%),
+    radial-gradient(circle at 82% 75%, rgba(227, 22, 108, 0.14) 0%, transparent 42%);
+}
+@media (max-width: 880px) {
+  .bb-row-awards {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
+}
+.bb-row-awards > .bb-bd-col {
+  grid-column: auto;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  align-items: center;
+  gap: 28px;
+}
+@media (max-width: 880px) {
+  .bb-row-awards > .bb-bd-col { grid-template-columns: 1fr; justify-items: center; gap: 20px; }
+}
+/* Значката: рисуваният медальон вече е файл, за да може да се смени от панела. */
+.bb-row-awards .bb-bd-banners { margin: 0; }
+.bb-row-awards .bb-bd-banner-img {
+  width: 160px; height: 160px;
+  object-fit: contain;
+  border-radius: 0;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35));
+}
+.bb-row-awards .bb-bd-text { margin: 0; }
+.bb-row-awards .bb-prose { color: rgba(255, 255, 255, 0.78); }
+.bb-row-awards .bb-prose .award-tag {
+  display: inline-block;
+  margin: 0 0 12px;
+  padding: 5px 12px;
+  border: 1px solid rgba(212, 175, 106, 0.4);
+  border-radius: 999px;
+  background: rgba(212, 175, 106, 0.12);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #f4d585;
+}
+.bb-row-awards .bb-prose h3 {
+  font-family: inherit;
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.8px;
+  color: var(--color-cream-1);
+  margin: 0 0 12px;
+}
+.bb-row-awards .bb-prose h3 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: #f4d585;
+}
+.bb-row-awards .bb-prose p {
+  font-size: 13.5px;
+  line-height: 1.65;
+  margin: 0 0 14px;
+  color: rgba(255, 255, 255, 0.78);
+}
+.bb-row-awards .bb-prose strong { color: #fff; }
+.bb-row-awards .bb-prose em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: #f4d585;
+}
+/* Последният абзац е издателят и датата, а връзката в него отваря статията. */
+.bb-row-awards .bb-prose .award-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+@media (max-width: 880px) { .bb-row-awards .bb-prose .award-meta { justify-content: center; } }
+.bb-row-awards .bb-prose .award-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border: 1px solid rgba(212, 175, 106, 0.45);
+  border-radius: 999px;
+  color: #f4d585;
+  text-decoration: none;
+  letter-spacing: 0.3px;
+  text-transform: none;
+  font-size: 12.5px;
+  transition: all 0.18s;
+}
+.bb-row-awards .bb-prose .award-meta a:hover { background: #f4d585; color: #0a2540; }
+.bb-row-awards .bb-prose .award-meta a::after {
+  content: "";
+  width: 12px; height: 12px;
+  background: currentColor;
+  -webkit-mask: var(--bb-ico-arrow) center / contain no-repeat;
+  mask: var(--bb-ico-arrow) center / contain no-repeat;
+}
+
 /* ── ЧЗВ: заглавието вляво, въпросите вдясно ────────────────────────────────
    Вторият Текст блок се пише като заглавия (въпросите) и текст под тях
    (отговорите); кодът ги подрежда в акордеона.
@@ -5404,10 +5538,17 @@ img.pm-banner {
 .bb-row-press > .bb-bd-col:hover {
   background: var(--color-ink);
   border-color: var(--color-ink);
-  color: var(--color-cream-1);
   transform: translateY(-2px);
   box-shadow: 0 14px 30px -12px rgba(10, 37, 64, 0.25);
 }
+/* Текстът светва заедно с картичката. Само `color` на колоната не стига:
+   `.bb-prose` слага свой цвят на съдържанието и наследеният се губи - на
+   тъмносиньо оставаше тъмносин текст, тоест картичката изглеждаше празна
+   (клиент, 2026-08-13). */
+.bb-row-press > .bb-bd-col:hover .bb-prose,
+.bb-row-press > .bb-bd-col:hover .bb-prose .outlet,
+.bb-row-press > .bb-bd-col:hover .bb-prose .outlet a { color: var(--color-cream-1); }
+.bb-row-press > .bb-bd-col:hover .bb-prose .outlet span { opacity: 0.75; }
 /* Надсловът и връзката отдолу не са картички - те носят реда. */
 .bb-row-press > .bb-bd-col:first-child,
 .bb-row-press > .bb-bd-col:last-child {
