@@ -16,7 +16,7 @@ import {
 } from '~/components/BuilderDesignRenderer';
 import {BUILDER_HOME_HANDLE, designComposesHome} from '~/components/home/SectionRegistry';
 import {homePageHandle} from '~/lib/page-flags.server';
-import {designPlacesPage} from '~/components/PageSectionRegistry';
+import {designIsAuthored, designPlacesPage} from '~/components/PageSectionRegistry';
 import {fetchHomeSectionData} from '~/lib/home-data.server';
 import {useHomeMotion} from '~/lib/use-home-motion';
 import {
@@ -104,13 +104,16 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
     page: {...page, handle: params.handle},
     builderData,
     movedToBuilder: designPlacesPage(design, params.handle),
+    // Сглобена в конструктора: тогава панелът е източникът, а ръчно
+    // написаната страница остава само резерва.
+    authoredInBuilder: designIsAuthored(design),
     composesHome,
     sections,
   };
 }
 
 export default function PageRoute() {
-  const {page, builderData, movedToBuilder, composesHome, sections} =
+  const {page, builderData, movedToBuilder, authoredInBuilder, composesHome, sections} =
     useLoaderData<typeof loader>();
   const handle = page.handle;
 
@@ -135,7 +138,7 @@ export default function PageRoute() {
   // three that have a custom layout of their own. Without this check those
   // three ignored the builder entirely, so anything added around their marker
   // in the panel had no effect (2026-08-07).
-  if (movedToBuilder) {
+  if (movedToBuilder || authoredInBuilder) {
     return <DefaultPage page={page} builderData={builderData} />;
   }
 
@@ -198,6 +201,7 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
   const useBarebones = override && PAGES_WITH_OWN_HERO.has(page.handle);
   // Same signal the route used to get here.
   const movedToBuilder = hasDesign && designPlacesPage(design, page.handle);
+  const authoredInBuilder = designIsAuthored(design);
 
   return (
     <PageShell
@@ -206,7 +210,7 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
       breadcrumbs={[]}
       variant={useBarebones ? 'barebones' : 'narrow'}
     >
-      {movedToBuilder ? (
+      {movedToBuilder || authoredInBuilder ? (
         <BuilderDesignRenderer design={design} data={builderData} />
       ) : hasRealHtml ? (
         <RichText data={page.body} />

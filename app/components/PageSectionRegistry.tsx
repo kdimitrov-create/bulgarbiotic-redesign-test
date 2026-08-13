@@ -55,6 +55,31 @@ export function knownPageSection(handle: string): boolean {
  * a page nobody has touched keeps rendering exactly as it always did, and
  * deleting the marker in the panel hands it straight back.
  */
+/**
+ * Страницата наистина ли е сглобена в конструктора?
+ *
+ * Различава двете състояния, които изглеждат еднакво отвън: дизайн, който само
+ * казва „тук постави кодираната страница" (един блок Код с маркер), и дизайн,
+ * в който съдържанието наистина е подредено от блокове. Първото не бива да
+ * бие ръчно написаната страница; второто трябва, иначе редакциите в панела не
+ * се виждат никъде (клиент, 2026-08-13).
+ */
+export function designIsAuthored(design: any): boolean {
+  if (!design) return false;
+  let real = 0;
+  const walk = (node: any) => {
+    if (!node || typeof node !== 'object') return;
+    if (node.map) {
+      const code = String(node?.settings?.code ?? node?.settings?.html ?? '');
+      const onlyMarker = /^\s*<!--\s*bb:[a-z0-9:_-]+\s*-->\s*$/i.test(code);
+      if (!onlyMarker) real += 1;
+    }
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(design);
+  return real > 0;
+}
+
 export function designPlacesPage(design: any, handle: string): boolean {
   if (!design || !handle) return false;
   const needle = `bb:page:${handle}`.toLowerCase();
