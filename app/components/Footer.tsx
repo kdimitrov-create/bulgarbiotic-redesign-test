@@ -285,15 +285,15 @@ export function Footer({shop, adminFooter}: FooterProps) {
           .bb-footer-top > *:first-child { grid-column: 1 / -1; }
           .bb-ft-contact { grid-column: 1 / -1; }
           .bb-ft-col h4 { font-size: 11.5px !important; letter-spacing: 1.4px !important; }
-          .bb-ft-col a { font-size: 13.5px !important; }
+          .bb-ft-col a { font-size: 14.5px !important; }
         }
 
         .bb-ft-logo { height: 56px; filter: brightness(0) invert(1); margin-bottom: 22px; }
-        .bb-ft-tag { font-size: 13px; opacity: 0.6; line-height: 1.75; max-width: 320px; margin-bottom: 24px; }
+        .bb-ft-tag { font-size: 14px; opacity: 0.6; line-height: 1.75; max-width: 320px; margin-bottom: 24px; }
 
         .bb-ft-news-block { margin-top: 6px; max-width: 320px; }
-        .bb-ft-news-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800; opacity: 0.55; margin-bottom: 8px; color: var(--color-pink-3); }
-        .bb-ft-news-sub { font-size: 12px; line-height: 1.55; opacity: 0.55; margin-bottom: 12px; }
+        .bb-ft-news-label { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 800; opacity: 0.55; margin-bottom: 8px; color: var(--color-pink-3); }
+        .bb-ft-news-sub { font-size: 13.5px; line-height: 1.55; opacity: 0.55; margin-bottom: 12px; }
         .bb-ft-news-input {
           display: flex;
           background: rgba(245,239,227,0.05);
@@ -330,13 +330,17 @@ export function Footer({shop, adminFooter}: FooterProps) {
           color: var(--color-cream-1);
         }
 
+        /* Кегелът във футъра е вдигнат заедно с останалия сайт (13.08).
+           Akrobat е с около 18% по-тесни букви от Manrope, тоест старите
+           размери се четяха ситно. Заглавията на колоните растат пестеливо -
+           те са с главни букви и разредка, там едно стъпало стига. */
         .bb-ft-col h4 {
-          font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+          font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
           font-weight: 800; opacity: 0.55; margin-bottom: 22px;
           color: var(--color-pink-3);
         }
         .bb-ft-col a {
-          display: block; font-size: 14px; opacity: 0.78;
+          display: block; font-size: 15px; opacity: 0.78;
           padding: 5px 0; transition: opacity 0.2s, color 0.2s, transform 0.2s;
         }
         .bb-ft-col a:hover { opacity: 1; color: var(--color-pink-3); transform: translateX(3px); }
@@ -346,7 +350,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
         .bb-ft-row svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 4px; opacity: 0.7; }
         .bb-ft-row a { color: inherit; transition: color 0.2s; }
         .bb-ft-row a:hover { color: var(--color-pink-3); }
-        .bb-ft-label { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; opacity: 0.5; font-weight: 700; }
+        .bb-ft-label { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; opacity: 0.5; font-weight: 700; }
         .bb-ft-val { font-weight: 600; opacity: 1; }
 
         .bb-ft-pay-label {
@@ -381,7 +385,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
           padding-top: 28px;
           display: flex; justify-content: space-between;
           align-items: center;
-          font-size: 12px; opacity: 0.55;
+          font-size: 13px; opacity: 0.55;
           flex-wrap: wrap; gap: 18px;
         }
         .bb-ft-meta { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
