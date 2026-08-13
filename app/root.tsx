@@ -1,6 +1,7 @@
 import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useFetchers, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
+import {fetchCartSummary} from '~/lib/cart-totals.server';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {setAutoDiscounts, setFreeShippingOver} from '~/lib/active-discounts';
 import {fetchProductMarks} from '~/lib/product-marks.server';
@@ -73,7 +74,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setCartOffers(offers);
   setThemeModules(themeModules);
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), cartSummary: ctx.cart.get().then((c: any) => fetchCartSummary(env, c?.id)), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {

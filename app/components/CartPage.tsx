@@ -6,6 +6,7 @@ import {PromoCode} from './PromoCode';
 import {fallbackToPlaceholder} from './CartDrawer';
 import {CartOffersStrip} from './CartOffers';
 import {markPricingForLine} from '~/lib/product-marks';
+import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from '~/lib/cart-summary';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {numericId} from '~/lib/analytics';
 import {SHOW_BGN} from '~/lib/currency';
@@ -26,7 +27,7 @@ import {CART_ACTION} from '~/lib/cart-action';
  * Pricing logic is imported from CartDrawer rather than re-derived, so the
  * drawer, this page and the PDP can never drift apart on what a line costs.
  */
-export function CartPage({cart}: {cart: CartData | null}) {
+export function CartPage({cart, summary}: {cart: CartData | null; summary?: CartSummary | null}) {
   const lines = cart?.lines?.nodes ?? [];
   const isEmpty = !cart || cart.totalQuantity === 0;
 
@@ -48,12 +49,22 @@ export function CartPage({cart}: {cart: CartData | null}) {
     payableEur += now;
     msrpEur += compareAtPrice ? bothCurrencies(compareAtPrice).eur : now;
   }
-  const savedEur = Math.max(0, msrpEur - payableEur);
-  const subtotalEur = payableEur;
+  /* Обобщението на търговеца е истината.
+     Сборът на редовете не познава ПРАВИЛАТА ЗА КОЛИЧКАТА: те се прилагат от
+     платформата при всяка промяна и се появяват като собствен ред в `totals`.
+     Измерено на bulgarbiotic.bg: правило „Pets 2=1" сваля 21,47 от количка за
+     42,94, а редовете си остават 42,94. */
+  const summaryTotal = money(totalLine(summary));
+  const summarySubtotal = money(subtotalLine(summary));
+  const adjustments = adjustmentLines(summary);
+  const payable = summaryTotal ?? payableEur;
+  const shownSubtotal = summarySubtotal ?? payableEur;
+  const savedEur = Math.max(0, msrpEur - payable);
+  const subtotalEur = shownSubtotal;
   const rawSubtotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
   const rawTotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
-  const totalEur = payableEur;
-  const totalBgn = payableEur * EUR_TO_BGN;
+  const totalEur = payable;
+  const totalBgn = payable * EUR_TO_BGN;
 
   const shippingTarget = freeShippingTargetEur();
   const remainingEur = Math.max(0, shippingTarget - subtotalEur);
@@ -92,7 +103,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
               <div className="bb-cart-shipping-fill" style={{width: `${shippingPct}%`}} />
             </div>
             {/* The merchant's gift offers and cart rules, live from the panel. */}
-            <CartOffersStrip subtotalEur={subtotalEur} />
+            <CartOffersStrip subtotalEur={subtotalEur} messages={summary?.messages ?? []} />
           </div>
 
           <ul className="bb-cart-items">
@@ -116,8 +127,17 @@ export function CartPage({cart}: {cart: CartData | null}) {
 
             <div className="bb-cart-sum-row">
               <span>Междинна сума</span>
-              <span>{fmtEur(rawSubtotal.eur)}</span>
+              <span>{fmtEur(shownSubtotal)}</span>
             </div>
+            {/* Редовете между междинната и крайната сума, с етикетите на
+                търговеца: правила за количката, отстъпки, доставка. Тях сами
+                никога няма да ги познаем. */}
+            {adjustments.map((row) => (
+              <div key={row.key ?? row.name} className="bb-cart-sum-row">
+                <span>{row.name || row.key}</span>
+                <span>{fmtEur(money(row) ?? 0)}</span>
+              </div>
+            ))}
             {savedEur > 0 && (
               <div className="bb-cart-sum-row bb-cart-sum-row--save">
                 <span>

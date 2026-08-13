@@ -15,10 +15,22 @@ const fmtEur = (n: number) =>
  * two patterns. Renders nothing when the merchant has no active offers, which
  * is the normal state most of the year.
  */
-export function CartOffersStrip({subtotalEur}: {subtotalEur: number}) {
+export function CartOffersStrip({
+  subtotalEur,
+  messages = [],
+}: {
+  subtotalEur: number;
+  /**
+   * Съобщенията, които правилата за количката отправят към купувача, както ги
+   * връща `Cart.messages`: почти достигнат праг, току-що приложена промоция.
+   * Описанието на полето е недвусмислено - „покажи ги, това е търговецът,
+   * който говори на купувача". Дотук не се показваха никъде.
+   */
+  messages?: string[];
+}) {
   const gifts = giftProgress(subtotalEur);
   const {rules} = cartOffers();
-  if (!gifts.length && !rules.length) return null;
+  if (!gifts.length && !rules.length && !messages.length) return null;
 
   return (
     <div className="bb-offers">
@@ -52,6 +64,15 @@ export function CartOffersStrip({subtotalEur}: {subtotalEur: number}) {
         </div>
       ))}
 
+      {messages.map((html, i) => (
+        <div key={`msg-${i}`} className="bb-offer bb-offer-rule">
+          <div
+            className="bb-offer-text bb-offer-msg-html"
+            dangerouslySetInnerHTML={{__html: html}}
+          />
+        </div>
+      ))}
+
       {rules.map((rule) => (
         <div key={rule.id} className="bb-offer bb-offer-rule">
           <div className="bb-offer-text">
@@ -82,6 +103,10 @@ export function CartOffersStrip({subtotalEur}: {subtotalEur: number}) {
         .bb-offer-icon { margin-right: 6px; }
         .bb-offer-bgn { color: rgba(10, 37, 64, 0.5); font-size: 11.5px; }
         .bb-offer-msg { color: rgba(10, 37, 64, 0.62); }
+        /* Съобщението идва като HTML от панела - изравняваме отстоянията му
+           с останалите редове в лентата. */
+        .bb-offer-msg-html p { margin: 0; }
+        .bb-offer-msg-html strong { font-weight: 800; }
 
         .bb-offer-track {
           margin-top: 8px; height: 5px; border-radius: 999px;

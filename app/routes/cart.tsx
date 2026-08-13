@@ -1,6 +1,7 @@
 import {useLoaderData, useFetchers} from 'react-router';
 import type {Route} from './+types/cart';
 import {getContext} from '~/lib/context';
+import {fetchCartSummary} from '~/lib/cart-totals.server';
 import type {CartData} from '@cloudcart/nitro';
 import {CartPage as CartPageView} from '~/components/CartPage';
 import {CART_ACTION} from '~/lib/cart-action';
@@ -10,11 +11,18 @@ export const meta: Route.MetaFunction = () => [{title: 'Кошница | Bactolo
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const cart = await ctx.cart.get();
-  return {cart};
+  // Обобщението идва отделно: fragment-ът на nitro не иска `totals` и
+  // `messages`, а точно там са правилата за количката и съобщенията, с които
+  // търговецът говори на купувача. Виж `cart-totals.server.ts`.
+  const cartSummary = await fetchCartSummary(
+    ctx.env as Record<string, string | undefined>,
+    (cart as any)?.id,
+  );
+  return {cart, cartSummary};
 }
 
 export default function CartPage() {
-  const {cart} = useLoaderData<typeof loader>();
+  const {cart, cartSummary} = useLoaderData<typeof loader>();
 
   const fetchers = useFetchers();
   const cartErrors = fetchers
@@ -24,7 +32,7 @@ export default function CartPage() {
   return (
     <>
       {cartErrors.length > 0 && <CartErrors errors={cartErrors} />}
-      <CartPageView cart={cart} />
+      <CartPageView cart={cart} summary={cartSummary} />
     </>
   );
 }
