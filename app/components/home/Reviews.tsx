@@ -57,7 +57,17 @@ type RealReview = {
   createdAt: string;
 };
 
-export function Reviews({reviews}: {reviews?: RealReview[]}) {
+export function Reviews({
+  reviews,
+  heading,
+  summary,
+}: {
+  reviews?: RealReview[];
+  /** Заглавието, когато секцията е сглобена в панела. */
+  heading?: React.ReactNode;
+  /** Числата вдясно от заглавието; подават се от панела като готов текст. */
+  summary?: {rating?: string; note?: string};
+}) {
   // Prefer REAL customer reviews from the store's ProductReview app (client #11);
   // fall back to the curated set only when the API returns nothing usable.
   const real = Array.isArray(reviews) ? reviews.filter((r) => (r.quote ?? '').trim().length > 0) : [];
@@ -92,13 +102,17 @@ export function Reviews({reviews}: {reviews?: RealReview[]}) {
     <section className="bb-reviews">
       <div className="bb-container">
         <div className="bb-reviews-head reveal">
-          <h2 className="section-h2">
-            Какво казват <span className="accent">3 300+ клиента.</span>
-          </h2>
+          {heading ?? (
+            <h2 className="section-h2">
+              Какво казват <span className="accent">3 300+ клиента.</span>
+            </h2>
+          )}
           <div className="bb-reviews-summary">
             <div>
-              <div className="bb-reviews-num">4.9</div>
-              <div className="bb-reviews-meta">от 3 303 проверени отзива</div>
+              <div className="bb-reviews-num">{summary?.rating ?? '4.9'}</div>
+              <div className="bb-reviews-meta">
+                {summary?.note ?? 'от 3 303 проверени отзива'}
+              </div>
             </div>
             <div className="bb-reviews-stars">★★★★★</div>
           </div>

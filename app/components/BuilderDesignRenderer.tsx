@@ -150,6 +150,11 @@ function rowClasses(node: BuilderNode): string {
  * contains `bb-row-blog`, so a substring test makes the head row answer for the
  * cards row.
  */
+/** Само текстът на един елемент - за полета, които не са HTML. */
+function stripTagsPlain(html: string): string {
+  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function rowHasClass(rowClass: string, name: string): boolean {
   return rowClass.split(/\s+/).includes(name);
 }
@@ -461,6 +466,29 @@ function renderBlock(
       // за него текстът се дублира - нещо, което CSS не може сам.
       if (rowHasClass(rowClass, 'bb-row-marquee')) {
         return <Marquee key={idx} items={listItems(html)} />;
+      }
+      // Отзивите: заглавието и числата се пишат в панела, а самите карти идват
+      // от отзивите на магазина - те се обновяват сами и не се пишат на ръка.
+      if (rowHasClass(rowClass, 'bb-row-reviews')) {
+        // Класът се търси като отделна дума, за да не хване „note" вътре в
+        // друг клас. ⚠️ Границата `\b` се пише тук, в редактора: през heredoc
+        // тя се превръща в истински backspace и изразът тихо спира да лови.
+        const rating = html.match(/<p[^>]*class="[^"]*\brating\b[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
+        const note = html.match(/<p[^>]*class="[^"]*\bnote\b[^"]*"[^>]*>([\s\S]*?)<\/p>/i);
+        const head = html
+          .replace(rating?.[0] ?? '', '')
+          .replace(note?.[0] ?? '', '');
+        return (
+          <Reviews
+            key={idx}
+            reviews={sections?.homeReviews as any}
+            heading={<div className="bb-prose" dangerouslySetInnerHTML={{__html: head}} />}
+            summary={{
+              rating: rating ? stripTagsPlain(rating[1]) : undefined,
+              note: note ? stripTagsPlain(note[1]) : undefined,
+            }}
+          />
+        );
       }
       // ЧЗВ: заглавията стават въпроси, текстът под тях - отговори. Списъкът с
       // въпроси се пише в панела, акордеонът остава в кода.
