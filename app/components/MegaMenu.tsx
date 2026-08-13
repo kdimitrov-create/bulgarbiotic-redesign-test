@@ -2,6 +2,7 @@ import {Link} from 'react-router';
 import type {ReactNode} from 'react';
 import type {NavNode} from '~/lib/navigation';
 import {NAV_ROLE, hasRole} from '~/lib/navigation';
+import {openProbioticFinder} from './ProbioticFinderModal';
 
 /**
  * Premium 4-column mega-menu inspired by seed.com / Mejuri / Glossier patterns.
@@ -181,10 +182,17 @@ function Foot({onNav, node}: {onNav?: () => void; node: NavNode | null}) {
           Пакети с отстъпка
           <Arrow />
         </Link>
-        <a href="#bb-finder-fab" className="bb-megamenu-foot-link bb-megamenu-foot-link--ghost" onClick={onNav}>
+        <button
+          type="button"
+          className="bb-megamenu-foot-link bb-megamenu-foot-link--ghost"
+          onClick={() => {
+            onNav?.();
+            openProbioticFinder();
+          }}
+        >
           ✦ Не знаеш кой? Намери за 30 сек
           <Arrow />
-        </a>
+        </button>
       </div>
     );
   }

@@ -1,5 +1,5 @@
-import {useState} from 'react';
-import {ProbioticFinderModal} from './ProbioticFinderModal';
+import {useEffect, useState} from 'react';
+import {FINDER_OPEN_EVENT, ProbioticFinderModal} from './ProbioticFinderModal';
 
 /**
  * Floating Action Button that opens the Probiotic Finder quiz in a modal —
@@ -11,6 +11,14 @@ import {ProbioticFinderModal} from './ProbioticFinderModal';
  */
 export function ProbioticFinderFAB() {
   const [open, setOpen] = useState(false);
+
+  // Модалът е един за целия сайт, затова отварянето му е събитие: менюто и
+  // всяка друга повърхност само го вдигат, без да носят свое копие.
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener(FINDER_OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(FINDER_OPEN_EVENT, onOpen);
+  }, []);
 
   return (
     <>

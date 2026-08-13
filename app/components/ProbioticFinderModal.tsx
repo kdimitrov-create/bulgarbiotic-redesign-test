@@ -16,6 +16,23 @@ interface Props {
  *
  * Each caller owns its own `open` state — modal is just presentational.
  */
+/**
+ * Събитието, с което всяка повърхност отваря теста.
+ *
+ * Модалът е монтиран веднъж, глобално, в `ProbioticFinderFAB`. Дотук връзката
+ * „Не знаеш кой?" в мега менюто беше `<a href="#bb-finder-fab">` - котва към
+ * плаващото копче. Котва не отваря нищо: страницата подскачаше до копчето и
+ * толкова, а клиентът съвсем правилно го отчете като „не води на правилното
+ * място". Със събитие всяка връзка може да пусне теста, без да си прави свой
+ * модал и без да се дублира състояние.
+ */
+export const FINDER_OPEN_EVENT = 'bb:finder-open';
+
+export function openProbioticFinder() {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent(FINDER_OPEN_EVENT));
+}
+
 export function ProbioticFinderModal({open, onClose}: Props) {
   useEffect(() => {
     if (!open) return;
