@@ -62,6 +62,35 @@ export function entries(value: unknown): BuilderEntry[] {
  * it back here. A leading `<strong>` is kept apart, because that is what the
  * band draws as a badge instead of a dot.
  */
+/**
+ * Показва ли се този запис сега според „Активен от" и „Активен до" в панела.
+ *
+ * Конструкторът дава на всеки банер и слайд двойка дати и ги пази в пълен ISO
+ * вид със зона: `2026-08-13T10:09:10+03:00`. Затова тук няма гадаене по часови
+ * зони - `Date.parse` разчита офсета сам, което е важно, защото worker-ът върви
+ * в UTC, а търговецът пише софийско време.
+ *
+ * Дотук двете полета се пренебрегваха: банер с изтекъл срок продължаваше да се
+ * върти, а насрочен за другия месец се показваше от днес. На началната има
+ * четири слайда с дати, два от които изтекли още през юли.
+ *
+ * Празно поле значи „без ограничение" от тази страна. Дата, която не може да се
+ * разчете, също не ограничава: по-добре банерът да се вижда, отколкото да
+ * изчезне заради формат, който не сме предвидили.
+ */
+export function withinSchedule(entry: Record<string, unknown>, now = Date.now()): boolean {
+  const edge = (value: unknown): number | null => {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+  const from = edge(entry.from);
+  const to = edge(entry.to);
+  if (from !== null && now < from) return false;
+  if (to !== null && now > to) return false;
+  return true;
+}
+
 export function listItems(html: string): Array<{label: string; text: string}> {
   const out: Array<{label: string; text: string}> = [];
   for (const match of html.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)) {

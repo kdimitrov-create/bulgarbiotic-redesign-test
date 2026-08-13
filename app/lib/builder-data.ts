@@ -1,4 +1,4 @@
-import {entries, number, text} from './builder-settings';
+import {entries, number, text, withinSchedule} from './builder-settings';
 
 /**
  * The client-safe half of the page-builder's data blocks.
@@ -96,6 +96,8 @@ export function carouselSlides(settings: Record<string, any>, data?: BuilderData
   alt?: string;
 }> {
   return entries(settings.slides)
+    // „Активен от / до" от панела: слайд извън прозореца си не се рисува.
+    .filter((slide) => withinSchedule(slide))
     .map((slide) => {
       const src = resolveStorage(slide.src || slide.image);
       if (!src) return null;

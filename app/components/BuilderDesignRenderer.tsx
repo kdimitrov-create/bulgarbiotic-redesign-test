@@ -1,6 +1,6 @@
 import React, {Fragment, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
-import {entries, headingPairs, isOn, listItems, number, text} from '~/lib/builder-settings';
+import {entries, headingPairs, isOn, listItems, number, text, withinSchedule} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
 import {renderPageSection} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
@@ -237,7 +237,10 @@ function FoldedText({html}: {html: string}) {
 
 function Banner({block, data}: {block: BuilderNode; data?: BuilderData | null}) {
   const settings = block.settings ?? {};
-  const list = entries(settings.banners);
+  // „Активен от / до" от панела. Филтрира се преди проверката за празнота, за
+  // да изчезне целият блок, вместо да остане празна рамка, когато всички банери
+  // са извън прозореца си.
+  const list = entries(settings.banners).filter((banner) => withinSchedule(banner));
   if (!list.length) return null;
   const perRow = Math.max(1, Math.min(6, number(settings.per_row) ?? 1));
   const title = text(settings.title);
