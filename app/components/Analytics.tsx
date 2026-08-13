@@ -6,6 +6,7 @@ import {
   getCcPageData,
   pushCcPageData,
   pushPageView,
+  flushPendingEvents,
 } from '~/lib/analytics';
 
 /**
@@ -158,6 +159,10 @@ export function Analytics() {
           ttq.page();
         }
       }
+
+      // Събитията на текущата страница вече са минали, преди пикселите да ги
+      // има - подаваме им ги сега, иначе първата отворена страница не се отчита.
+      flushPendingEvents();
 
       return true;
     }

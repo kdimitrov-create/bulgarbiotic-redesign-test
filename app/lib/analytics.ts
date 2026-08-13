@@ -172,13 +172,48 @@ const META_EVENTS: Record<string, string> = {
   search: 'Search',
 };
 
+/**
+ * Опашка за събитията, изпреварили пиксела.
+ *
+ * ⚠️ Това беше истински пропуск, хванат чак на живо. `useEcommerceEvent` се
+ * задейства при качването на страницата, а пикселите се зареждат СЛЕД
+ * съгласието - тоест на първата отворена страница `window.fbq` още го няма и
+ * събитието се губеше безвъзвратно. dataLayer оцелява, защото е обикновен
+ * масив и GTM го изпива после; повикването към `fbq` няма такава опашка.
+ *
+ * Ефектът беше най-лош точно там, където боли: човек, дошъл от реклама, вижда
+ * една страница и си тръгва - и точно неговият `ViewContent` не се отчиташе.
+ * Затова изпреварилите събития се пазят и се пращат веднага щом пикселът е там.
+ */
+type Pending = {
+  event: string;
+  payload: {currency?: string; value?: number; items: EcomItem[]; [key: string]: unknown};
+};
+const pendingMeta: Pending[] = [];
+const pendingTikTok: Pending[] = [];
+/** Пази паметта, ако посетителят никога не приеме бисквитки. */
+const MAX_PENDING = 20;
+
+/** Вика се от <Analytics/>, щом пикселите са вдигнати. */
+export function flushPendingEvents() {
+  if (typeof window === 'undefined') return;
+  const meta = pendingMeta.splice(0, pendingMeta.length);
+  const tiktok = pendingTikTok.splice(0, pendingTikTok.length);
+  for (const p of meta) pushMetaEvent(p.event, p.payload);
+  for (const p of tiktok) pushTikTokEvent(p.event, p.payload);
+}
+
 function pushMetaEvent(
   event: string,
   payload: {currency?: string; value?: number; items: EcomItem[]; [key: string]: unknown},
 ) {
   const name = META_EVENTS[event];
+  if (!name) return;
   const fbq = (window as any).fbq;
-  if (!name || typeof fbq !== 'function') return;
+  if (typeof fbq !== 'function') {
+    if (pendingMeta.length < MAX_PENDING) pendingMeta.push({event, payload});
+    return;
+  }
   const items = payload.items ?? [];
   fbq('track', name, {
     // Категорията се отчита като `product_group`, точно както го прави
@@ -215,8 +250,12 @@ function pushTikTokEvent(
   payload: {currency?: string; value?: number; items: EcomItem[]; [key: string]: unknown},
 ) {
   const name = TIKTOK_EVENTS[event];
+  if (!name) return;
   const ttq = (window as any).ttq;
-  if (!name || !ttq || typeof ttq.track !== 'function') return;
+  if (!ttq || typeof ttq.track !== 'function') {
+    if (pendingTikTok.length < MAX_PENDING) pendingTikTok.push({event, payload});
+    return;
+  }
   const items = payload.items ?? [];
   ttq.track(name, {
     contents: items.map((i) => ({
