@@ -5214,6 +5214,181 @@ img.pm-banner {
   filter: drop-shadow(0 24px 40px rgba(10, 37, 64, 0.18));
 }
 
+/* ── Вариант „Beauty": същият ред, но с вида на Beauty страницата ───────────
+   Добавя се като ВТОРИ клас на реда (`bb-row-pagehero bb-bty`). Разликите са
+   изцяло типографски: заглавията са с шрифта с засечки, надсловът е розово
+   хапче, а всичко е центрирано - така изглежда кодираната страница, която
+   клиентът иска да съвпадне (13.08).
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-pagehero.bb-bty {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+}
+.bb-row-pagehero.bb-bty > .bb-bd-col { max-width: 820px; }
+.bb-row-pagehero.bb-bty::before {
+  top: -120px; right: -100px;
+  width: 380px; height: 380px;
+}
+.bb-row-pagehero.bb-bty .section-tag { justify-content: center; }
+.bb-row-pagehero.bb-bty .bb-prose h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(36px, 6vw, 64px);
+  line-height: 1;
+  letter-spacing: -1.8px;
+  margin: 0 0 24px;
+}
+.bb-row-pagehero.bb-bty .bb-prose p {
+  font-size: clamp(16px, 1.8vw, 19px);
+  line-height: 1.65;
+  max-width: 620px;
+  margin: 0 auto 36px;
+}
+/* Числата: три равни колони под тънка линия. */
+.bb-row-pagehero.bb-bty .bb-prose .stat-pair {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  width: 33%;
+  padding-top: 32px;
+}
+.bb-row-pagehero.bb-bty .bb-prose .stat-pair:first-of-type {
+  border-top: 1px solid rgba(10, 37, 64, 0.12);
+  padding-left: 0;
+}
+.bb-row-pagehero.bb-bty .bb-prose .stat-pair,
+.bb-row-pagehero.bb-bty .bb-prose .stat-pair ~ .stat-pair {
+  border-top: 1px solid rgba(10, 37, 64, 0.12);
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.bb-row-pagehero.bb-bty .bb-prose .stat-pair strong {
+  font-size: clamp(32px, 4.4vw, 44px);
+  letter-spacing: -1.4px;
+  margin-bottom: 6px;
+}
+
+/* Заглавие на секция във вида на Beauty страницата. */
+.bb-row-headline.bb-bty .section-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  background: var(--color-pink-1);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--color-brand-pink);
+  margin-bottom: 14px;
+}
+/* Хапчето няма нужда от чертичката, с която идва надсловът иначе. */
+.bb-row-headline.bb-bty .section-tag::before { display: none; }
+.bb-row-headline.bb-bty .bb-prose h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(28px, 3.8vw, 42px);
+  line-height: 1.05;
+  letter-spacing: -1.2px;
+  margin: 0 0 12px;
+}
+.bb-row-headline.bb-bty .bb-prose h2 em,
+.bb-row-headline.bb-bty .bb-prose h2 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--color-brand-pink);
+}
+.bb-row-headline.bb-bty .bb-prose p {
+  font-size: 15px;
+  line-height: 1.65;
+  max-width: 540px;
+  margin: 0 auto;
+  color: rgba(10, 37, 64, 0.7);
+}
+
+/* Картите на ритуала: голям номер с засечки вместо икона. */
+.bb-row-forms.bb-bty { column-gap: 16px; row-gap: 16px; }
+.bb-row-forms.bb-bty > .bb-bd-col {
+  padding: 36px 28px;
+  border-radius: 20px;
+  border-color: rgba(10, 37, 64, 0.08);
+}
+.bb-row-forms.bb-bty > .bb-bd-col::before { display: none; }
+.bb-row-forms.bb-bty > .bb-bd-col:hover {
+  border-color: var(--color-brand-pink);
+  box-shadow: 0 20px 40px -16px rgba(227, 22, 108, 0.2);
+}
+.bb-row-forms.bb-bty .bb-prose .num {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--color-pink-2);
+  margin: 0;
+  flex: 0 0 auto;
+}
+.bb-row-forms.bb-bty .bb-prose h3 {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  margin: 14px 0 10px;
+}
+.bb-row-forms.bb-bty .bb-prose p { font-size: 13.5px; line-height: 1.65; }
+
+/* Продуктът: снимката стои на наклонена „сцена" с мек фон. */
+.bb-row-founder.bb-bty { column-gap: 80px; }
+.bb-row-founder.bb-bty::before { display: none; }
+.bb-row-founder.bb-bty .bb-bd-banners { margin: 0; }
+.bb-row-founder.bb-bty .bb-bd-banner,
+.bb-row-founder.bb-bty .bb-bd-banner-link {
+  aspect-ratio: 4 / 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  border-radius: 28px;
+  background: linear-gradient(135deg, var(--color-pink-1) 0%, var(--color-cream-2) 100%);
+  box-shadow: 0 40px 70px -20px rgba(10, 37, 64, 0.25);
+  transform: rotate(-2deg);
+  transition: transform 0.5s ease;
+}
+.bb-row-founder.bb-bty .bb-bd-banner:hover,
+.bb-row-founder.bb-bty .bb-bd-banner-link:hover { transform: rotate(0) scale(1.02); }
+.bb-row-founder.bb-bty .bb-bd-banner-img {
+  width: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: none;
+}
+.bb-row-founder.bb-bty .bb-prose h2 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -1.4px;
+}
+.bb-row-founder.bb-bty .bb-prose h2 .accent { font-style: italic; }
+.bb-row-founder.bb-bty .bb-prose p { font-size: 14.5px; margin-bottom: 12px; }
+
+/* Цитатът между двата продукта. */
+.bb-row-headline.bb-bty--quote .bb-prose h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.35;
+  letter-spacing: -0.8px;
+  max-width: 760px;
+  margin: 0 auto 14px;
+}
+.bb-row-headline.bb-bty--quote .bb-prose p {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(10, 37, 64, 0.45);
+}
+
 /* ── Каталог на щамовете: малки карти със снимка и име ──────────────────────
    Една колона = един щам. Първата колона е отличената („флагман").
    ────────────────────────────────────────────────────────────────────────── */
