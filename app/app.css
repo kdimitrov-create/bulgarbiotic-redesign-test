@@ -4438,6 +4438,40 @@ img.pm-banner {
   .bb-bd-col { grid-column: 1 / -1 !important; }
 }
 .bb-bd-col { grid-column: span 12; min-width: 0; }
+
+/* Ред с клас `bb-row-carousel`: колоните му се показват една по една.
+   Слайдовете стоят един върху друг, за да не подскача височината при смяна;
+   най-високият държи мястото. */
+.bb-bd-carousel { display: block; }
+.bb-bd-carousel-stage { display: grid; }
+.bb-bd-carousel-slide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.45s ease;
+  /* Скритият слайд не бива да лови мишката, нито да се озовава под таб. */
+  pointer-events: none;
+}
+.bb-bd-carousel-slide.is-on { opacity: 1; visibility: visible; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .bb-bd-carousel-slide { transition: none; }
+}
+.bb-bd-carousel-dots {
+  display: flex; justify-content: center; align-items: center; gap: 8px;
+  margin-top: 18px;
+}
+.bb-bd-carousel-dot {
+  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px;
+  background: rgba(10, 37, 64, 0.22); cursor: pointer;
+  transition: width 0.25s ease, background 0.25s ease;
+}
+.bb-bd-carousel-dot.on { width: 22px; background: var(--color-brand-pink); }
+/* Тъмните редове носят светли точки - иначе изчезват във фона. */
+.bb-row-awards .bb-bd-carousel-dot { background: rgba(255, 255, 255, 0.3); }
+.bb-row-awards .bb-bd-carousel-dot.on { background: #d4af6a; }
+.bb-bd-carousel-dot:focus-visible { outline: 2px solid var(--color-brand-pink); outline-offset: 3px; }
+
+
 .bb-bd-col-1 { grid-column: span 1; }
 .bb-bd-col-2 { grid-column: span 2; }
 .bb-bd-col-3 { grid-column: span 3; }
@@ -5748,7 +5782,7 @@ img.pm-banner {
     padding-right: 22px;
   }
 }
-.bb-row-awards > .bb-bd-col {
+.bb-row-awards .bb-bd-col {
   grid-column: auto;
   position: relative;
   z-index: 1;
@@ -5758,7 +5792,7 @@ img.pm-banner {
   gap: 28px;
 }
 @media (max-width: 880px) {
-  .bb-row-awards > .bb-bd-col { grid-template-columns: 1fr; justify-items: center; gap: 20px; }
+  .bb-row-awards .bb-bd-col { grid-template-columns: 1fr; justify-items: center; gap: 20px; }
 }
 /* Значката: рисуваният медальон вече е файл, за да може да се смени от панела. */
 .bb-row-awards .bb-bd-banners { margin: 0; }

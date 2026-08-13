@@ -1,4 +1,4 @@
-import {Fragment, useEffect, useRef, useState} from 'react';
+import React, {Fragment, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {entries, headingPairs, isOn, listItems, number, text} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
@@ -618,9 +618,93 @@ function renderRow(
   data?: BuilderData,
 ): React.ReactNode {
   const classes = rowClasses(row);
+  const columns = row.children ?? [];
+
+  // Ред с клас `bb-row-carousel` показва колоните си една по една.
+  //
+  // Прави се на ниво РЕД, а не с нов widget, защото един слайд тук е цяла
+  // композиция: снимка плюс текст плюс бутон, всяко от тях редактируемо в
+  // панела. Widget-ът „карусел" носи само снимки. Търговецът добавя следващия
+  // слайд, като добави колона.
+  if (rowHasClass(classes, 'bb-row-carousel') && columns.length > 1) {
+    return (
+      <ColumnCarousel key={idx} className={classes} style={rowStyle(row)}>
+        {columns.map((col, i) => renderColumn(col, i, sections, data, classes))}
+      </ColumnCarousel>
+    );
+  }
+
   return (
     <div key={idx} className={classes} style={rowStyle(row)}>
-      {(row.children ?? []).map((col, i) => renderColumn(col, i, sections, data, classes))}
+      {columns.map((col, i) => renderColumn(col, i, sections, data, classes))}
+    </div>
+  );
+}
+
+/** Колко стои един слайд, преди сам да отстъпи на следващия. */
+const CAROUSEL_MS = 7000;
+
+/**
+ * Колоните на един ред, показвани една по една.
+ *
+ * Спира да се върти, докато мишката е върху него или нещо вътре е на фокус -
+ * иначе текстът се сменя точно докато го четеш. Уважава и
+ * `prefers-reduced-motion`: тогава няма автоматично въртене, само точките.
+ */
+function ColumnCarousel({
+  className,
+  style,
+  children,
+}: {
+  className: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode[];
+}) {
+  const slides = React.Children.toArray(children);
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused || slides.length < 2) return;
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = window.setInterval(() => setIdx((i) => (i + 1) % slides.length), CAROUSEL_MS);
+    return () => window.clearInterval(timer);
+  }, [paused, slides.length]);
+
+  return (
+    <div
+      className={`${className} bb-bd-carousel`}
+      style={style}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      <div className="bb-bd-carousel-stage">
+        {slides.map((slide, i) => (
+          <div
+            key={i}
+            className={`bb-bd-carousel-slide${i === idx ? ' is-on' : ''}`}
+            aria-hidden={i !== idx}
+            {...(i !== idx ? {inert: ''} : {})}
+          >
+            {slide}
+          </div>
+        ))}
+      </div>
+      <div className="bb-bd-carousel-dots" role="tablist" aria-label="Слайдове">
+        {slides.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            role="tab"
+            aria-selected={i === idx}
+            aria-label={`Слайд ${i + 1}`}
+            className={`bb-bd-carousel-dot${i === idx ? ' on' : ''}`}
+            onClick={() => setIdx(i)}
+          />
+        ))}
+      </div>
     </div>
   );
 }
