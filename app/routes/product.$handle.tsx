@@ -6,6 +6,7 @@ import {markPricing} from '~/lib/product-marks';
 import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
 import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
+import {videoTitle} from '~/lib/product-video-titles';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductImageGallery} from '~/components/ProductImageGallery';
@@ -161,11 +162,11 @@ export default function ProductPage() {
 
       {/* FAQ accordion moved up (client 2026-07): now sits directly above the
           "Как работи пробиотикът" video section. Per-product questions. */}
-      <ProductFaq handle={product.handle} />
+      <ProductFaq handle={product.handle} productTitle={product.title} />
 
       {/* Long-form storytelling sections (NL Beauty-style scroll) */}
       <section id="video">
-        <ProductVideo handle={product.handle} />
+        <ProductVideo handle={product.handle} title={videoTitle(product.handle)} />
       </section>
 
       {/* Client 2026-08-05: the "Реални резултати" figures (94% / 89% / 3 303)
@@ -286,23 +287,33 @@ function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product:
       {/* Title — large, confident, and balanced. Mobile sits at ~26px
        * so even long names read as a strong headline (not a label),
        * desktop scales up to 32px. */}
-      <h1 className="text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
-        {product.title}
-      </h1>
+      {/* Заглавието и отзивите делят един ред (клиент, 13.08).
+        *
+        * Дотук отзивите заемаха свой ред под заглавието и бутаха всичко
+        * надолу - целта на клиента е „Купи" да се вижда без превъртане.
+        * Затова звездите отиват вдясно, на височината на последния ред от
+        * заглавието. На тесен екран се пренасят отдолу, както си беше.
+        *
+        * ⚠️ `min-w-0` на заглавието не е излишно: без него дълго име не се
+        * свива под съдържанието си и избутва звездите извън кутията. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        <h1 className="min-w-0 flex-1 text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
+          {product.title}
+        </h1>
 
-      {/* Rating above-fold */}
-      {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
-        <div className="mt-3 flex items-center gap-2.5">
-          <StarRating
-            rating={product.reviewSummary.averageRating}
-            count={product.reviewSummary.totalCount}
-            size="md"
-          />
-          <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
-            Виж отзивите →
-          </a>
-        </div>
-      )}
+        {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
+          <div className="flex shrink-0 items-center gap-2.5">
+            <StarRating
+              rating={product.reviewSummary.averageRating}
+              count={product.reviewSummary.totalCount}
+              size="md"
+            />
+            <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
+              Виж отзивите →
+            </a>
+          </div>
+        )}
+      </div>
 
       {/* BGolden Awards 2025 — small inline badge for instant authority */}
       <PdpAwardBadge />

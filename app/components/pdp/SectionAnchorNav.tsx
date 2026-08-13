@@ -35,12 +35,18 @@ const DEFAULT_SECTIONS: Section[] = [
  */
 function ensureIngredientsAnchor() {
   if (document.getElementById('ingredients')) return;
-  const root = document.getElementById('description');
-  if (!root) return;
-  for (const el of Array.from(root.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,b'))) {
+  /* ⚠️ Търси се в ЦЯЛАТА страница, не само в описанието.
+   *
+   * Дотук се гледаше само вътре в `#description` и точно затова бутонът
+   * „Съставки" не водеше наникъде: при Femin редът „Състав на продукта
+   * (в 1 капсула)" съществува, но стои ИЗВЪН описанието - в блока с
+   * подробностите. Търсенето не го намираше, котвата не се слагаше, а
+   * връзката оставаше видима и не мърдаше при натискане. */
+  const scope = document.getElementById('bb-pdp-main') ?? document.body;
+  for (const el of Array.from(scope.querySelectorAll('h1,h2,h3,h4,h5,h6,strong,b'))) {
     const text = (el.textContent ?? '').trim();
-    // Short line starting with "Състав" — a heading, not a sentence that
-    // happens to mention the word.
+    // Къс ред, започващ със „Състав" — заглавие, а не изречение, в което
+    // думата случайно се среща.
     if (text.length <= 80 && /^състав/i.test(text)) {
       const target = (el.closest('p') ?? el) as HTMLElement;
       target.id = 'ingredients';
@@ -66,9 +72,42 @@ export function SectionAnchorNav({sections = DEFAULT_SECTIONS}: Props = {}) {
   // worse than no link, so anything without a target is dropped once mounted.
   const [present, setPresent] = useState<string[] | null>(null);
 
+  /* Проверката се повтаря, а не се прави веднъж.
+   *
+   * ⚠️ Котвата за „Съставки" се слага РЪЧНО върху чужд елемент, а описанието
+   * се рисува през `dangerouslySetInnerHTML`. Пребоядиса ли React този блок
+   * (разгъването на „прочети повече" например), сложеното id изчезва заедно с
+   * него - връзката остава да стърчи и не води наникъде. Затова следим
+   * страницата и при промяна слагаме котвата наново и преброяваме кое го има.
+   */
   useEffect(() => {
-    ensureIngredientsAnchor();
-    setPresent(sections.filter((s) => document.getElementById(s.id)).map((s) => s.id));
+    let frame = 0;
+    const recheck = () => {
+      ensureIngredientsAnchor();
+      const next = sections.filter((s) => document.getElementById(s.id)).map((s) => s.id);
+      // ⚠️ Само при истинска промяна. Нов масив със същото съдържание води до
+      // ново рисуване, то е промяна по DOM-а, наблюдателят пак ще се обади -
+      // и въртележката няма край.
+      setPresent((prev) =>
+        prev && prev.length === next.length && prev.every((id, i) => id === next[i]) ? prev : next,
+      );
+    };
+    recheck();
+
+    const observer = new MutationObserver(() => {
+      // Съединяваме поредицата от промени в една проверка на кадър, за да не
+      // се брои дървото при всяко отделно докосване на DOM-а.
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        recheck();
+      });
+    });
+    observer.observe(document.body, {childList: true, subtree: true});
+    return () => {
+      observer.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, [sections]);
 
   const visibleSections = present ? sections.filter((s) => present.includes(s.id)) : sections;

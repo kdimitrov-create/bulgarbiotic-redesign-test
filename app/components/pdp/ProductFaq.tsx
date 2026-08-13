@@ -31,20 +31,30 @@ const GENERIC_FAQ: Array<{q: string; a: string}> = [
   },
 ];
 
-export function ProductFaq({handle}: {handle?: string}) {
+export function ProductFaq({handle, productTitle}: {handle?: string; productTitle?: string}) {
   const items = (handle && PRODUCT_FAQS[handle]) || GENERIC_FAQ;
   // Only cap the height (show ~5, scroll the rest) when there are more than 5.
   const scrolls = items.length > 5;
 
   return (
     <section id="faq" className="max-w-3xl mx-auto px-5 py-12 md:py-16" aria-labelledby="bb-pdp-faq-title">
+      {/* Таговете са разменени, видът е същият.
+        *
+        * Досега H2 беше „Имаш въпрос? Имаме отговор." - подканата, а не темата.
+        * За търсачката заглавието на секцията е „Често задавани въпроси", и то
+        * с името на продукта, защото всяка продуктова страница има свои
+        * въпроси. Затова надсловът става H2, а подканата - обикновен ред.
+        * Стиловете следват класовете, не таговете, тоест нищо не се мести. */}
       <div className="text-center mb-8">
-        <span className="inline-block text-[11px] font-bold uppercase tracking-[1.4px] text-[var(--color-brand-pink)] mb-3">
-          Често задавани въпроси
-        </span>
-        <h2 id="bb-pdp-faq-title" className="text-2xl md:text-3xl font-extrabold text-[var(--color-ink)] tracking-tight">
-          Имаш въпрос? Имаме отговор.
+        <h2
+          id="bb-pdp-faq-title"
+          className="inline-block text-[11px] font-bold uppercase tracking-[1.4px] text-[var(--color-brand-pink)] mb-3"
+        >
+          {productTitle ? `Често задавани въпроси за ${productTitle}` : 'Често задавани въпроси'}
         </h2>
+        <div className="text-2xl md:text-3xl font-extrabold text-[var(--color-ink)] tracking-tight">
+          Имаш въпрос? Имаме отговор.
+        </div>
       </div>
 
       <div className={`flex flex-col gap-3${scrolls ? ' bb-pdp-faq-scroll' : ''}`}>

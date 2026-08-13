@@ -318,14 +318,15 @@ export function LuckyWheel() {
                 })}
               </div>
               <div className="lw-hub">
-                {/* Емблемата на Bactology, същата която ползва и оригиналното
-                    колело (`data/wheel-hub-64.png` в неговото репо).
+                {/* Логото на марката в средата (клиент, 13.08).
+                    Дотук тук стоеше само розовата бактерия - тя е част от
+                    логото, но не е логото. Сега е самата словна марка.
 
-                    Дотук сочеше `/favicon.svg`, а той е шаблонният файл на
-                    Nitrogen - просто буквата „N". Файлът се зареждаше, затова
-                    нямаше счупена картинка; в средата на колелото стоеше чужда
-                    буква и изглеждаше, че логото е изчезнало. */}
-                <img src="/images/wheel-hub.png" alt="" width={64} height={64} />
+                    Взима се SVG-то, а не растер: кръгчето мени големината си
+                    според колелото (`--lw-size`), а буквите трябва да остават
+                    остри на всяка от тях. Марката е широка и ниска, затова
+                    `object-fit: contain` я вписва по ширина. */}
+                <img src="/logo.svg" alt="Bactology" width={200} height={80} />
               </div>
             </div>
 
@@ -382,7 +383,7 @@ export function LuckyWheel() {
         .lw-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;
           width:calc(var(--lw-size)*.255);height:calc(var(--lw-size)*.255);border-radius:50%;
           background:#fff;border:3px solid #e3166c;display:flex;align-items:center;
-          justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box}
+          justify-content:center;overflow:hidden;padding:9px 7px;box-sizing:border-box}
         .lw-hub img{width:100%;height:100%;object-fit:contain}
         .lw-spin{width:100%;padding:14px;border:0;border-radius:25px;background:#e3166c;
           color:#fff;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}

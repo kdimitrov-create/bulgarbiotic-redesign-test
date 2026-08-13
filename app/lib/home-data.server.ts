@@ -119,5 +119,37 @@ export async function fetchHomeSectionData(ctx: any): Promise<SectionData> {
     // друг с почти същите думи (клиент, 2026-08-10). Държим по един на човек.
     .filter((r, i, all) => all.findIndex((o) => o.name === r.name) === i)
     .slice(0, 6);
-  return {featuredProducts, familyPack, homeReviews, articles};
+  /* Оттук нататък пътува само това, което началната наистина рисува.
+   *
+   * ⚠️ Досега страницата носеше в кода си пълните описания на дузина продукта
+   * и целите текстове на статиите - хиляди думи, които никой компонент не
+   * чете. Проверено: картите ползват `title`, `handle`, `featuredImage`,
+   * `priceRange`, `variants`, `availableForSale`, `reviewSummary`; статиите -
+   * `title`, `handle`, `image`, `excerpt`. Нито едно от махнатите полета не се
+   * ползва на тази страница.
+   *
+   * Освен теглото, това е и дублирано съдържание: началната повтаряше дума по
+   * дума текста на дванадесет продуктови страници и три статии, което ги
+   * кара да си конкурират темата.
+   *
+   * Отзивите се четат ТУК, на сървъра, и излизат готови в `homeReviews` -
+   * затова суровият списък също не заминава надолу.
+   */
+  const slimProduct = (p: any) => {
+    if (!p) return p;
+    const {description, descriptionHtml, reviews, seo, ...rest} = p;
+    return rest;
+  };
+  const slimArticle = (a: any) => {
+    if (!a) return a;
+    const {contentHtml, content, body, seo, ...rest} = a;
+    return rest;
+  };
+
+  return {
+    featuredProducts: (featuredProducts as any[]).map(slimProduct),
+    familyPack: slimProduct(familyPack),
+    homeReviews,
+    articles: (articles as any[]).map(slimArticle),
+  };
 }

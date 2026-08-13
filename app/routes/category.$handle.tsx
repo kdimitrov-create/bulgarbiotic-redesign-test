@@ -84,10 +84,28 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
     }
   };
 
-  const [result, collections] = await Promise.all([
+  const [result, allCollections] = await Promise.all([
     fetchProducts(),
     ctx.storefront.getCollections(8).catch(() => []),
   ]);
+
+  /* Страничното меню ползва точно четири полета - и това е всичко, което
+   * заминава към браузъра.
+   *
+   * ⚠️ Мереното е грубо: описанията на осемте колекции тежат ~44 KB и до днес
+   * пътуваха с ВСЯКА категорийна страница. Тоест страницата за „перли" носеше
+   * в кода си текста на „за деца", „за жени", „за отслабване" и така нататък.
+   * Освен килограмите, това е и вътрешно дублирано съдържание - едни и същи
+   * абзаци на седем адреса, което размива темата на всяка от тях.
+   * `collections-content.ts` го казва направо: описанието на колекция е
+   * „almost always a 2-10 KB SEO-stuffed" текст. Нищо от него не се рисува тук.
+   */
+  const collections = (allCollections as any[]).map((c) => ({
+    id: c.id,
+    title: c.title,
+    handle: c.handle,
+    productsCount: c.productsCount,
+  }));
 
   if (!result) throw data('Категорията не е намерена', {status: 404});
 

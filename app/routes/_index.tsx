@@ -43,12 +43,37 @@ import {
   EMPTY_BUILDER_DATA,
 } from '~/lib/builder-data.server';
 
-export const meta: Route.MetaFunction = () =>
-  getSeoMeta({
+/* Началната беше единствената страница без картинка при споделяне.
+ *
+ * Продуктовите отдавна дават og:image, og:type и twitter:card - началната
+ * даваше само заглавие и описание. Тоест точно адресът, който се пуска в чат,
+ * във Facebook или в Messenger, излизаше като гол син линк без нищо до него.
+ * `getSeoMeta` строи целия набор, щом му се подадат `type`, `image` и `url`.
+ *
+ * Адресът се взима от root loader-а, защото og:image трябва да е пълен -
+ * относителен път не се разпознава от нито една социална мрежа.
+ */
+export const meta: Route.MetaFunction = ({matches}) => {
+  const origin =
+    ((matches ?? []).find((m: any) => m?.id === 'root')?.data as any)?.origin ?? '';
+  return getSeoMeta({
     title: 'Bactology - Български пробиотици с Lactobacillus bulgaricus',
     description:
       'Български пробиотици с автентичен Lactobacillus bulgaricus. 25+ научно проучени формули за червата, имунитета, женското здраве, децата и красотата. Доверени от 110 000+ семейства от 2019 г.',
+    type: 'website',
+    ...(origin ? {url: origin} : {}),
+    ...(origin
+      ? {
+          image: {
+            url: `${origin}/images/generated-v2/hero-family-pack.png`,
+            width: 1376,
+            height: 768,
+            altText: 'Пробиотиците на Bactology',
+          },
+        }
+      : {}),
   });
+};
 
 // "Продукти на фокус" — the exact homepage carousel line-up the client chose
 // (2026-07-24, from the live bulgarbiotic.bg grid screenshot), in their order.
