@@ -19,7 +19,7 @@ export function Marquee({items: given}: {items?: MarqueeItem[]} = {}) {
     {label: '', text: 'Наличие на естествени съставки'},
     {label: '', text: '5 пробиотични щама във всяка формула'},
     {label: '', text: 'Гарантирано 100% натурално'},
-    {label: '', text: '30 дни гаранция — връщаме парите'},
+    {label: '', text: '30 дни гаранция - връщаме парите'},
   ];
   const items = given && given.length ? given : fallback;
   // Duplicate for seamless infinite scroll

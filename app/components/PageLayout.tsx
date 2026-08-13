@@ -43,7 +43,7 @@ export function PageLayout({shop, headerMenu, footerMenu, adminFooter, cart, chi
       <CartToast />
       {/* Офертата, която платформата връща след добавяне в количката. */}
       <CrossSellOffer />
-      {/* Пали се при добавяне в количката — затова стои в layout-а, не в отделна страница. */}
+      {/* Пали се при добавяне в количката - затова стои в layout-а, не в отделна страница. */}
       <LuckyWheel />
     </div>
   );

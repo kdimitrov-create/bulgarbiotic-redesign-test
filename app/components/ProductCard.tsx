@@ -78,7 +78,7 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           />
         )}
 
-        {/* „Любими“ е изключено в модула „Продуктов каталог“ (клиент 2026-08-04) —
+        {/* „Любими“ е изключено в модула „Продуктов каталог“ (клиент 2026-08-04) -
             сърцето е махнато от картите, каруселите и продуктовата страница. */}
 
         {/* Every badge on this card — labels, the strains mark, the Forbes
@@ -128,7 +128,7 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
 
         <DiscountCountdown product={p} surface="listing" className="mt-1.5" />
 
-        {/* "Купи" — same button as the home carousel (client request). */}
+        {/* "Купи" - same button as the home carousel (client request). */}
         <CardBuyButton merchandiseId={p.variants?.nodes?.[0]?.id} handle={product.handle} />
       </div>
     </Link>

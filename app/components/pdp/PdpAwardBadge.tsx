@@ -33,7 +33,7 @@ export function PdpAwardBadge() {
       </svg>
     </Link>
 
-      {/* Client 2026-08-05: "тука не се разбира въобще какво е това" — the bare
+      {/* Client 2026-08-05: "тука не се разбира въобще какво е това" - the bare
           Forbes graphic said nothing on its own, so it is spelled out. Same
           image the merchant uses as a product banner, now with its own label. */}
       <div className="bb-pdp-award-forbes">

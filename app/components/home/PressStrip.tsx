@@ -31,7 +31,7 @@ const OUTLETS: Outlet[] = [
   },
   {
     name: 'Mediapool', family: 'sans', tagline: 'News',
-    headline: 'Bactology Babies & Kids – пробиотични перли с млечен шоколад за силен детски имунитет',
+    headline: 'Bactology Babies & Kids - пробиотични перли с млечен шоколад за силен детски имунитет',
     article: 'bactology-babies-kids-probiotichni-perli-s-mlechen-shokolad-za-silen-detski-imunitet',
   },
   {

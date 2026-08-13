@@ -118,7 +118,7 @@ export async function adminListAll<T>(
     after = page?.pageInfo?.hasNextPage ? page.pageInfo.endCursor : null;
     if (after && pages >= MAX_PAGES) {
       console.warn(
-        `admin-api: ${opts.label ?? opts.root} спря на ${MAX_PAGES * PAGE_SIZE} реда — останалите не се четат. Вдигни MAX_PAGES.`,
+        `admin-api: ${opts.label ?? opts.root} спря на ${MAX_PAGES * PAGE_SIZE} реда - останалите не се четат. Вдигни MAX_PAGES.`,
       );
       after = null;
     }

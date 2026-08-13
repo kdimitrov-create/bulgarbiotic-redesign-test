@@ -47,7 +47,7 @@ const COLUMN_GOAL: ColumnSpec = {
     {label: 'Женско здраве', to: '/category/probiotik-za-jeni', hint: 'Интимно здраве'},
     {label: 'Стрес и сън', to: '/product/bactology-anti-stress', hint: 'Anti Stress'},
     {label: 'За отслабване', to: '/category/probiotik-za-otslabvane', hint: 'Микробиом и метаболизъм'},
-    {/* „Отслабване" беше дубликат на „За отслабване" (същата категория) — махнат 2026-08-04. */}
+    {/* „Отслабване" беше дубликат на „За отслабване" (същата категория) - махнат 2026-08-04. */}
   ],
 };
 
@@ -79,7 +79,7 @@ const FEATURED_PRODUCT = {
   handle: 'bactology-probiotik-za-jeni-femin',
   title: 'Bactology Femin',
   tag: 'Бестселър №1',
-  blurb: 'Пробиотик за женско интимно здраве — препоръчван от гинеколози.',
+  blurb: 'Пробиотик за женско интимно здраве - препоръчван от гинеколози.',
   image: '/images/generated-v2/p-femin.png',
 };
 

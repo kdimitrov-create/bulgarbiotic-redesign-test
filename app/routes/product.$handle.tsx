@@ -144,18 +144,18 @@ export default function ProductPage() {
       </div>
 
       {/* Dynamic USP marquee (client 2026-07): the scrolling USP strip sits
-          between the gallery and the certifications — in the slot the "Ключови
+          between the gallery and the certifications - in the slot the "Ключови
           ползи" band used to occupy (which moved up into the buy-box column). */}
       <Marquee />
 
-      {/* Quality certification stickers — moved UP here (client: "стикерите за
+      {/* Quality certification stickers - moved UP here (client: "стикерите за
           качество над описанието"). Was previously rendered low on the page. */}
       <CertificationsStrip />
 
       {/* Sticky jump-to-section nav (Slice 3) */}
       <SectionAnchorNav />
 
-      {/* Product description at the top (client reorder: "описанието най-горе") —
+      {/* Product description at the top (client reorder: "описанието най-горе") -
           extracted from the old tabs; still collapses with "прочети повече". */}
       <ProductDescription descriptionHtml={product.descriptionHtml} />
 
@@ -183,7 +183,7 @@ export default function ProductPage() {
         <ComparisonTable {...getProductComparison(product.handle, product.title)} />
       </section>
 
-      {/* Tabbed deep details — Описание / Употреба / Спец. / Доставка / ЧЗВ */}
+      {/* Tabbed deep details - Описание / Употреба / Спец. / Доставка / ЧЗВ */}
       <section id="tabs" className="bb-pdp-tabs-wrap">
         <ProductTabs
           descriptionHtml={product.descriptionHtml}

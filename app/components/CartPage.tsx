@@ -92,7 +92,7 @@ export function CartPage({cart}: {cart: CartData | null}) {
               {isFreeShip ? (
                 <>
                   <span className="bb-cart-shipping-icon" aria-hidden="true">✓</span>
-                  Поздравления — <strong>безплатна доставка</strong> е включена!
+                  Поздравления - <strong>безплатна доставка</strong> е включена!
                 </>
               ) : (
                 <>

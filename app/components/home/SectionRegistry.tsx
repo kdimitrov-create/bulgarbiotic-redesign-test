@@ -82,7 +82,7 @@ export const HOME_SECTIONS: Section[] = [
     label: 'Продукти на фокус (карусел)',
     render: (d) => <FeaturedProducts products={d.featuredProducts ?? []} />,
   },
-  {marker: 'doverie', label: 'Доверие — числата', render: () => <Doverie />},
+  {marker: 'doverie', label: 'Доверие - числата', render: () => <Doverie />},
   {marker: 'doctors', label: 'Какво казва медицината (лекари)', render: () => <DoctorsSection />},
   {
     marker: 'bundle',

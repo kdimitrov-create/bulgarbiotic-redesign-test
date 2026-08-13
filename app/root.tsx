@@ -23,7 +23,7 @@ import {PageLayout} from '~/components/PageLayout';
 import '~/app.css';
 import {CART_ACTION} from '~/lib/cart-action';
 
-export const meta: MetaFunction = () => getSeoMeta({title: 'Bulgar Biotic — Български пробиотици Bactology'});
+export const meta: MetaFunction = () => getSeoMeta({title: 'Bulgar Biotic - Български пробиотици Bactology'});
 
 export const shouldRevalidate: Route.ShouldRevalidateFunction = ({formMethod, currentUrl, nextUrl}) => {
   if (formMethod && formMethod !== 'GET') return true;

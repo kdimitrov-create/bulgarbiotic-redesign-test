@@ -22,9 +22,9 @@ import {enhanceProducts} from '~/lib/product-images';
 
 export const meta: Route.MetaFunction = () =>
   getSeoMeta({
-    title: 'Всички продукти | Bactology — Български пробиотици',
+    title: 'Всички продукти | Bactology - Български пробиотици',
     description:
-      'Разгледай всички пробиотични продукти на Bactology — 25+ научно проучени формули за червата, имунитета, женското здраве, децата и красотата. Произведено в България.',
+      'Разгледай всички пробиотични продукти на Bactology - 25+ научно проучени формули за червата, имунитета, женското здраве, децата и красотата. Произведено в България.',
   });
 
 const PAGE_SIZE = 12;
@@ -98,7 +98,7 @@ export default function ProductsIndex() {
           </h1>
           <p className="bb-listing-hero-sub">
             25+ научно проучени формули с автентичен Lactobacillus bulgaricus.
-            Намери своя — за червата, имунитета, женското здраве, децата и красотата.
+            Намери своя - за червата, имунитета, женското здраве, децата и красотата.
           </p>
         </div>
         <div className="bb-listing-hero-count" aria-label={`${totalCount} продукта в каталога`}>

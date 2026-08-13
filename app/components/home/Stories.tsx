@@ -9,7 +9,7 @@ const TILES: Tile[] = [
   {kind: 'video', shape: 'vertical', img: '/images/ugc-stills/ugc-2-colongic-palm.png', handle: '@marina_a', meta: '2 мес', reelId: null},
   {kind: 'video', shape: 'square', img: '/images/ugc-stills/ugc-3-anti-stress-talking.png', handle: '@yana.k', meta: 'опит', reelId: null},
   {kind: 'video', shape: 'horizontal', img: '/images/ugc-stills/ugc-4-shelf-flat.png', handle: '@dom_in_pastel', reelId: null},
-  {kind: 'quote', text: 'Bактology прилага към пробиотиците стандарти, познати само от лекарствената индустрия — и това им печели лоялност от 110 000+ клиенти.', source: 'Forbes Bulgaria'},
+  {kind: 'quote', text: 'Bактology прилага към пробиотиците стандарти, познати само от лекарствената индустрия - и това им печели лоялност от 110 000+ клиенти.', source: 'Forbes Bulgaria'},
   {kind: 'video', shape: 'vertical', img: '/images/ugc-stills/ugc-5-babies-mom.png', handle: '@nia.mama', reelId: null},
   {kind: 'video', shape: 'vertical', img: '/images/ugc-stills/ugc-6-pearls-cafe.png', handle: '@active_kris', reelId: null},
   {kind: 'video', shape: 'horizontal', img: '/images/ugc-stills/ugc-7-family-kitchen.png', handle: '@petrov_family', reelId: null},
@@ -66,7 +66,7 @@ export function Stories() {
           <div>
             <div className="section-tag">@bulgarbiotic · Instagram</div>
             <h2 className="bb-stories-h2">Истории от хора,<br />които ни се <span className="accent">доверяват.</span></h2>
-            <p className="bb-stories-lead">Реални reels на @bulgarbiotic — публикуваме нови всяка седмица.</p>
+            <p className="bb-stories-lead">Реални reels на @bulgarbiotic - публикуваме нови всяка седмица.</p>
           </div>
 
           <div className="bb-now-playing">

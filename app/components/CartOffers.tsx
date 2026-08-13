@@ -31,10 +31,10 @@ export function CartOffersStrip({subtotalEur}: {subtotalEur: number}) {
                 Печелиш <strong>{gift.productTitle}</strong>
                 {gift.free ? (
                   <>
-                    {' '}— добавя се към поръчката за <strong className="accent">0,00 €</strong>
+                    {' '}- добавя се към поръчката за <strong className="accent">0,00 €</strong>
                   </>
                 ) : (
-                  <> — добавя се към поръчката</>
+                  <> - добавя се към поръчката</>
                 )}
               </>
             ) : (

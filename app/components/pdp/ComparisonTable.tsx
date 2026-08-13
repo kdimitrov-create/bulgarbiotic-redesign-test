@@ -12,8 +12,8 @@ interface Props {
 }
 
 const DEFAULT_ROWS: Row[] = [
-  {feature: 'Брой активни бактерии (CFU)',         others: '1–10 млрд',  bactology: '50 милиарда'},
-  {feature: 'Брой клинично доказани щамове',        others: '1–2',         bactology: '5 на формула'},
+  {feature: 'Брой активни бактерии (CFU)',         others: '1-10 млрд',  bactology: '50 милиарда'},
+  {feature: 'Брой клинично доказани щамове',        others: '1-2',         bactology: '5 на формула'},
   {feature: 'Lactobacillus bulgaricus (БГ щам)',    others: false,         bactology: true},
   {feature: 'DR-Caps™ растителни капсули',          others: false,         bactology: true},
   {feature: 'Издържа на стомашна киселина',         others: 'Понякога',    bactology: true},

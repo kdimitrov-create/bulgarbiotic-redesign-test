@@ -11,7 +11,7 @@ import {fetchArticleImages} from '~/lib/blog-images.server';
 export const meta: Route.MetaFunction = ({data: d}) => getSeoMeta({
   title: d?.blog ? `${d.blog.title} | Bactology Блог` : 'Блог | Bactology',
   description:
-    'Знание за микробиома — експертно съдържание за храносмилане, имунитет, женско здраве и красота. Без жаргон, базирано на наука.',
+    'Знание за микробиома - експертно съдържание за храносмилане, имунитет, женско здраве и красота. Без жаргон, базирано на наука.',
 });
 
 export async function loader({params, context, request}: Route.LoaderArgs) {

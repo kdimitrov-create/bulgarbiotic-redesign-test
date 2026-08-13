@@ -32,7 +32,7 @@ export function BeautyPageContent() {
           <p className="bb-bty-manifesto-p">
             Не на повърхността. Не във флакончето с крем. А в баланса на
             микроелементи, които всеки ден захранват кожата, косата и
-            ноктите ти — клетка по клетка.
+            ноктите ти - клетка по клетка.
           </p>
           <div className="bb-bty-manifesto-stats">
             <div>
@@ -62,9 +62,9 @@ export function BeautyPageContent() {
         </div>
         <div className="bb-bty-ritual-grid">
           {[
-            {n: '01', h: 'Събуди се', p: 'Преди кафето — една капсула с глътка вода активира абсорбцията през деня.'},
+            {n: '01', h: 'Събуди се', p: 'Преди кафето - една капсула с глътка вода активира абсорбцията през деня.'},
             {n: '02', h: 'Хапни нещо', p: 'Малка закуска осигурява буфера, който позволява микроелементите да се усвоят оптимално.'},
-            {n: '03', h: 'Чакай 30 дни', p: 'Ноктите растат първи. Косата — след 4-6 седмици. Кожата — след 6-8 седмици.'},
+            {n: '03', h: 'Чакай 30 дни', p: 'Ноктите растат първи. Косата - след 4-6 седмици. Кожата - след 6-8 седмици.'},
           ].map((s) => (
             <div key={s.n} className="bb-bty-ritual-card">
               <span className="bb-bty-ritual-n">{s.n}</span>
@@ -102,10 +102,10 @@ export function BeautyPageContent() {
           <div className="bb-bty-ing-section">
             <div className="bb-bty-ing-label">Активни съставки · 5</div>
             <ul className="bb-bty-ing-list">
-              <li><span className="bb-bty-ing-dot" /> <strong>Биотин</strong> — стимулира растежа и здравината</li>
+              <li><span className="bb-bty-ing-dot" /> <strong>Биотин</strong> - стимулира растежа и здравината</li>
               <li><span className="bb-bty-ing-dot" /> <strong>Витамини A, C, E, D3 + B-комплекс</strong></li>
-              <li><span className="bb-bty-ing-dot" /> <strong>Желязо</strong> — за здрав корен и пълнота</li>
-              <li><span className="bb-bty-ing-dot" /> <strong>Силиций</strong> — против цепещи се нокти</li>
+              <li><span className="bb-bty-ing-dot" /> <strong>Желязо</strong> - за здрав корен и пълнота</li>
+              <li><span className="bb-bty-ing-dot" /> <strong>Силиций</strong> - против цепещи се нокти</li>
             </ul>
           </div>
 
@@ -141,7 +141,7 @@ export function BeautyPageContent() {
           Когато коренът е здрав, растежът се случва от само себе си.<br />
           <em>Това важи и за косата. Важи и за кожата.</em>
         </blockquote>
-        <span className="bb-bty-quote-attribution">— философията на Bactology Beauty</span>
+        <span className="bb-bty-quote-attribution">- философията на Bactology Beauty</span>
       </aside>
 
       {/* ─── PRODUCT 2: SKIN — right image / left content ─── */}
@@ -153,16 +153,16 @@ export function BeautyPageContent() {
           </h2>
           <p className="bb-bty-product-lead">
             Bactology съчетава синергичното действие на колаген, хиалуронова
-            киселина и коензим Q10 — съставки, които стимулират собственото
+            киселина и коензим Q10 - съставки, които стимулират собственото
             производство на колаген в дермата.
           </p>
 
           <div className="bb-bty-ing-section">
             <div className="bb-bty-ing-label">Активни съставки · 6</div>
             <ul className="bb-bty-ing-list">
-              <li><span className="bb-bty-ing-dot" /> <strong>Колаген</strong> — структурата на кожата</li>
-              <li><span className="bb-bty-ing-dot" /> <strong>Хиалуронова киселина</strong> — хидратация отвътре</li>
-              <li><span className="bb-bty-ing-dot" /> <strong>Коензим Q10</strong> — против стареене</li>
+              <li><span className="bb-bty-ing-dot" /> <strong>Колаген</strong> - структурата на кожата</li>
+              <li><span className="bb-bty-ing-dot" /> <strong>Хиалуронова киселина</strong> - хидратация отвътре</li>
+              <li><span className="bb-bty-ing-dot" /> <strong>Коензим Q10</strong> - против стареене</li>
               <li><span className="bb-bty-ing-dot" /> <strong>Витамини A, C, E, D</strong> + <strong>Биотин</strong></li>
             </ul>
           </div>
@@ -209,7 +209,7 @@ export function BeautyPageContent() {
           <span className="bb-bty-tag bb-bty-tag--gold">Времева линия</span>
           <h2 className="bb-bty-h2">Кога ще видиш разликата?</h2>
           <p className="bb-bty-section-sub bb-bty-section-sub--light">
-            Бавно и устойчиво — никога драматично за един ден.
+            Бавно и устойчиво - никога драматично за един ден.
             Истинската красота е процес.
           </p>
         </div>
@@ -219,7 +219,7 @@ export function BeautyPageContent() {
             {when: 'Седмица 1-2', what: 'Ноктите спират да се чупят. Усещаш разлика в текстурата.', hl: 'НОКТИ'},
             {when: 'Седмица 3-4', what: 'Косата изглежда по-плътна. По-малко падане при сресване.', hl: 'КОСАТА'},
             {when: 'Месец 2', what: 'Кожата става по-хидратирана. Линиите изглеждат по-меки.', hl: 'КОЖАТА'},
-            {when: 'Месец 3', what: 'Пълна трансформация — устойчиви резултати при редовен прием.', hl: 'УСТОЙЧИВО'},
+            {when: 'Месец 3', what: 'Пълна трансформация - устойчиви резултати при редовен прием.', hl: 'УСТОЙЧИВО'},
           ].map((t, i) => (
             <div key={i} className="bb-bty-timeline-item">
               <span className="bb-bty-timeline-dot" />
@@ -237,7 +237,7 @@ export function BeautyPageContent() {
           <span className="bb-bty-tag">Кой за какво</span>
           <h2 className="bb-bty-h2">Не си сигурна коя ти трябва?</h2>
           <p className="bb-bty-section-sub">
-            Двете формули са създадени да работят заедно — но всяка решава
+            Двете формули са създадени да работят заедно - но всяка решава
             конкретен проблем най-добре.
           </p>
         </div>
@@ -258,16 +258,16 @@ export function BeautyPageContent() {
           </div>
 
           {[
-            ['Косопад', '✓', '—'],
-            ['Чупливи нокти', '✓', '—'],
-            ['Сухота на скалпа', '✓', '—'],
-            ['Бръчки и фини линии', '—', '✓'],
-            ['Загуба на еластичност', '—', '✓'],
-            ['Кожни раздразнения', '—', '✓'],
+            ['Косопад', '✓', '-'],
+            ['Чупливи нокти', '✓', '-'],
+            ['Сухота на скалпа', '✓', '-'],
+            ['Бръчки и фини линии', '-', '✓'],
+            ['Загуба на еластичност', '-', '✓'],
+            ['Кожни раздразнения', '-', '✓'],
             ['Биотин', '✓', '✓'],
-            ['Колаген + хиалурон', '—', '✓'],
-            ['Желязо + силиций', '✓', '—'],
-            ['Коензим Q10', '—', '✓'],
+            ['Колаген + хиалурон', '-', '✓'],
+            ['Желязо + силиций', '✓', '-'],
+            ['Коензим Q10', '-', '✓'],
             ['1 капсула дневно', '✓', '✓'],
           ].map(([label, a, b], i) => (
             <div key={i} className="bb-bty-cmp-row">
@@ -279,18 +279,18 @@ export function BeautyPageContent() {
         </div>
 
         <p className="bb-bty-cmp-tip">
-          💡 <strong>Препоръка:</strong> За най-добри резултати — комбинирай и
+          💡 <strong>Препоръка:</strong> За най-добри резултати - комбинирай и
           двете. Прием: <em>Hair &amp; Nails сутрин, Skin Formula вечер.</em>
         </p>
       </section>
 
-      {/* ─── BENTO UGC GRID — "Истински жени, истински резултати" ─── */}
+      {/* ─── BENTO UGC GRID - "Истински жени, истински резултати" ─── */}
       <section className="bb-bty-ugc not-prose">
         <div className="bb-bty-section-head">
           <span className="bb-bty-tag">Истински жени</span>
           <h2 className="bb-bty-h2">Българки, които вече знаят</h2>
           <p className="bb-bty-section-sub">
-            Какво казват клиентките ни — със собствените им думи.
+            Какво казват клиентките ни - със собствените им думи.
           </p>
         </div>
 
@@ -299,7 +299,7 @@ export function BeautyPageContent() {
             <figcaption>
               <span className="bb-bty-bento-tag">Hair &amp; Nails</span>
               <blockquote>"Косата ми спря да пада за 3 седмици. Никога преди не съм имала такъв ефект от хранителна добавка."</blockquote>
-              <span className="bb-bty-bento-name">— Елена П.</span>
+              <span className="bb-bty-bento-name">- Елена П.</span>
             </figcaption>
           </figure>
 
@@ -307,7 +307,7 @@ export function BeautyPageContent() {
             <figcaption>
               <span className="bb-bty-bento-tag">Skin Formula</span>
               <blockquote>"Кожата ми се промени драматично. Линиите под очите се изгладиха."</blockquote>
-              <span className="bb-bty-bento-name">— Стоянка К.</span>
+              <span className="bb-bty-bento-name">- Стоянка К.</span>
             </figcaption>
           </figure>
 
@@ -335,7 +335,7 @@ export function BeautyPageContent() {
             <em>Тридесет дни до първата разлика.</em>
           </h2>
           <p className="bb-bty-finale-p">
-            Високо качествени активни формули за коса, кожа и нокти —
+            Високо качествени активни формули за коса, кожа и нокти -
             произведени в България, с фармацевтичен стандарт.
           </p>
           <div className="bb-bty-finale-actions">

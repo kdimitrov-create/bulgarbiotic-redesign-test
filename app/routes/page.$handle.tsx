@@ -246,7 +246,7 @@ function DisneylandGiveawayPage({page}: {page: any}) {
     <PageShell
       title="Спечели семейна екскурзия до Дисниленд в Париж"
       tag="✦ Кампания · Декември 2025"
-      lead="Купи продукти на стойност над 50 € и автоматично участваш в томболата за семейна екскурзия до Дисниленд Париж — Bactology × Happy Family Travel."
+      lead="Купи продукти на стойност над 50 € и автоматично участваш в томболата за семейна екскурзия до Дисниленд Париж - Bactology × Happy Family Travel."
       breadcrumbs={[]}
       variant="wide"
     >
@@ -255,7 +255,7 @@ function DisneylandGiveawayPage({page}: {page: any}) {
           <div className="bb-giveaway-card">
             <div className="bb-giveaway-num">1</div>
             <h3>Поръчай за 50+ €</h3>
-            <p>Сложи всичко, което те вълнува, в кошницата. Над 50 € — поръчката участва.</p>
+            <p>Сложи всичко, което те вълнува, в кошницата. Над 50 € - поръчката участва.</p>
           </div>
           <div className="bb-giveaway-card">
             <div className="bb-giveaway-num">2</div>
@@ -442,21 +442,21 @@ function DisneylandGiveawayPage({page}: {page: any}) {
 // headline, deliberately not rendered.
 const PRESS_LIST = [
   {outlet: 'ELLE', region: 'България', headline: '10 успели жени празнуват живота с Bulgar Biotic', url: 'https://www.elle.bg/a/10-uspeli-zheni-praznuvat-zhivota-s-bulgar-biotik'},
-  {outlet: 'Cosmopolitan', region: 'България', headline: 'Bulgar Biotic — вдъхновение от традициите и природата', url: 'https://www.cosmopolitan.bg/a/bulgar-biotik-vdxnovenie-ot-tradiciite-i-prirodata'},
+  {outlet: 'Cosmopolitan', region: 'България', headline: 'Bulgar Biotic - вдъхновение от традициите и природата', url: 'https://www.cosmopolitan.bg/a/bulgar-biotik-vdxnovenie-ot-tradiciite-i-prirodata'},
   {outlet: '24 часа', region: 'Daily', headline: 'Българска фирма впечатли германците с пробиотици с шоколад', url: 'https://www.24chasa.bg/bulgaria/article/17511201'},
   {outlet: 'Mediapool', region: 'News', headline: 'Изсушено кисело мляко под формата на перли в нов шоколадов пробиотик', url: 'https://www.mediapool.bg/izsusheno-kiselo-mlyako-pod-formata-na-perli-v-nov-shokoladov-probiotik-news302802.html'},
   {outlet: 'Manager', region: 'Бизнес', headline: 'Bulgar Biotic: вдъхновение от традициите и природата', url: 'https://manager.bg/общество/bulgar-biotik-vdahnovenie-ot-tradiciite-i-prirodata'},
-  {outlet: 'az-жената', region: 'Здраве и красота', headline: 'Bulgar Biotic — здраве и красота', url: 'https://www.az-jenata.bg/a/5-zdrave-i-krasota/69992-bulgar-biotik'},
+  {outlet: 'az-жената', region: 'Здраве и красота', headline: 'Bulgar Biotic - здраве и красота', url: 'https://www.az-jenata.bg/a/5-zdrave-i-krasota/69992-bulgar-biotik'},
   {outlet: 'Mila', region: 'Lifestyle', headline: 'Bulgar Biotic и нашите традиции', url: 'https://www.mila.bg/Article/17511480'},
   {outlet: 'Mama 24', region: 'За майки', headline: 'Bulgar Biotic за цялото семейство', url: 'https://www.mama24.bg/Article/17512059'},
   {outlet: 'Cosmopolitan', region: 'България', headline: 'Празникът на майката събра 10 инфлуенсърки около обредния хляб', url: 'https://www.jenatadnes.com/hrana-za-tialoto-i-dushata/bulgar-biotik-vdahnovenie-ot-traditsiite-i-prirodata/'},
   {outlet: 'BG днес', region: 'Шоу', headline: 'Bulgar Biotic ни връща при обичаните ни празници', url: 'https://www.bgdnes.bg/shou/article/17511571'},
   {outlet: 'Bulgaria News', region: 'Новини', headline: 'Българска компания представя пробиотици в Истанбул', url: 'https://bulgarianews.bg/2024/03/27/булгар-биотик-вдъхновение-от-традици/'},
   {outlet: 'Skandal', region: 'News', headline: 'Българска компания представя пробиотици в Истанбул', url: 'https://skandal.bg/news/16553899311558/balgarska-kompaniya-predstavya-probiotitsi-v-istanbul'},
-  {outlet: 'Грaнd News', region: 'EU', headline: 'Bulgar Biotic — вдъхновение от традициите и природата', url: 'https://grand-news.eu/булгар-биотик-вдъхновение-от-традици/'},
+  {outlet: 'Грaнd News', region: 'EU', headline: 'Bulgar Biotic - вдъхновение от традициите и природата', url: 'https://grand-news.eu/булгар-биотик-вдъхновение-от-традици/'},
   {outlet: 'Rozali', region: 'Любопитно', headline: 'Благовещение с Bulgar Biotic', url: 'https://m.rozali.com/novini/lyubopitno/blagoveshtenie-s-bulgar-biotik.html'},
-  {outlet: 'Жената днес', region: 'Здраве', headline: 'Bulgar Biotic — вдъхновение от традициите и природата', url: 'https://www.jenatadnes.com/hrana-za-tialoto-i-dushata/bulgar-biotik-vdahnovenie-ot-traditsiite-i-prirodata/'},
-  {outlet: 'Actualno', region: 'News', headline: 'Bulgar Biotic — събрани публикации', url: 'https://www.actualno.com/tagnews/булгар-биотик.html'},
+  {outlet: 'Жената днес', region: 'Здраве', headline: 'Bulgar Biotic - вдъхновение от традициите и природата', url: 'https://www.jenatadnes.com/hrana-za-tialoto-i-dushata/bulgar-biotik-vdahnovenie-ot-traditsiite-i-prirodata/'},
+  {outlet: 'Actualno', region: 'News', headline: 'Bulgar Biotic - събрани публикации', url: 'https://www.actualno.com/tagnews/булгар-биотик.html'},
 ];
 
 function MediaPressPage({page}: {page: any}) {
@@ -464,7 +464,7 @@ function MediaPressPage({page}: {page: any}) {
     <PageShell
       title="Медиите за нас"
       tag="Press kit · 16+ публикации"
-      lead="Bulgar Biotic в медиите — реални публикации от ELLE, Cosmopolitan, 24 часа, Mediapool, Manager и още водещи български издания."
+      lead="Bulgar Biotic в медиите - реални публикации от ELLE, Cosmopolitan, 24 часа, Mediapool, Manager и още водещи български издания."
       breadcrumbs={[]}
       variant="wide"
     >
@@ -481,7 +481,7 @@ function MediaPressPage({page}: {page: any}) {
       </div>
 
       <p className="bb-press-list-note">
-        Журналисти и редактори — за интервюта, мостри или въпроси относно Bulgar Biotic / Bactology,
+        Журналисти и редактори - за интервюта, мостри или въпроси относно Bulgar Biotic / Bactology,
         свържи се с нас на{' '}
         <a href="mailto:bulgarbiotic.eu@gmail.com">bulgarbiotic.eu@gmail.com</a>.
       </p>

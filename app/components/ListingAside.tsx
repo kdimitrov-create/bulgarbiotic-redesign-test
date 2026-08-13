@@ -138,7 +138,7 @@ export function ListingAside({filters = [], totalCount, collections}: Props) {
         <div className="bb-aside-quiz">
           <div className="bb-aside-quiz-title">Не знаеш кой ти трябва?</div>
           <div className="bb-aside-quiz-sub">
-            2 въпроса — реална препоръка от каталога ни за 30 секунди.
+            2 въпроса - реална препоръка от каталога ни за 30 секунди.
           </div>
           <button
             type="button"

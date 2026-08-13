@@ -29,7 +29,7 @@ export interface CollectionIntro {
 export const COLLECTION_INTROS: Record<string, CollectionIntro> = {
   'all-products': {
     tag: 'Каталог',
-    intro: 'Всички формули на Bactology — за червата, имунитета, женското здраве, децата и красотата.',
+    intro: 'Всички формули на Bactology - за червата, имунитета, женското здраве, децата и красотата.',
   },
   'probiotik-za-jeni': {
     tag: 'За женското здраве',
@@ -39,7 +39,7 @@ export const COLLECTION_INTROS: Record<string, CollectionIntro> = {
   },
   'probiotik-za-deca': {
     tag: 'За децата',
-    intro: 'Babies & Kids — нежни формули, които децата обичат на вкус.',
+    intro: 'Babies & Kids - нежни формули, които децата обичат на вкус.',
   },
   'probiotik-za-otslabvane': {
     tag: 'За плосък корем',
@@ -47,19 +47,19 @@ export const COLLECTION_INTROS: Record<string, CollectionIntro> = {
   },
   'perli': {
     tag: 'Innovation',
-    intro: 'Пробиотични перли с натурален млечен или кето шоколад — иновативна форма за всеки ден.',
+    intro: 'Пробиотични перли с натурален млечен или кето шоколад - иновативна форма за всеки ден.',
   },
   'pets': {
     tag: 'За домашни любимци',
-    intro: 'Bactology Pets — пробиотик за кучета и котки. Здрав микробиом, козина и имунитет.',
+    intro: 'Bactology Pets - пробиотик за кучета и котки. Здрав микробиом, козина и имунитет.',
   },
   'packages': {
     tag: 'Пакети с отстъпка',
-    intro: 'Family Pack, Travel Pack и още комплекти — спести когато подкрепяш цялото семейство.',
+    intro: 'Family Pack, Travel Pack и още комплекти - спести когато подкрепяш цялото семейство.',
   },
   'podaraci': {
     tag: 'Подаръци',
-    intro: 'Готови подаръчни пакети — за рожден ден, празник или просто "защото".',
+    intro: 'Готови подаръчни пакети - за рожден ден, празник или просто "защото".',
   },
 };
 

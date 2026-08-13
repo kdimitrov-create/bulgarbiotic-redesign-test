@@ -72,7 +72,7 @@ export default function PagePreview() {
       <div className="bb-preview-note">
         {draft.published
           ? 'Това е публикуваната версия на страницата.'
-          : 'Това е чернова — още не е публикувана и не се вижда от клиентите.'}
+          : 'Това е чернова - още не е публикувана и не се вижда от клиентите.'}
         {draft.handle && (
           <>
             {' '}Адрес след публикуване: <code>/page/{draft.handle}</code>

@@ -49,7 +49,7 @@ const PRIZES: Prize[] = [
     bg: '#FCE5EF',
     merchandiseId: 'gid://cloudcart/ProductVariant/225',
     freeCode: '80W3JG567A',
-    wonText: '🎉 Спечели: Хавлия, която вече е\nДобавена в количката — безплатно!',
+    wonText: '🎉 Спечели: Хавлия, която вече е\nДобавена в количката - безплатно!',
   },
   {label: '-10%', bg: '#FAD7E6', code: 'H6FR7965O9'},
   {
@@ -57,7 +57,7 @@ const PRIZES: Prize[] = [
     bg: '#F9C9DD',
     merchandiseId: 'gid://cloudcart/ProductVariant/227',
     freeCode: 'A0X9IP44N3',
-    wonText: '🎉 Спечели: Химикал, който вече е\nДобавен в количката — безплатно!',
+    wonText: '🎉 Спечели: Химикал, който вече е\nДобавен в количката - безплатно!',
   },
   {label: '-15%', bg: '#F7BBD4', code: '06VLV2N252'},
   {
@@ -66,7 +66,7 @@ const PRIZES: Prize[] = [
     merchandiseId: 'gid://cloudcart/ProductVariant/233',
     freeCode: 'F18MJ76KG5',
     wonText:
-      '🎉 Спечели: Формулата за коса и нокти, която вече е\nДобавена в количката — безплатно!',
+      '🎉 Спечели: Формулата за коса и нокти, която вече е\nДобавена в количката - безплатно!',
   },
   {label: '-5%', bg: '#F49FC3', code: 'A72AQ4K380'},
   {
@@ -75,7 +75,7 @@ const PRIZES: Prize[] = [
     merchandiseId: 'gid://cloudcart/ProductVariant/230',
     freeCode: '3VXVV6ZXLF',
     wonText:
-      '🎉 Спечели: Формулата за сияйна кожа, която вече е\nДобавена в количката — безплатно!',
+      '🎉 Спечели: Формулата за сияйна кожа, която вече е\nДобавена в количката - безплатно!',
   },
   {label: '-10%', bg: '#F084B1', code: 'H6FR7965O9'},
   {
@@ -84,7 +84,7 @@ const PRIZES: Prize[] = [
     merchandiseId: 'gid://cloudcart/ProductVariant/228',
     freeCode: 'TPX196C9G4',
     wonText:
-      '🎉 Спечели: Bactology Anti Stress, който вече е\nДобавен в количката — безплатно!',
+      '🎉 Спечели: Bactology Anti Stress, който вече е\nДобавен в количката - безплатно!',
   },
   {label: '-15%', bg: '#ED689F', code: '06VLV2N252'},
 ];
@@ -169,7 +169,7 @@ export function LuckyWheel() {
   }, [open, finished]);
 
   /* Щом продуктът-награда влезе в количката, прилагаме неговия 100% код.
-     Редът е задължителен — код преди продукта не важи за нищо. */
+     Редът е задължителен - код преди продукта не важи за нищо. */
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
   function showToast(text: string) {

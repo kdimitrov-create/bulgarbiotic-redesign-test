@@ -146,7 +146,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
             {isFreeShip ? (
               <>
                 <span className="bb-cd-shipping-icon" aria-hidden="true">✓</span>
-                Поздравления — <strong>безплатна доставка</strong> е включена!
+                Поздравления - <strong>безплатна доставка</strong> е включена!
               </>
             ) : (
               <>
@@ -305,7 +305,7 @@ export function CartTrustStrip() {
           </svg>
         </span>
         {/* Куриерите (Еконт / Спиди / BOX NOW / Sameday) са премахнати по
-            заявка на клиента (2026-08-04) — остават само плащанията. */}
+            заявка на клиента (2026-08-04) - остават само плащанията. */}
         <span className="bb-cd-trust-divider" aria-hidden="true" />
         <span className="bb-cd-trust-lock" aria-label="Сигурно плащане">
           <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

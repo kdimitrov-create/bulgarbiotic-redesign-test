@@ -155,7 +155,7 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
         }
       </VariantSelector>
 
-      {/* Месечни пакети — the merchant's quantity discounts from the admin
+      {/* Месечни пакети - the merchant's quantity discounts from the admin
           panel. Picking one just sets the quantity below, so there is still a
           single add-to-cart path. */}
       {variant && price && (

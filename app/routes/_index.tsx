@@ -45,7 +45,7 @@ import {
 
 export const meta: Route.MetaFunction = () =>
   getSeoMeta({
-    title: 'Bactology — Български пробиотици с Lactobacillus bulgaricus',
+    title: 'Bactology - Български пробиотици с Lactobacillus bulgaricus',
     description:
       'Български пробиотици с автентичен Lactobacillus bulgaricus. 25+ научно проучени формули за червата, имунитета, женското здраве, децата и красотата. Доверени от 110 000+ семейства от 2019 г.',
   });
@@ -120,7 +120,7 @@ async function fetchHomePage(ctx: any, handle: string): Promise<any> {
       }
     } catch (error) {
       console.warn(
-        'home: страницата от панела не се прочете (опит %d) — %s',
+        'home: страницата от панела не се прочете (опит %d) - %s',
         attempt + 1,
         (error as Error).message,
       );

@@ -147,7 +147,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
               </svg>
               <div>
                 <div className="bb-ft-label">Работно време</div>
-                <div className="bb-ft-val">Пон – Пет · 9:00 – 18:00</div>
+                <div className="bb-ft-val">Пон - Пет · 9:00 - 18:00</div>
               </div>
             </div>
             <div className="bb-ft-pay-label">Начини на плащане</div>

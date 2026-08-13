@@ -19,7 +19,7 @@ export const meta: Route.MetaFunction = () =>
   getSeoMeta({
     title: 'За мъже | Bactology',
     description:
-      'Пробиотични формули, съобразени с мъжкото здраве — метаболизъм, енергия и добро храносмилане.',
+      'Пробиотични формули, съобразени с мъжкото здраве - метаболизъм, енергия и добро храносмилане.',
   });
 
 export async function loader({context, request}: Route.LoaderArgs) {
@@ -48,7 +48,7 @@ export default function ZaMajePage() {
           <span className="bb-listing-hero-tag">За мъже</span>
           <h1 className="bb-listing-hero-h1">За мъже</h1>
           <p className="bb-listing-hero-sub">
-            Пробиотични формули, съобразени с мъжкото здраве — метаболизъм, енергия и добро
+            Пробиотични формули, съобразени с мъжкото здраве - метаболизъм, енергия и добро
             храносмилане.
           </p>
         </div>

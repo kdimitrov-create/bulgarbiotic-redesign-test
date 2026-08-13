@@ -55,7 +55,7 @@ export function SciencePageContent() {
             <p className="bb-sci-manifesto-p">
               Вярваме, че качественият пробиотик започва с науката. Зад всяка
               капсула стоят <strong>десетилетия научен опит</strong>,
-              фармацевтичен контрол и наследството на д-р Стамен Григоров –
+              фармацевтичен контрол и наследството на д-р Стамен Григоров -
               откривателя на <em>Lactobacillus bulgaricus</em>.
             </p>
             <div className="bb-sci-manifesto-stats">
@@ -113,7 +113,7 @@ export function SciencePageContent() {
           {[
             {
               n: '01', h: 'Българско наследство',
-              p: 'Lactobacillus bulgaricus е щам, който се среща естествено само в българската планина. Открит от Стамен Григоров — днес най-изследваният пробиотик в света.',
+              p: 'Lactobacillus bulgaricus е щам, който се среща естествено само в българската планина. Открит от Стамен Григоров - днес най-изследваният пробиотик в света.',
               icon: (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 2l9 4v6c0 5.5-3.5 9.5-9 10-5.5-.5-9-4.5-9-10V6l9-4z" />
@@ -177,13 +177,13 @@ export function SciencePageContent() {
             <p className="bb-sci-bulg-lead">
               Една от двете основни бактерии за ферментацията на автентичното
               българско кисело мляко. Открита от <em>Стамен Григоров</em> през
-              1905 г. Среща се естествено само тук — в българската планина.
+              1905 г. Среща се естествено само тук - в българската планина.
             </p>
 
             <div className="bb-sci-bulg-timeline">
               <div className="bb-sci-bulg-event">
                 <span className="bb-sci-bulg-year">1905</span>
-                <p>Стамен Григоров открива и описва L. bulgaricus в Женева — на 27 г. възраст.</p>
+                <p>Стамен Григоров открива и описва L. bulgaricus в Женева - на 27 г. възраст.</p>
               </div>
               <div className="bb-sci-bulg-event">
                 <span className="bb-sci-bulg-year">1907</span>
@@ -191,7 +191,7 @@ export function SciencePageContent() {
               </div>
               <div className="bb-sci-bulg-event">
                 <span className="bb-sci-bulg-year">2019</span>
-                <p>Bulgar Biotic стартира с мисията — да върне този щам в ежедневието на семействата.</p>
+                <p>Bulgar Biotic стартира с мисията - да върне този щам в ежедневието на семействата.</p>
               </div>
             </div>
           </div>
@@ -223,7 +223,7 @@ export function SciencePageContent() {
         <ol className="bb-sci-process-list">
           {[
             {n: '01', h: 'Подбор на щамове', p: 'в основата на всяка наша формула'},
-            {n: '02', h: 'Формулиране', p: 'Учените комбинират пробиотичните щамове с допълващите естествени съставки синергично според терапевтичната нужда — стомах, имунитет, женско здраве, стрес.'},
+            {n: '02', h: 'Формулиране', p: 'Учените комбинират пробиотичните щамове с допълващите естествени съставки синергично според терапевтичната нужда - стомах, имунитет, женско здраве, стрес.'},
             {n: '03', h: 'Контрол и тестване', p: 'Микробиологични анализи за CFU брой и чистота. Биохимични тестове за активност. Всичко по EU стандарти.'},
             {n: '04', h: 'Стабилност и ефективност', p: 'Тестване за устойчивост в стомашна киселина + многомесечни тестове за съхранение при стайна температура.'},
           ].map((s, i) => (
@@ -322,7 +322,7 @@ export function SciencePageContent() {
             </svg>
             <blockquote>
               Връзката между чревните бактерии и мозъка е <em>двупосочна и
-              изключително мощна</em> — промени в микробиома могат да променят
+              изключително мощна</em> - промени в микробиома могат да променят
               начина, по който тялото и умът функционират.
             </blockquote>
           </article>
@@ -335,7 +335,7 @@ export function SciencePageContent() {
               <div>
                 <div className="bb-sci-expert-name">Джулия Ендерс</div>
                 <div className="bb-sci-expert-role">Учен &amp; автор</div>
-                <div className="bb-sci-expert-cred"><em>"Черво с чар"</em> — бестселър за микробиома</div>
+                <div className="bb-sci-expert-cred"><em>"Черво с чар"</em> - бестселър за микробиома</div>
               </div>
             </header>
             <svg className="bb-sci-expert-quote" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -343,7 +343,7 @@ export function SciencePageContent() {
             </svg>
             <blockquote>
               Чревният микробиом е <em>ключов регулатор</em> на имунната система,
-              метаболизма и мозъчната функция — неговият баланс е фундаментален
+              метаболизма и мозъчната функция - неговият баланс е фундаментален
               за цялостното здраве.
             </blockquote>
           </article>

@@ -91,7 +91,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
   if (who === 'baby') {
     return {
       title: 'Bactology Babies & Kids',
-      reason: 'Безопасна формула за бебета и малки деца — нежна към чувствителния микробиом.',
+      reason: 'Безопасна формула за бебета и малки деца - нежна към чувствителния микробиом.',
       handle: 'probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids',
       badge: 'Идеално за първите 3 г.',
       image: '/images/generated-v2/p-babies.png',
@@ -100,7 +100,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
   if (who === 'kid') {
     return {
       title: 'Smart Start пакет за деца',
-      reason: 'Пробиотични перли с шоколад + имуностимулатор — за силен имунитет и щастливо коремче.',
+      reason: 'Пробиотични перли с шоколад + имуностимулатор - за силен имунитет и щастливо коремче.',
       handle: 'smart-start-paket-za-silen-imunitet',
       badge: 'Любим вкус на децата',
       image: '/images/generated-v2/p-smart-start.png',
@@ -109,7 +109,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
   if (who === 'pet') {
     return {
       title: 'Bactology Pets',
-      reason: 'За кучета и котки — поддържа здрав микробиом, козина и имунитет.',
+      reason: 'За кучета и котки - поддържа здрав микробиом, козина и имунитет.',
       handle: 'bactology-pets',
       badge: 'Ветеринарно одобрен',
       image: '/images/generated-v2/p-pets.png',
@@ -119,7 +119,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
     case 'gut':
       return {
         title: 'Bactology Gastro Balance',
-        reason: 'Целево решение за газове, подуване и нередовно храносмилане — 50 млрд активни бактерии.',
+        reason: 'Целево решение за газове, подуване и нередовно храносмилане - 50 млрд активни бактерии.',
         handle: 'bactology-probiotik-za-podut-korem-i-gazove-gastro-balance',
         badge: 'Бестселър №1',
         image: '/images/generated-v2/p-gastro.png',
@@ -127,7 +127,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
     case 'immunity':
       return {
         title: 'Bactology Colongic',
-        reason: 'Пробиотик за дебелото черво — над 70% от имунната система живее там.',
+        reason: 'Пробиотик за дебелото черво - над 70% от имунната система живее там.',
         handle: 'bactology-colongic-probiotik-za-debeloto-chervo',
         badge: 'За цяла година защита',
         image: '/images/generated-v2/p-colongic.png',
@@ -135,7 +135,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
     case 'stress':
       return {
         title: 'Bactology Anti Stress',
-        reason: 'Подкрепя оста черва-мозък — за по-добър сън и по-малко тревожност.',
+        reason: 'Подкрепя оста черва-мозък - за по-добър сън и по-малко тревожност.',
         handle: 'bactology-anti-stress',
         badge: 'Калмиращ ефект',
         image: '/images/generated-v2/p-anti-stress.png',
@@ -143,7 +143,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
     case 'beauty':
       return {
         title: 'Пакет Beauty',
-        reason: 'Активни формули за коса, кожа и нокти — отвътре, не само в крема.',
+        reason: 'Активни формули за коса, кожа и нокти - отвътре, не само в крема.',
         handle: 'paket-beauty',
         badge: 'Сияние отвътре',
         image: 'https://bulgarbiotic.bg/cdn/img/products/59/paket-beauty-64edbfebd7bfc.png?width=600&height=600',
@@ -153,7 +153,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
         // Client (2026-07-31): this step must read as "Плоско Коремче", not Femin.
         // The old image URL was missing the CDN filename hash → 404 (the card fell
         // back to showing the alt text, which started with "Femin").
-        title: 'Плоско Коремче — Femin + Gastro Balance',
+        title: 'Плоско Коремче - Femin + Gastro Balance',
         reason: 'Промоционален пакет: 5 пробиотични щама за метаболизъм + хормонален баланс.',
         handle: 'probiotici-za-plosko-koremche-promociya-femin-gastro-balance',
         badge: 'Спести ~20%',

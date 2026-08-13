@@ -25,9 +25,9 @@ export const meta: Route.MetaFunction = ({data}) => {
   const pct = (data as any)?.maxDiscountPercent ?? 0;
   const savings = pct > 0 ? ` Спести до ${pct}% от любимите си продукти.` : '';
   return getSeoMeta({
-    title: 'Промоции | Bactology — Български пробиотици на топ цени',
+    title: 'Промоции | Bactology - Български пробиотици на топ цени',
     description:
-      'Активни промоции на Bactology пробиотици — пакетни оферти, отстъпки и сезонни кампании.' +
+      'Активни промоции на Bactology пробиотици - пакетни оферти, отстъпки и сезонни кампании.' +
       savings,
   });
 };
@@ -226,7 +226,7 @@ export default function PromotionsPage() {
             )}
           </h1>
           <p className="bb-promo-hero-sub">
-            Сезонни оферти, пакетни отстъпки и кампании. Цените са вече намалени —
+            Сезонни оферти, пакетни отстъпки и кампании. Цените са вече намалени -
             никакъв код не е нужен.
           </p>
           {/* The two campaign chips that used to sit here named a fixed campaign

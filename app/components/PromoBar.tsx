@@ -37,7 +37,7 @@ function campaigns(): Campaign[] {
   {
     id: 'may-30',
     glyph: '◉',
-    text: '-30% за май — автоматично прилагане, без код',
+    text: '-30% за май - автоматично прилагане, без код',
     cta: 'Виж промо продуктите',
     to: '/category/all-products',
   },

@@ -64,7 +64,7 @@ export async function dropOfferGifts(cart: any, cartApi: any): Promise<any> {
     const result = await cartApi.removeLines(stale.map((line: any) => line.id));
     return result?.cart ?? cart;
   } catch (error) {
-    console.warn('cart gifts: подаръчните редове останаха — %s', (error as Error).message);
+    console.warn('cart gifts: подаръчните редове останаха - %s', (error as Error).message);
     return cart;
   }
 }

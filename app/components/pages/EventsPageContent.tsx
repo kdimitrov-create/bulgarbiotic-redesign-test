@@ -24,7 +24,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-hero">
     <p class="bb-hero-kicker">Bactology &amp; Bulgar Biotic</p>
     <h1>Събития и <em>активности</em></h1>
-    <p>Изложения, фестивали и срещи на живо — където разказваме за микробиома,
+    <p>Изложения, фестивали и срещи на живо - където разказваме за микробиома,
        показваме продуктите си и се запознаваме лично с хората, за които ги правим.</p>
   </section>
 
@@ -48,7 +48,7 @@ const EVENTS_HTML = `<div class="bb-events">
         <div class="bb-event-number">01 / 08</div>
         <h2>Bactology и <em>Furisto</em> в Южен парк</h2>
         <p>През юни 2026 г. Bactology и Furisto организираха специален семеен ден в
-           Южен парк – София. Малките посетители се превърнаха в изследователи на
+           Южен парк - София. Малките посетители се превърнаха в изследователи на
            микробиома, участваха в забавни лекарски занимания и научиха повече за
            грижата за здравето чрез игри. Благодарим на всички семейства, които
            споделиха този слънчев и усмихнат ден с нас!</p>
@@ -69,7 +69,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event bb-reverse">
       <div class="bb-event-media">
-        <span class="bb-tape">28–31 май</span>
+        <span class="bb-tape">28-31 май</span>
         <div class="bb-frame">
           <img src="/images/events/event-02-8555c771d3.jpg" alt="Bactology на Шестата научна конференция">
           <span class="bb-frame-caption">Астория Гранд Хотел, София</span>
@@ -81,7 +81,7 @@ const EVENTS_HTML = `<div class="bb-events">
         <h2>Bactology на <em>Шестата научна конференция</em></h2>
         <p>През май 2026 г. Bactology участва със собствен щанд в Шестата научна
            конференция „Хронични заболявания, имунитет, възпаление и ваксини“ в
-           Астория Гранд Хотел – София. По време на събитието се срещнахме с лекари,
+           Астория Гранд Хотел - София. По време на събитието се срещнахме с лекари,
            специалисти и студенти и представихме нашия научно обоснован подход към
            грижата за микробиома и имунитета. Благодарим на всички, които посетиха
            щанда ни и обмениха знания и опит с нашия екип!</p>
@@ -102,7 +102,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event">
       <div class="bb-event-media">
-        <span class="bb-tape">13–15 май</span>
+        <span class="bb-tape">13-15 май</span>
         <div class="bb-frame">
           <img src="/images/events/event-03-1df856d0ba.jpg" alt="Bactology на БУЛМЕДИКА 2026">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
@@ -113,7 +113,7 @@ const EVENTS_HTML = `<div class="bb-events">
         <div class="bb-event-number">03 / 08</div>
         <h2>Bactology на <em>БУЛМЕДИКА 2026</em></h2>
         <p>През май 2026 г. Bactology участва със собствен щанд на международното
-           изложение БУЛМЕДИКА в Интер Експо Център – София. Представихме нашите
+           изложение БУЛМЕДИКА в Интер Експо Център - София. Представихме нашите
            пробиотични продукти и научно обоснован подход към грижата за микробиома,
            като обменихме опит и идеи с медицински специалисти и партньори от сектора.
            Благодарим на всички професионалисти, които посетиха щанда ни и проявиха
@@ -135,7 +135,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event bb-reverse">
       <div class="bb-event-media">
-        <span class="bb-tape">25–26 април</span>
+        <span class="bb-tape">25-26 април</span>
         <div class="bb-frame">
           <img src="/images/events/event-04-9c132dce73.jpg" alt="Bactology на Голямото изложение за малки мечтатели">
           <span class="bb-frame-caption">Семейно изложение</span>
@@ -167,7 +167,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event">
       <div class="bb-event-media">
-        <span class="bb-tape">24–26 април</span>
+        <span class="bb-tape">24-26 април</span>
         <div class="bb-frame">
           <img src="/images/events/event-05-6a0cc26330.jpg" alt="Bactology на Arena of Beauty 2026">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
@@ -178,7 +178,7 @@ const EVENTS_HTML = `<div class="bb-events">
         <div class="bb-event-number">05 / 08</div>
         <h2>Bactology на <em>Arena of Beauty 2026</em></h2>
         <p>През април 2026 г. Bactology участва със собствен щанд на Arena of Beauty в
-           Интер Експо Център – София. Представихме нашите решения за красота и баланс
+           Интер Експо Център - София. Представихме нашите решения за красота и баланс
            отвътре, запознахме посетителите с продуктите ни и обменихме опит с
            професионалисти от бюти сектора. Благодарим на всички, които се срещнаха с
            нашия екип и проявиха интерес към Bactology!</p>
@@ -199,16 +199,16 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event bb-reverse">
       <div class="bb-event-media">
-        <span class="bb-tape">12–14 декември</span>
+        <span class="bb-tape">12-14 декември</span>
         <div class="bb-frame">
-          <img src="/images/events/event-06-26c7b7f229.jpg" alt="Bactology на Mish Mash Fest – Christmas Edition">
+          <img src="/images/events/event-06-26c7b7f229.jpg" alt="Bactology на Mish Mash Fest - Christmas Edition">
           <span class="bb-frame-caption">Ларгото, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Фестивал · Ларгото, София</p>
         <div class="bb-event-number">06 / 08</div>
-        <h2>Bactology на <em>Mish Mash Fest</em> – Christmas Edition</h2>
+        <h2>Bactology на <em>Mish Mash Fest</em> - Christmas Edition</h2>
         <p>През декември Bactology беше част от коледното издание на Mish Mash Fest на
            Ларгото. На нашия щанд представихме подбрани продукти и празнични предложения,
            споделихме идеи за полезни подаръци и се срещнахме с много посетители в уютната
@@ -231,7 +231,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event">
       <div class="bb-event-media">
-        <span class="bb-tape">12–15 ноември</span>
+        <span class="bb-tape">12-15 ноември</span>
         <div class="bb-frame">
           <img src="/images/events/event-07-9f138943c8.jpg" alt="Bulgar Biotic на Interfood & Drink 2025">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
@@ -242,7 +242,7 @@ const EVENTS_HTML = `<div class="bb-events">
         <div class="bb-event-number">07 / 08</div>
         <h2>Bulgar Biotic на <em>„Interfood &amp; Drink 2025“</em></h2>
         <p>През ноември 2025 г. Bulgar Biotic участва със собствен щанд в 23-тото издание
-           на изложението „Пътят на млякото“ в Интер Експо Център – София. По време на
+           на изложението „Пътят на млякото“ в Интер Експо Център - София. По време на
            събитието представихме нашите продукти и решения за подкрепа на чревния баланс
            и имахме възможност да разговаряме както със специалисти от сектора, така и с
            множество посетители. Благодарим на всички, които се срещнаха с нашия екип и
@@ -264,7 +264,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <section class="bb-section">
     <div class="bb-event bb-reverse">
       <div class="bb-event-media">
-        <span class="bb-tape">24–26 октомври</span>
+        <span class="bb-tape">24-26 октомври</span>
         <div class="bb-frame">
           <img src="/images/events/event-08-b13dbed574.jpg" alt="Bulgar Biotic на Бебемания 2025">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
@@ -291,7 +291,7 @@ const EVENTS_HTML = `<div class="bb-events">
   <div class="bb-closing">
     <h3>Ще се <em>видим</em> и на следващото събитие</h3>
     <p>Следвайте ни, за да разберете къде ще бъде щандът на Bactology и Bulgar Biotic
-       следващия път — очакват ви нови продукти, съвети и специални предложения на живо.</p>
+       следващия път - очакват ви нови продукти, съвети и специални предложения на живо.</p>
   </div>
 
 </div>`;

@@ -37,7 +37,7 @@ export function ProductVideo({
   poster,
   handle,
   title = 'Как работи пробиотикът',
-  subtitle = 'От приема до активирането в червата — четири стъпки.',
+  subtitle = 'От приема до активирането в червата - четири стъпки.',
 }: Props = {}) {
   return (
     <section className="bb-pvideo" aria-labelledby="bb-pvideo-title">
@@ -371,7 +371,7 @@ function CapsuleJourneyVertical({handle}: {handle?: string}) {
     {n: 4, title: 'Активиране',         sub: '50 млрд. активни пробиотични бактерии',                   icon: 'bloom'},
   ];
   return (
-    <ol className="bb-pjv" aria-label="Пътят на пробиотика — 4 стъпки">
+    <ol className="bb-pjv" aria-label="Пътят на пробиотика - 4 стъпки">
       {STATIONS.map((s, i) => {
         const isLast = i === STATIONS.length - 1;
         return (

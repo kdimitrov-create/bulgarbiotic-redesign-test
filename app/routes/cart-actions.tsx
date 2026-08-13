@@ -74,7 +74,7 @@ export async function action({request, context}: Route.ActionArgs) {
         break;
       }
       /* Прилага промо код без навигация. Route-ът /discount/:code прави същото,
-         но пренасочва към /cart — което не става, когато кодът се прилага от
+         но пренасочва към /cart - което не става, когато кодът се прилага от
          изскачащ прозорец (колелото на късмета). */
       case 'APPLY_DISCOUNT': {
         const code = String(fd.get('code') || '').trim();
