@@ -121,6 +121,7 @@ export function pushEcommerce(
   dataLayer().push({ecommerce: null});
   dataLayer().push({event, ecommerce: payload});
   pushMetaEvent(event, payload);
+  pushTikTokEvent(event, payload);
 }
 
 /**
@@ -152,6 +153,44 @@ function pushMetaEvent(
     content_ids: items.map((i) => String(i.item_id)),
     contents: items.map((i) => ({id: String(i.item_id), quantity: i.quantity ?? 1})),
     content_name: items[0]?.item_name,
+    value: payload.value,
+    currency: payload.currency,
+  });
+}
+
+/**
+ * Същото за TikTok. Пикселът също не е в контейнера, значи и той не вижда
+ * нищо от dataLayer.
+ *
+ * Имената са стандартните на TikTok Events Manager - подадем ли своите
+ * (`add_to_cart`), отчетите остават празни, защото TikTok ги мери по своите.
+ * `content_id` е същото голо число на CloudCart, което подаваме на Google и
+ * на Meta - така един и същ продукт се разпознава и в трите каталога.
+ */
+const TIKTOK_EVENTS: Record<string, string> = {
+  view_item: 'ViewContent',
+  add_to_cart: 'AddToCart',
+  begin_checkout: 'InitiateCheckout',
+  search: 'Search',
+  purchase: 'CompletePayment',
+};
+
+function pushTikTokEvent(
+  event: string,
+  payload: {currency?: string; value?: number; items: EcomItem[]; [key: string]: unknown},
+) {
+  const name = TIKTOK_EVENTS[event];
+  const ttq = (window as any).ttq;
+  if (!name || !ttq || typeof ttq.track !== 'function') return;
+  const items = payload.items ?? [];
+  ttq.track(name, {
+    contents: items.map((i) => ({
+      content_id: String(i.item_id),
+      content_type: 'product',
+      content_name: i.item_name,
+      quantity: i.quantity ?? 1,
+      price: i.price,
+    })),
     value: payload.value,
     currency: payload.currency,
   });
