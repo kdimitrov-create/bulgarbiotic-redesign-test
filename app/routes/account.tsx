@@ -4,7 +4,7 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {AccountSidebar} from '~/components/AccountSidebar';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Account | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Профил | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -20,11 +20,16 @@ export async function loader({context, request}: Route.LoaderArgs) {
 export default function AccountLayout() {
   const {customer} = useLoaderData<typeof loader>();
   const greeting = customer?.firstName
-    ? `Welcome back, ${customer.firstName}`
-    : 'Your account';
+    ? `Здравей, ${customer.firstName}`
+    : 'Твоят профил';
 
+  /* Съдържанието на профила стои в същата рамка като логото и иконката на
+     количката в хедъра: `bb-container` е точно тя - 1380px, центрирана, с 36px
+     отстрани. Измерено при екран 1440px: логото започва на 59px и контейнерът
+     също. Дотук тук стоеше гол `max-w-7xl`, тоест без центриране и без
+     отстояние, затова страничното меню опираше в ръба. */
   return (
-    <div className="max-w-7xl">
+    <div className="bb-container py-10">
       <h1 className="text-2xl font-bold tracking-tight mb-8">{greeting}</h1>
       <div className="grid gap-10 md:grid-cols-[200px_1fr]">
         <aside>

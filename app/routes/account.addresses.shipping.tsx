@@ -5,7 +5,7 @@ import {getSeoMeta} from '@cloudcart/nitro';
 import type {Customer} from '@cloudcart/nitro';
 import {AddressListSection, readAddressFromForm} from '~/components/AddressForm';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Shipping addresses | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Адреси за доставка | Bactology'});
 
 type ActionResponse = {error: string | null; message?: string};
 
@@ -25,26 +25,26 @@ export async function action({request, context}: Route.ActionArgs) {
       case 'POST': {
         const {errors} = await ctx.customerAccount.createAddress(readAddressFromForm(form));
         if (errors.length) return data({error: errors[0].message}, {status: 400});
-        return {error: null, message: 'Address added.'} as ActionResponse;
+        return {error: null, message: 'Адресът е добавен.'} as ActionResponse;
       }
       case 'PUT': {
-        if (!id) return data({error: 'Missing address id.'}, {status: 400});
+        if (!id) return data({error: 'Липсва номер на адрес.'}, {status: 400});
         const {errors} = await ctx.customerAccount.updateAddress(id, readAddressFromForm(form));
         if (errors.length) return data({error: errors[0].message}, {status: 400});
         if (form.get('defaultAddress') === 'on') await ctx.customerAccount.setDefaultAddress(id);
-        return {error: null, message: 'Address updated.'} as ActionResponse;
+        return {error: null, message: 'Адресът е обновен.'} as ActionResponse;
       }
       case 'DELETE': {
-        if (!id) return data({error: 'Missing address id.'}, {status: 400});
+        if (!id) return data({error: 'Липсва номер на адрес.'}, {status: 400});
         const {errors} = await ctx.customerAccount.deleteAddress(id);
         if (errors.length) return data({error: errors[0].message}, {status: 400});
-        return {error: null, message: 'Address removed.'} as ActionResponse;
+        return {error: null, message: 'Адресът е изтрит.'} as ActionResponse;
       }
       default:
-        return data({error: 'Method not allowed.'}, {status: 405});
+        return data({error: 'Методът не е разрешен.'}, {status: 405});
     }
   } catch (err: unknown) {
-    return data({error: err instanceof Error ? err.message : 'Unknown error'}, {status: 400});
+    return data({error: err instanceof Error ? err.message : 'Възникна грешка'}, {status: 400});
   }
 }
 
@@ -54,7 +54,7 @@ export default function ShippingAddresses() {
 
   return (
     <AddressListSection
-      title="Shipping addresses"
+      title="Адреси за доставка"
       addresses={customer.addresses?.nodes ?? []}
       defaultAddressId={customer.defaultAddress?.id}
       actionData={actionData}

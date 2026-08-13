@@ -45,7 +45,7 @@ export function AddressListSection({
             className="inline-flex items-center gap-1.5 py-2 px-4 bg-brand text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
           >
             <PlusIcon className="size-4" />
-            Add address
+            Добави адрес
           </button>
         )}
       </div>
@@ -67,13 +67,13 @@ export function AddressListSection({
       {showForm && !editingId && (
         <div className="mb-6 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden [&>div:first-child]:rounded-t-[11px]">
           <div className="flex items-center justify-between px-5 py-3 bg-gray-900 text-white">
-            <h3 className="text-sm font-semibold">New address</h3>
+            <h3 className="text-sm font-semibold">Нов адрес</h3>
             <button type="button" onClick={() => setShowForm(false)} className="text-gray-400 hover:text-white transition-colors">
               <XMarkIcon className="size-5" />
             </button>
           </div>
           <div className="p-5">
-            <AddressFormFields method="POST" address={null} isDefault={false} submitLabel="Add address" onCancel={() => setShowForm(false)} />
+            <AddressFormFields method="POST" address={null} isDefault={false} submitLabel="Добави адрес" onCancel={() => setShowForm(false)} />
           </div>
         </div>
       )}
@@ -85,7 +85,7 @@ export function AddressListSection({
         return (
           <div className="mb-6 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden [&>div:first-child]:rounded-t-[11px]">
             <div className="flex items-center justify-between px-5 py-3 bg-gray-900 text-white">
-              <h3 className="text-sm font-semibold">Edit address</h3>
+              <h3 className="text-sm font-semibold">Редакция на адрес</h3>
               <button type="button" onClick={() => setEditingId(null)} className="text-gray-400 hover:text-dark transition-colors">
                 <XMarkIcon className="size-5" />
               </button>
@@ -95,7 +95,7 @@ export function AddressListSection({
                 method="PUT"
                 address={addr}
                 isDefault={defaultAddressId === addr.id}
-                submitLabel="Save changes"
+                submitLabel="Запази"
                 onCancel={() => setEditingId(null)}
               />
             </div>
@@ -107,15 +107,15 @@ export function AddressListSection({
       {addresses.length === 0 && !showForm ? (
         <div className="py-16 text-center">
           <MapPinIcon className="size-12 mx-auto mb-4 text-gray-200" />
-          <p className="text-gray-500 mb-1 font-medium">No addresses yet</p>
-          <p className="text-sm text-gray-400 mb-4">Add your first address to speed up checkout.</p>
+          <p className="text-gray-500 mb-1 font-medium">Още няма адреси</p>
+          <p className="text-sm text-gray-400 mb-4">Добави първия си адрес, за да плащаш по-бързо.</p>
           <button
             type="button"
             onClick={() => setShowForm(true)}
             className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline"
           >
             <PlusIcon className="size-4" />
-            Add address
+            Добави адрес
           </button>
         </div>
       ) : (
@@ -145,12 +145,12 @@ function AddressCard({address, isDefault, onEdit}: {address: MailingAddress; isD
       <div className="flex items-center justify-between px-4 py-2.5 bg-gray-900">
         <div className="flex items-center gap-2">
           <MapPinIcon className="size-3.5 text-gray-400" />
-          <span className="text-xs font-medium text-white truncate">{fullName || 'Address'}</span>
+          <span className="text-xs font-medium text-white truncate">{fullName || 'Адрес'}</span>
         </div>
         {isDefault && (
           <span className="inline-flex items-center gap-1 py-0.5 px-2 bg-emerald-600 text-white text-[0.6rem] font-bold uppercase tracking-wider rounded">
             <CheckIcon className="size-3" />
-            Default
+            По подразбиране
           </span>
         )}
       </div>
@@ -174,7 +174,7 @@ function AddressCard({address, isDefault, onEdit}: {address: MailingAddress; isD
           className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:text-dark transition-all"
         >
           <PencilIcon className="size-3" />
-          Edit
+          Редактирай
         </button>
         <Form method="DELETE">
           <input type="hidden" name="id" value={address.id} />
@@ -184,7 +184,7 @@ function AddressCard({address, isDefault, onEdit}: {address: MailingAddress; isD
             className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-red-300 hover:text-red-600 transition-all disabled:opacity-50"
           >
             <TrashIcon className="size-3" />
-            {isDeleting ? 'Deleting…' : 'Delete'}
+            {isDeleting ? 'Deleting…' : 'Изтрий'}
           </button>
         </Form>
       </div>
@@ -207,21 +207,21 @@ function AddressFormFields({
   return (
     <Form method={method} className="grid grid-cols-2 gap-x-3 gap-y-4">
       {address ? <input type="hidden" name="id" value={address.id} /> : null}
-      <Field name="firstName" label="First name" autoComplete="given-name" defaultValue={address?.firstName} required />
-      <Field name="lastName" label="Last name" autoComplete="family-name" defaultValue={address?.lastName} required />
-      <Field name="company" label="Company" autoComplete="organization" defaultValue={address?.company} full />
-      <Field name="companyVat" label="VAT number" defaultValue={address?.companyVat} full />
-      <Field name="address1" label="Address" autoComplete="address-line1" defaultValue={address?.address1} required full />
-      <Field name="address2" label="Apt, suite, etc." autoComplete="address-line2" defaultValue={address?.address2} full />
-      <Field name="city" label="City" autoComplete="address-level2" defaultValue={address?.city} required />
-      <Field name="province" label="State / Province" autoComplete="address-level1" defaultValue={address?.province} />
-      <Field name="zip" label="ZIP / Postal code" autoComplete="postal-code" defaultValue={address?.zip} required />
-      <Field name="country" label="Country" autoComplete="country-name" defaultValue={address?.country} required />
-      <Field name="phone" label="Phone" autoComplete="tel" defaultValue={address?.phone} full />
+      <Field name="firstName" label="Име" autoComplete="given-name" defaultValue={address?.firstName} required />
+      <Field name="lastName" label="Фамилия" autoComplete="family-name" defaultValue={address?.lastName} required />
+      <Field name="company" label="Фирма" autoComplete="organization" defaultValue={address?.company} full />
+      <Field name="companyVat" label="ЕИК / ДДС номер" defaultValue={address?.companyVat} full />
+      <Field name="address1" label="Адрес" autoComplete="address-line1" defaultValue={address?.address1} required full />
+      <Field name="address2" label="Вход, етаж, апартамент" autoComplete="address-line2" defaultValue={address?.address2} full />
+      <Field name="city" label="Град" autoComplete="address-level2" defaultValue={address?.city} required />
+      <Field name="province" label="Област" autoComplete="address-level1" defaultValue={address?.province} />
+      <Field name="zip" label="Пощенски код" autoComplete="postal-code" defaultValue={address?.zip} required />
+      <Field name="country" label="Държава" autoComplete="country-name" defaultValue={address?.country} required />
+      <Field name="phone" label="Телефон" autoComplete="tel" defaultValue={address?.phone} full />
 
       <label className="col-span-2 flex items-center gap-2 text-sm text-gray-500 select-none cursor-pointer">
         <input type="checkbox" name="defaultAddress" defaultChecked={isDefault} className="rounded border-gray-300 text-brand focus:ring-brand/20" />
-        Set as default
+        Направи основен
       </label>
 
       <div className="col-span-2 flex gap-2 pt-2">
@@ -230,7 +230,7 @@ function AddressFormFields({
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} className="py-2.5 px-5 text-sm text-gray-500 hover:text-dark transition-colors">
-            Cancel
+            Отказ
           </button>
         )}
       </div>

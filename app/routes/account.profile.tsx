@@ -5,7 +5,7 @@ import {getSeoMeta} from '@cloudcart/nitro';
 import type {Customer} from '@cloudcart/nitro';
 import {CheckIcon, XMarkIcon} from '@heroicons/react/24/outline';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Profile | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Профил | Bactology'});
 
 type ActionResponse = {error: string | null; saved: boolean};
 
@@ -17,7 +17,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
 
 export async function action({request, context}: Route.ActionArgs) {
   if (request.method !== 'PUT') {
-    return data({error: 'Method not allowed', saved: false}, {status: 405});
+    return data({error: 'Методът не е разрешен', saved: false}, {status: 405});
   }
   const ctx = await getContext(context, request);
   const form = await request.formData();
@@ -45,7 +45,7 @@ export default function AccountProfile() {
 
   return (
     <section>
-      <h2 className="text-lg font-bold mb-6">Profile</h2>
+      <h2 className="text-lg font-bold mb-6">Профил</h2>
 
       {actionData?.error && (
         <div className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-100 rounded-xl text-sm text-red-700">
@@ -56,18 +56,18 @@ export default function AccountProfile() {
       {actionData?.saved && (
         <div className="flex items-center gap-2 p-3 mb-4 bg-green-50 border border-green-100 rounded-xl text-sm text-green-700">
           <CheckIcon className="size-4 shrink-0" />
-          Profile saved successfully.
+          Профилът е запазен.
         </div>
       )}
 
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="px-5 py-3 bg-gray-900 text-white">
-          <h3 className="text-xs font-medium uppercase tracking-wider">Personal information</h3>
+          <h3 className="text-xs font-medium uppercase tracking-wider">Лични данни</h3>
         </div>
         <Form method="PUT" className="p-5 space-y-4 max-w-lg">
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className="block text-xs font-medium text-gray-500 mb-1.5">First name</span>
+              <span className="block text-xs font-medium text-gray-500 mb-1.5">Име</span>
               <input
                 type="text"
                 name="firstName"
@@ -77,7 +77,7 @@ export default function AccountProfile() {
               />
             </label>
             <label className="block">
-              <span className="block text-xs font-medium text-gray-500 mb-1.5">Last name</span>
+              <span className="block text-xs font-medium text-gray-500 mb-1.5">Фамилия</span>
               <input
                 type="text"
                 name="lastName"
@@ -89,7 +89,7 @@ export default function AccountProfile() {
           </div>
 
           <label className="block">
-            <span className="block text-xs font-medium text-gray-500 mb-1.5">Email</span>
+            <span className="block text-xs font-medium text-gray-500 mb-1.5">Имейл</span>
             <input
               type="email"
               name="email"
@@ -100,7 +100,7 @@ export default function AccountProfile() {
           </label>
 
           <label className="block">
-            <span className="block text-xs font-medium text-gray-500 mb-1.5">Phone</span>
+            <span className="block text-xs font-medium text-gray-500 mb-1.5">Телефон</span>
             <input
               type="tel"
               name="phone"
@@ -117,7 +117,7 @@ export default function AccountProfile() {
               defaultChecked={customer.acceptsMarketing}
               className="rounded border-gray-300 text-brand focus:ring-brand/20"
             />
-            Receive marketing emails
+            Получавай новини и промоции
           </label>
 
           <div className="pt-2">
@@ -126,7 +126,7 @@ export default function AccountProfile() {
               disabled={isSubmitting}
               className="py-2.5 px-5 bg-brand text-white text-sm font-medium rounded-lg hover:opacity-90 disabled:opacity-60 transition-opacity"
             >
-              {isSubmitting ? 'Saving…' : 'Save changes'}
+              {isSubmitting ? 'Saving…' : 'Запази'}
             </button>
           </div>
         </Form>

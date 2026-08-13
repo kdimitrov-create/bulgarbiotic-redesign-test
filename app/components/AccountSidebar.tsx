@@ -2,13 +2,13 @@ import {Form, NavLink} from 'react-router';
 import {UserIcon, ShoppingBagIcon, MapPinIcon, BuildingOfficeIcon, HeartIcon, ArrowDownTrayIcon, CreditCardIcon, ArrowLeftStartOnRectangleIcon} from '@heroicons/react/24/outline';
 
 const links = [
-  {to: '/account/profile', label: 'Profile', icon: UserIcon, end: true},
-  {to: '/account/orders', label: 'Orders', icon: ShoppingBagIcon, end: false},
-  {to: '/account/payments', label: 'Payments', icon: CreditCardIcon, end: true},
-  {to: '/account/downloads', label: 'Downloads', icon: ArrowDownTrayIcon, end: true},
-  {to: '/account/wishlist', label: 'Wishlist', icon: HeartIcon, end: true},
-  {to: '/account/addresses/shipping', label: 'Shipping addresses', icon: MapPinIcon, end: true},
-  {to: '/account/addresses/billing', label: 'Billing addresses', icon: BuildingOfficeIcon, end: true},
+  {to: '/account/profile', label: 'Профил', icon: UserIcon, end: true},
+  {to: '/account/orders', label: 'Поръчки', icon: ShoppingBagIcon, end: false},
+  {to: '/account/payments', label: 'Плащания', icon: CreditCardIcon, end: true},
+  {to: '/account/downloads', label: 'Файлове', icon: ArrowDownTrayIcon, end: true},
+  {to: '/account/wishlist', label: 'Любими', icon: HeartIcon, end: true},
+  {to: '/account/addresses/shipping', label: 'Адреси за доставка', icon: MapPinIcon, end: true},
+  {to: '/account/addresses/billing', label: 'Адреси за фактура', icon: BuildingOfficeIcon, end: true},
 ];
 
 export function AccountSidebar() {
@@ -37,7 +37,7 @@ export function AccountSidebar() {
           className="flex w-full items-center gap-2 py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-dark"
         >
           <ArrowLeftStartOnRectangleIcon className="size-4 shrink-0" />
-          Sign out
+          Изход
         </button>
       </Form>
     </nav>

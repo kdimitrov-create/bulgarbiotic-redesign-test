@@ -5,7 +5,7 @@ import {getSeoMeta} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {ShoppingBagIcon, ChevronRightIcon} from '@heroicons/react/24/outline';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Orders | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Поръчки | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -31,11 +31,11 @@ export default function Orders() {
   if (!orders.length) {
     return (
       <section>
-        <h2 className="text-lg font-bold mb-4">Orders</h2>
+        <h2 className="text-lg font-bold mb-4">Поръчки</h2>
         <div className="py-16 text-center">
           <ShoppingBagIcon className="size-12 mx-auto mb-4 text-gray-200" />
-          <p className="text-gray-500 mb-1 font-medium">No orders yet</p>
-          <p className="text-sm text-gray-400 mb-4">When you place an order, it will appear here.</p>
+          <p className="text-gray-500 mb-1 font-medium">Още няма поръчки</p>
+          <p className="text-sm text-gray-400 mb-4">Щом направиш поръчка, тя ще се появи тук.</p>
           <Link to="/collections" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
             Start shopping →
           </Link>
@@ -46,18 +46,18 @@ export default function Orders() {
 
   return (
     <section>
-      <h2 className="text-lg font-bold mb-4">Orders</h2>
+      <h2 className="text-lg font-bold mb-4">Поръчки</h2>
 
       {/* Desktop table — hidden on mobile */}
       <div className="hidden md:block overflow-hidden border border-gray-200 rounded-xl">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-900 text-white text-xs uppercase tracking-wider">
-              <th className="py-3 px-4 text-left font-medium">Order</th>
-              <th className="py-3 px-4 text-left font-medium">Date</th>
-              <th className="py-3 px-4 text-left font-medium">Status</th>
-              <th className="py-3 px-4 text-left font-medium">Payment</th>
-              <th className="py-3 px-4 text-right font-medium">Total</th>
+              <th className="py-3 px-4 text-left font-medium">Поръчка</th>
+              <th className="py-3 px-4 text-left font-medium">Дата</th>
+              <th className="py-3 px-4 text-left font-medium">Статус</th>
+              <th className="py-3 px-4 text-left font-medium">Плащане</th>
+              <th className="py-3 px-4 text-right font-medium">Общо</th>
               <th className="py-3 px-4" />
             </tr>
           </thead>
@@ -83,7 +83,7 @@ export default function Orders() {
                   </td>
                   <td className="py-3.5 px-4 text-right font-semibold"><Money data={order.totalPrice} /></td>
                   <td className="py-3.5 px-4 text-right">
-                    <Link to={`/account/orders/${encodeURIComponent(order.id)}`} className="text-brand text-xs font-medium hover:underline">View →</Link>
+                    <Link to={`/account/orders/${encodeURIComponent(order.id)}`} className="text-brand text-xs font-medium hover:underline">Виж →</Link>
                   </td>
                 </tr>
               );

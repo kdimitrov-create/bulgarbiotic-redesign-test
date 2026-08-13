@@ -6,7 +6,7 @@ import type {Product} from '@cloudcart/nitro';
 import {HeartIcon} from '@heroicons/react/24/outline';
 import {ProductCard} from '~/components/ProductCard';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Wishlist | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Любими | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -22,11 +22,11 @@ export default function Wishlist() {
   if (items.length === 0) {
     return (
       <section>
-        <h2 className="text-lg font-bold mb-4">Wishlist</h2>
+        <h2 className="text-lg font-bold mb-4">Любими</h2>
         <div className="py-16 text-center">
           <HeartIcon className="size-12 mx-auto mb-4 text-gray-200" />
-          <p className="text-gray-500 mb-1 font-medium">Your wishlist is empty</p>
-          <p className="text-sm text-gray-400 mb-4">Save products you love to find them quickly later.</p>
+          <p className="text-gray-500 mb-1 font-medium">Списъкът ти с любими е празен</p>
+          <p className="text-sm text-gray-400 mb-4">Запазвай продукти, за да ги намираш бързо после.</p>
           <Link to="/collections" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
             Browse products →
           </Link>
@@ -38,7 +38,7 @@ export default function Wishlist() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">Wishlist</h2>
+        <h2 className="text-lg font-bold">Любими</h2>
         <span className="text-sm text-gray-400">
           {wishlist.totalCount} {wishlist.totalCount === 1 ? 'item' : 'items'}
         </span>

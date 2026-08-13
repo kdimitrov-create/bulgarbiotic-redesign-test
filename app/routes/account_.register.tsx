@@ -3,7 +3,7 @@ import type {Route} from './+types/account_.register';
 import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Create account | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Регистрация | Bactology'});
 
 type ActionData = {error: string; values?: Record<string, string>};
 
@@ -24,7 +24,7 @@ export async function action({request, context}: Route.ActionArgs) {
   const acceptsMarketing = form.get('acceptsMarketing') === 'on';
 
   if (!email) {
-    return {error: 'Email is required.', values: {firstName, lastName}} as ActionData;
+    return {error: 'Имейлът е задължителен.', values: {firstName, lastName}} as ActionData;
   }
 
   const {errors} = await ctx.customerAccount.register({
@@ -52,14 +52,14 @@ export default function AccountRegister() {
 
   return (
     <div className="mx-auto max-w-md py-12">
-      <h1 className="text-2xl font-bold tracking-tight mb-2">Create your account</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-2">Създаване на профил</h1>
       <p className="text-sm text-gray-500 mb-6">
         After registering, we’ll email you a 6-digit sign-in code.
       </p>
 
       <Form method="POST" className="space-y-4">
         <label className="block">
-          <span className="block text-sm font-medium mb-1">Email</span>
+          <span className="block text-sm font-medium mb-1">Имейл</span>
           <input
             type="email"
             name="email"
@@ -72,7 +72,7 @@ export default function AccountRegister() {
 
         <div className="grid grid-cols-2 gap-3">
           <label className="block">
-            <span className="block text-sm font-medium mb-1">First name</span>
+            <span className="block text-sm font-medium mb-1">Име</span>
             <input
               type="text"
               name="firstName"
@@ -82,7 +82,7 @@ export default function AccountRegister() {
             />
           </label>
           <label className="block">
-            <span className="block text-sm font-medium mb-1">Last name</span>
+            <span className="block text-sm font-medium mb-1">Фамилия</span>
             <input
               type="text"
               name="lastName"
@@ -95,7 +95,7 @@ export default function AccountRegister() {
 
         <label className="flex items-start gap-2 text-sm text-gray-600">
           <input type="checkbox" name="acceptsMarketing" className="mt-0.5" />
-          <span>I’d like to receive marketing emails.</span>
+          <span>Искам да получавам новини и промоции по имейл.</span>
         </label>
 
         {actionData?.error ? (
@@ -107,14 +107,14 @@ export default function AccountRegister() {
           disabled={isSubmitting}
           className="w-full py-2.5 px-4 bg-brand text-white font-medium rounded-lg hover:opacity-90 disabled:opacity-60"
         >
-          {isSubmitting ? 'Creating…' : 'Create account'}
+          {isSubmitting ? 'Creating…' : 'Създай профил'}
         </button>
       </Form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
         Already have an account?{' '}
         <Link to="/account/login" className="text-brand hover:underline">
-          Sign in
+          Вход
         </Link>
       </p>
     </div>

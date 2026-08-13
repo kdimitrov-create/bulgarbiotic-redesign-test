@@ -4,7 +4,7 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta, extractId} from '@cloudcart/nitro';
 import {CreditCardIcon} from '@heroicons/react/24/outline';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Payments | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Плащания | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -42,11 +42,11 @@ export default function Payments() {
   if (items.length === 0) {
     return (
       <section>
-        <h2 className="text-lg font-bold mb-4">Payments</h2>
+        <h2 className="text-lg font-bold mb-4">Плащания</h2>
         <div className="py-16 text-center">
           <CreditCardIcon className="size-12 mx-auto mb-4 text-gray-200" />
-          <p className="text-gray-500 mb-1 font-medium">No payments yet</p>
-          <p className="text-sm text-gray-400 mb-4">Payments from your orders will appear here.</p>
+          <p className="text-gray-500 mb-1 font-medium">Още няма плащания</p>
+          <p className="text-sm text-gray-400 mb-4">Плащанията по поръчките ти ще се появят тук.</p>
           <Link to="/collections" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
             Browse products →
           </Link>
@@ -58,7 +58,7 @@ export default function Payments() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">Payments</h2>
+        <h2 className="text-lg font-bold">Плащания</h2>
         <span className="text-sm text-gray-400">
           {payments.totalCount} {payments.totalCount === 1 ? 'payment' : 'payments'}
         </span>
@@ -69,12 +69,12 @@ export default function Payments() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-900 text-white text-xs uppercase tracking-wider">
-              <th className="py-3 px-4 text-left font-medium">Payment #</th>
-              <th className="py-3 px-4 text-left font-medium">Provider</th>
-              <th className="py-3 px-4 text-right font-medium">Amount</th>
-              <th className="py-3 px-4 text-left font-medium">Order</th>
-              <th className="py-3 px-4 text-left font-medium">Date</th>
-              <th className="py-3 px-4 text-left font-medium">Status</th>
+              <th className="py-3 px-4 text-left font-medium">Плащане №</th>
+              <th className="py-3 px-4 text-left font-medium">Метод</th>
+              <th className="py-3 px-4 text-right font-medium">Сума</th>
+              <th className="py-3 px-4 text-left font-medium">Поръчка</th>
+              <th className="py-3 px-4 text-left font-medium">Дата</th>
+              <th className="py-3 px-4 text-left font-medium">Статус</th>
             </tr>
           </thead>
           <tbody>

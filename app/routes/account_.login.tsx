@@ -3,7 +3,7 @@ import type {Route} from './+types/account_.login';
 import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Sign in | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Вход | Bactology'});
 
 type ActionData =
   | {stage: 'email'; error?: string}
@@ -25,7 +25,7 @@ export async function action({request, context}: Route.ActionArgs) {
   if (stage === 'email') {
     const email = String(form.get('email') ?? '').trim();
     if (!email) {
-      return {stage: 'email', error: 'Please enter your email.'} as ActionData;
+      return {stage: 'email', error: 'Въведи имейл.'} as ActionData;
     }
     await ctx.customerAccount.requestLoginCode(email);
     throw redirect(`/account/login?sent=1&email=${encodeURIComponent(email)}`);
@@ -35,7 +35,7 @@ export async function action({request, context}: Route.ActionArgs) {
     const email = String(form.get('email') ?? '').trim();
     const code = String(form.get('code') ?? '').trim();
     if (!email || !/^\d{6}$/.test(code)) {
-      return {stage: 'code', email, error: 'Enter the 6-digit code.'} as ActionData;
+      return {stage: 'code', email, error: 'Въведи 6-цифрения код.'} as ActionData;
     }
     const {errors} = await ctx.customerAccount.verifyLoginCode(email, code);
     if (errors.length) {
@@ -46,7 +46,7 @@ export async function action({request, context}: Route.ActionArgs) {
     });
   }
 
-  return {stage: 'email', error: 'Invalid request.'} as ActionData;
+  return {stage: 'email', error: 'Невалидна заявка.'} as ActionData;
 }
 
 export default function AccountLogin() {
@@ -60,7 +60,7 @@ export default function AccountLogin() {
 
   return (
     <div className="mx-auto max-w-md py-12">
-      <h1 className="text-2xl font-bold tracking-tight mb-2">Sign in</h1>
+      <h1 className="text-2xl font-bold tracking-tight mb-2">Вход</h1>
       <p className="text-sm text-gray-500 mb-6">
         We’ll email you a 6-digit code. No password required.
       </p>
@@ -69,7 +69,7 @@ export default function AccountLogin() {
         <Form method="POST" className="space-y-4">
           <input type="hidden" name="stage" value="email" />
           <label className="block">
-            <span className="block text-sm font-medium mb-1">Email</span>
+            <span className="block text-sm font-medium mb-1">Имейл</span>
             <input
               type="email"
               name="email"
@@ -87,7 +87,7 @@ export default function AccountLogin() {
             disabled={isSubmitting}
             className="w-full py-2.5 px-4 bg-brand text-white font-medium rounded-lg hover:opacity-90 disabled:opacity-60"
           >
-            {isSubmitting ? 'Sending…' : 'Send sign-in code'}
+            {isSubmitting ? 'Sending…' : 'Изпрати код'}
           </button>
         </Form>
       ) : (
@@ -99,7 +99,7 @@ export default function AccountLogin() {
             Enter it below to sign in.
           </p>
           <label className="block">
-            <span className="block text-sm font-medium mb-1">Sign-in code</span>
+            <span className="block text-sm font-medium mb-1">Код за вход</span>
             <input
               type="text"
               name="code"
@@ -120,12 +120,12 @@ export default function AccountLogin() {
             disabled={isSubmitting}
             className="w-full py-2.5 px-4 bg-brand text-white font-medium rounded-lg hover:opacity-90 disabled:opacity-60"
           >
-            {isSubmitting ? 'Verifying…' : 'Verify & sign in'}
+            {isSubmitting ? 'Verifying…' : 'Потвърди и влез'}
           </button>
           <p className="text-center text-sm text-gray-500">
             Didn’t get the code?{' '}
             <Link to="/account/login" className="text-brand hover:underline">
-              Try again
+              Опитай пак
             </Link>
           </p>
         </Form>
@@ -134,7 +134,7 @@ export default function AccountLogin() {
       <p className="mt-6 text-center text-sm text-gray-500">
         No account yet?{' '}
         <Link to="/account/register" className="text-brand hover:underline">
-          Create one
+          Създай профил
         </Link>
       </p>
     </div>

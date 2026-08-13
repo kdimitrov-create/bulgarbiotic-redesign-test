@@ -4,7 +4,7 @@ import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {ArrowDownTrayIcon, DocumentIcon, ChevronRightIcon} from '@heroicons/react/24/outline';
 
-export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Downloads | Bactology'});
+export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Файлове | Bactology'});
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -27,11 +27,11 @@ export default function Downloads() {
   if (items.length === 0) {
     return (
       <section>
-        <h2 className="text-lg font-bold mb-4">Downloads</h2>
+        <h2 className="text-lg font-bold mb-4">Файлове</h2>
         <div className="py-16 text-center">
           <ArrowDownTrayIcon className="size-12 mx-auto mb-4 text-gray-200" />
-          <p className="text-gray-500 mb-1 font-medium">No downloads available</p>
-          <p className="text-sm text-gray-400 mb-4">Digital files from your completed orders will appear here.</p>
+          <p className="text-gray-500 mb-1 font-medium">Няма файлове за сваляне</p>
+          <p className="text-sm text-gray-400 mb-4">Файловете от завършените ти поръчки ще се появят тук.</p>
           <Link to="/collections" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
             Browse products →
           </Link>
@@ -43,7 +43,7 @@ export default function Downloads() {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-bold">Downloads</h2>
+        <h2 className="text-lg font-bold">Файлове</h2>
         <span className="text-sm text-gray-400">
           {downloads.totalCount} {downloads.totalCount === 1 ? 'file' : 'files'}
         </span>
@@ -54,10 +54,10 @@ export default function Downloads() {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-900 text-white text-xs uppercase tracking-wider">
-              <th className="py-3 px-4 text-left font-medium">File</th>
-              <th className="py-3 px-4 text-left font-medium">Product</th>
-              <th className="py-3 px-4 text-left font-medium">Order</th>
-              <th className="py-3 px-4 text-right font-medium">Size</th>
+              <th className="py-3 px-4 text-left font-medium">Файл</th>
+              <th className="py-3 px-4 text-left font-medium">Продукт</th>
+              <th className="py-3 px-4 text-left font-medium">Поръчка</th>
+              <th className="py-3 px-4 text-right font-medium">Размер</th>
               <th className="py-3 px-4" />
             </tr>
           </thead>
@@ -105,7 +105,7 @@ export default function Downloads() {
                     className="inline-flex items-center gap-1 py-1.5 px-3 text-xs font-medium text-white bg-brand rounded-lg hover:opacity-90 transition-opacity hover:no-underline"
                   >
                     <ArrowDownTrayIcon className="size-3.5" />
-                    Download
+                    Свали
                   </a>
                 </td>
               </tr>
@@ -151,7 +151,7 @@ export default function Downloads() {
                 className="inline-flex items-center gap-1.5 py-1.5 px-3 text-xs font-medium text-white bg-brand rounded-lg hover:opacity-90 transition-opacity hover:no-underline"
               >
                 <ArrowDownTrayIcon className="size-3.5" />
-                Download
+                Свали
               </a>
             </div>
           </div>

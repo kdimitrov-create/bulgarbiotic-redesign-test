@@ -7,7 +7,7 @@ import {Money, Image} from '@cloudcart/nitro-react';
 import {ArrowLeftIcon, TruckIcon, MapPinIcon, BuildingOfficeIcon, CreditCardIcon, ChatBubbleLeftIcon, TagIcon, DocumentTextIcon, CalendarIcon} from '@heroicons/react/24/outline';
 
 export const meta: Route.MetaFunction = ({data}) =>
-  getSeoMeta({title: data?.order ? `Order #${data.order.orderNumber}` : 'Order'});
+  getSeoMeta({title: data?.order ? `Order #${data.order.orderNumber}` : 'Поръчка'});
 
 export async function loader({context, request, params}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
@@ -41,7 +41,7 @@ export default function OrderDetail() {
       <div>
         <Link to="/account/orders" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-brand mb-3 hover:no-underline">
           <ArrowLeftIcon className="size-3" />
-          Back to orders
+          Назад към поръчките
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
           <div>
@@ -60,17 +60,17 @@ export default function OrderDetail() {
       {/* Info cards — fluid wrap */}
       <div className="flex flex-wrap gap-4">
         {order.shippingAddress && (
-          <InfoCard icon={MapPinIcon} title="Shipping address">
+          <InfoCard icon={MapPinIcon} title="Адрес за доставка">
             <FormattedAddress address={order.shippingAddress} />
           </InfoCard>
         )}
         {order.billingAddress && (
-          <InfoCard icon={BuildingOfficeIcon} title="Billing address">
+          <InfoCard icon={BuildingOfficeIcon} title="Адрес за фактура">
             <FormattedAddress address={order.billingAddress} />
           </InfoCard>
         )}
         {(payments.length > 0 || order.paymentMethod) && (
-          <InfoCard icon={CreditCardIcon} title="Payment">
+          <InfoCard icon={CreditCardIcon} title="Плащане">
             {payments.length > 0 ? payments.map((p: any, i: number) => (
               <div key={i} className={i > 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}>
                 <p className="text-sm font-medium">{p.providerName}</p>
@@ -89,7 +89,7 @@ export default function OrderDetail() {
           </InfoCard>
         )}
         {fulfillment && (
-          <InfoCard icon={TruckIcon} title="Delivery">
+          <InfoCard icon={TruckIcon} title="Доставка">
             {fulfillment.shippingProvider && <p className="text-sm font-medium">{fulfillment.shippingProvider}</p>}
             {fulfillment.trackingNumber && (
               <p className="text-sm mt-1">
@@ -110,7 +110,7 @@ export default function OrderDetail() {
           </InfoCard>
         )}
         {(order.invoiceNumber || order.shippingDate) && (
-          <InfoCard icon={DocumentTextIcon} title="Details">
+          <InfoCard icon={DocumentTextIcon} title="Детайли">
             {order.invoiceNumber && <p className="text-sm">Invoice: <span className="font-medium">{order.invoiceNumber}</span></p>}
             {order.shippingDate && <p className="text-sm mt-1">Delivery date: <span className="font-medium">{order.shippingDate}</span></p>}
           </InfoCard>
@@ -126,7 +126,7 @@ export default function OrderDetail() {
               <span className="font-medium">{d.name}</span>
               {d.code && <span className="font-mono bg-purple-100 px-1.5 py-0.5 rounded">{d.code}</span>}
               <span className="text-purple-500">
-                {d.type === 'percent' ? `-${d.value}%` : d.type === 'shipping' ? 'Free shipping' : `-${d.value}`}
+                {d.type === 'percent' ? `-${d.value}%` : d.type === 'shipping' ? 'Безплатна доставка' : `-${d.value}`}
               </span>
             </div>
           ))}
@@ -138,7 +138,7 @@ export default function OrderDetail() {
         <div className="flex items-start gap-3 p-4 bg-amber-50/50 border border-amber-100 rounded-xl">
           <ChatBubbleLeftIcon className="size-5 text-amber-500 shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">Your note</p>
+            <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider mb-1">Твоя бележка</p>
             <p className="text-sm text-amber-800">{order.note}</p>
           </div>
         </div>
@@ -146,17 +146,17 @@ export default function OrderDetail() {
 
       {/* Line items */}
       <div>
-        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Items</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-400 mb-3">Продукти</h3>
 
         {/* Desktop */}
         <div className="hidden sm:block border border-gray-200 rounded-xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-900 text-white text-xs uppercase tracking-wider">
-                <th className="py-2.5 px-4 text-left font-medium">Product</th>
-                <th className="py-2.5 px-4 text-right font-medium">Price</th>
-                <th className="py-2.5 px-4 text-right font-medium">Qty</th>
-                <th className="py-2.5 px-4 text-right font-medium">Total</th>
+                <th className="py-2.5 px-4 text-left font-medium">Продукт</th>
+                <th className="py-2.5 px-4 text-right font-medium">Цена</th>
+                <th className="py-2.5 px-4 text-right font-medium">Бр.</th>
+                <th className="py-2.5 px-4 text-right font-medium">Общо</th>
               </tr>
             </thead>
             <tbody>
@@ -199,7 +199,7 @@ export default function OrderDetail() {
                   ) : (
                     <p className="text-sm font-medium text-dark line-clamp-2">{item.title}</p>
                   )}
-                  {item.variant?.title && item.variant.title !== 'Default' && (
+                  {item.variant?.title && item.variant.title !== 'По подразбиране' && (
                     <p className="text-xs text-gray-400 mt-0.5">{item.variant.title}</p>
                   )}
                 </div>
@@ -279,7 +279,7 @@ function LineItemContent({item}: {item: any}) {
       )}
       <div>
         <div className="font-medium text-dark">{item.title}</div>
-        {item.variant?.title && item.variant.title !== 'Default' && (
+        {item.variant?.title && item.variant.title !== 'По подразбиране' && (
           <div className="text-xs text-gray-400 mt-0.5">{item.variant.title}</div>
         )}
       </div>

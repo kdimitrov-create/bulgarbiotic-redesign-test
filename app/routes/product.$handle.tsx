@@ -316,9 +316,17 @@ function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product:
         * заглавието. На тесен екран се пренасят отдолу, както си беше.
         *
         * ⚠️ `min-w-0` на заглавието не е излишно: без него дълго име не се
-        * свива под съдържанието си и избутва звездите извън кутията. */}
+        * свива под съдържанието си и избутва звездите извън кутията.
+        *
+        * 🛑 На телефон заглавието взима ЦЕЛИЯ ред, а звездите слизат отдолу.
+        * Дотук и двете деляха реда: звездите са `shrink-0` и заемат 259px, а
+        * заглавието е `flex-1 min-w-0`, тоест се свива до колкото остане.
+        * Измерено при 390px екран - на заглавието оставаха **75px**, затова
+        * излизаше по една дума на ред, а дългите думи преливаха вдясно и
+        * изглеждаха отрязани. `basis-full` кара реда да се пренесе, вместо
+        * заглавието да се смачка; от `md` нагоре е както си беше. */}
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
-        <h1 className="min-w-0 flex-1 text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
+        <h1 className="min-w-0 basis-full md:basis-0 md:flex-1 text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
           {product.title}
         </h1>
 
