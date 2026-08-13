@@ -196,12 +196,15 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
   // override comes first — see PAGES_WITH_AUTHORED_BODY.
   const authored = override && PAGES_WITH_AUTHORED_BODY.has(page.handle);
   const hasRealHtml = !authored && bodyIsHtml(body);
-  // When the override component provides its own hero, render the shell
-  // barebones (just breadcrumbs + content, full width).
-  const useBarebones = override && PAGES_WITH_OWN_HERO.has(page.handle);
   // Same signal the route used to get here.
   const movedToBuilder = hasDesign && designPlacesPage(design, page.handle);
   const authoredInBuilder = designIsAuthored(design);
+  // When the override component provides its own hero, render the shell
+  // barebones (just breadcrumbs + content, full width). Страница, сглобена в
+  // конструктора, също: редовете ѝ носят собствената си ширина и фон, а
+  // тесният контейнер ги стягаше до 720px.
+  const useBarebones =
+    (override && PAGES_WITH_OWN_HERO.has(page.handle)) || authoredInBuilder;
 
   return (
     <PageShell
