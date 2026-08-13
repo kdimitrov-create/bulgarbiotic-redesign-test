@@ -132,12 +132,23 @@ export function pushEcommerce(
  * `content_ids` трябва да съвпадат с ID-тата в каталога на Meta - това са
  * същите голи числа на CloudCart, които подаваме и на Google.
  */
+/**
+ * ⚠️ Нарочно БЕЗ `begin_checkout` и `purchase`.
+ *
+ * Касата и количката не са наши: `/cart` и `/checkout` са резервирани пътища и
+ * ги рисува класическата тема. Там приложението „Facebook Dynamic Ads" вече
+ * пуска `facebook_pixel.min.js` и сам подава `InitiateCheckout` и `Purchase`
+ * (проверено на живо на bulgarbiotic.bg - скриптът се зарежда на страницата).
+ *
+ * Платформата НЕ засича повторно инсталиран пиксел. Подадем ли и ние същите
+ * две събития, всяка поръчка се брои два пъти и ROAS-ът става двойно по-хубав,
+ * отколкото е. Затова тук стоят само събитията, които класическата тема вече
+ * не вижда, защото Nitrogen е поел тези страници.
+ */
 const META_EVENTS: Record<string, string> = {
   view_item: 'ViewContent',
   add_to_cart: 'AddToCart',
-  begin_checkout: 'InitiateCheckout',
   search: 'Search',
-  purchase: 'Purchase',
 };
 
 function pushMetaEvent(
@@ -167,12 +178,11 @@ function pushMetaEvent(
  * `content_id` е същото голо число на CloudCart, което подаваме на Google и
  * на Meta - така един и същ продукт се разпознава и в трите каталога.
  */
+/** Същото разделение като при Meta - касата се брои от платформата. */
 const TIKTOK_EVENTS: Record<string, string> = {
   view_item: 'ViewContent',
   add_to_cart: 'AddToCart',
-  begin_checkout: 'InitiateCheckout',
   search: 'Search',
-  purchase: 'CompletePayment',
 };
 
 function pushTikTokEvent(
