@@ -1,4 +1,5 @@
 import {useLoaderData} from 'react-router';
+import {useCcPage} from '~/lib/analytics';
 import {useHomeMotion} from '~/lib/use-home-motion';
 import type {Route} from './+types/_index';
 import {getContext} from '~/lib/context';
@@ -142,6 +143,10 @@ async function fetchHomePage(ctx: any, handle: string): Promise<any> {
 export default function Homepage() {
   const {featuredProducts, familyPack, articles, homeReviews, homeDesign, builderData} =
     useLoaderData<typeof loader>();
+
+  // Класическата тема описва началната като `site_home` - същото име, за да не
+  // се разминат правилата в контейнера.
+  useCcPage({type: 'site_home'});
 
   // Page-wide scroll progress + reveal-on-scroll observer + magnetic buttons
   useHomeMotion(featuredProducts);

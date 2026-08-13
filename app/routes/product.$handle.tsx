@@ -5,6 +5,7 @@ import {bestDiscountFor, displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing} from '~/lib/product-marks';
 import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
+import {useCcPage, useEcommerceEvent, numericId} from '~/lib/analytics';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductImageGallery} from '~/components/ProductImageGallery';
@@ -77,6 +78,38 @@ export default function ProductPage() {
   const priceAmount = parseFloat(variant?.price?.amount ?? '0');
   const priceCurrency = (variant?.price?.currencyCode ?? 'EUR') as 'EUR' | 'BGN';
   const basePriceEur = priceCurrency === 'EUR' ? priceAmount : priceAmount / EUR_TO_BGN;
+
+  /* Измерване: продуктова страница.
+   *
+   * Класическата тема прави точно тези две неща на PDP - описва страницата в
+   * `cc_page_data` и праща `view_item` / `ViewContent`. Nitrogen поема тази
+   * страница, значи трябва да ги направи вместо нея, иначе Meta и TikTok
+   * виждат поръчки без нито един преглед преди тях. */
+  const trackedId = numericId(product.id);
+  useCcPage({
+    type: 'product',
+    id: trackedId,
+    name: product.title,
+    sku: variant?.sku ?? '',
+    barcode: variant?.barcode ?? '',
+    brand: product.vendor ?? '',
+    price: priceAmount,
+    currency: priceCurrency,
+    url: `/product/${product.handle}`,
+  });
+  useEcommerceEvent('view_item', {
+    currency: priceCurrency,
+    value: priceAmount,
+    items: [
+      {
+        item_id: trackedId,
+        item_name: product.title,
+        item_category: product.productType ?? undefined,
+        price: priceAmount,
+        quantity: 1,
+      },
+    ],
+  });
 
   // Key benefits extracted from the CMS description — rendered high on the page
   // (client: "Ключови ползи" raised up as focus, before scrolling past the hero).

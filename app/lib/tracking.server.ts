@@ -27,11 +27,37 @@ import {envValue} from './env.server';
 /** Контейнерът на клиента. Той носи GA4 + Google Ads + Clarity. */
 const GTM_ID = 'GTM-5X5M2HX';
 
-/** Няма го на оригинала - чака ID от Meta Events Manager. */
-const META_PIXEL_ID = '';
+/**
+ * Вторият контейнер на живия магазин - управлението на съгласието.
+ *
+ * Проверен: нула пиксела вътре, но 59 споменавания на „consent". Той бута
+ * `cookie_consent_*` в dataLayer и точно затова `fbq` стои неинициализиран на
+ * bulgarbiotic.bg, докато посетителят не приеме маркетинговите бисквитки.
+ *
+ * ⚠️ НАРОЧНО ИЗКЛЮЧЕН. Този редизайн си има собствен банер (`CookieBanner`).
+ * Пуснат едновременно с него, посетителят получава ДВА банера, които се борят
+ * за един и същ избор. Включва се чак когато се реши кой от двата остава -
+ * тогава тук се слага 'GTM-KT8R2G' и `CookieBanner` отпада.
+ */
+const CONSENT_GTM_ID = '';
 
-/** Няма го на оригинала - чака ID от TikTok Events Manager. */
-const TIKTOK_PIXEL_ID = '';
+/**
+ * Meta Pixel на магазина.
+ * Източник: marketingAppSettings(key: "app.xml_feed.facebook").pixel
+ * Живият магазин го зарежда през `facebook_pixel.min.js` (приложението
+ * „Facebook Dynamic Ads"), но само на страници, които рисува класическата тема.
+ */
+const META_PIXEL_ID = '530956661433130';
+
+/**
+ * TikTok Pixel на магазина.
+ * Източник: marketingAppSettings(key: "app.xml_feed.tiktok").pixel_code
+ * ⚠️ Events API-то на TikTok е ВКЛЮЧЕНО (`capi_status: 1`), тоест платформата
+ * праща и сървърни събития. Преди пускане на живо се проверява в TikTok Events
+ * Manager дали `AddToCart` не се брои два пъти - веднъж от нашия браузърен
+ * пиксел и веднъж сървърно от `/cart/add`.
+ */
+const TIKTOK_PIXEL_ID = 'CQ1VKIJC77U1G0V3L16G';
 
 /**
  * GA4 през gtag.js - НАРОЧНО празно.
@@ -43,6 +69,7 @@ const GA_ID = '';
 
 export type TrackingIds = {
   gtmId: string | null;
+  consentGtmId: string | null;
   metaPixelId: string | null;
   tiktokPixelId: string | null;
   gaId: string | null;
@@ -64,6 +91,7 @@ const clean = (v: string | undefined | null) => {
 export function resolveTracking(env: Record<string, string | undefined> | undefined): TrackingIds {
   return {
     gtmId: clean(envValue(env, 'PUBLIC_GTM_ID')) ?? clean(GTM_ID),
+    consentGtmId: clean(envValue(env, 'PUBLIC_CONSENT_GTM_ID')) ?? clean(CONSENT_GTM_ID),
     metaPixelId: clean(envValue(env, 'PUBLIC_META_PIXEL_ID')) ?? clean(META_PIXEL_ID),
     tiktokPixelId: clean(envValue(env, 'PUBLIC_TIKTOK_PIXEL_ID')) ?? clean(TIKTOK_PIXEL_ID),
     gaId: clean(envValue(env, 'PUBLIC_GA_ID')) ?? clean(GA_ID),

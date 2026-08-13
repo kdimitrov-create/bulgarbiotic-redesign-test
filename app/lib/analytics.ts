@@ -119,9 +119,28 @@ export function pushEcommerce(
   // Без нулиране следващото събитие наследява продуктите от предишното -
   // GTM пази стария `ecommerce` обект и ги слива.
   dataLayer().push({ecommerce: null});
-  dataLayer().push({event, ecommerce: payload});
+  dataLayer().push({event, ecommerce: withLegacyAliases(payload)});
   pushMetaEvent(event, payload);
   pushTikTokEvent(event, payload);
+}
+
+/**
+ * Контейнерът чете продукта по ДВА начина.
+ *
+ * Проверено в GTM-5X5M2HX: има променливи и за `eventModel.items.0.item_id`
+ * (GA4), и за `eventModel.items.0.id` (старият Universal Analytics вид). Кой от
+ * двата ползва даден tag не се вижда отвън, а липсващият просто мълчи и
+ * ремаркетингът остава без продукт. Затова подаваме и двата - дублирането е
+ * безплатно, познатото име винаги е налично.
+ */
+function withLegacyAliases(payload: {items: EcomItem[]; [key: string]: unknown}) {
+  const items = (payload.items ?? []).map((i) => ({
+    ...i,
+    id: i.item_id,
+    name: i.item_name,
+    category: i.item_category,
+  }));
+  return {...payload, items};
 }
 
 /**
@@ -147,7 +166,9 @@ export function pushEcommerce(
  */
 const META_EVENTS: Record<string, string> = {
   view_item: 'ViewContent',
+  view_item_list: 'ViewContent',
   add_to_cart: 'AddToCart',
+  add_to_wishlist: 'AddToWishlist',
   search: 'Search',
 };
 
@@ -160,7 +181,9 @@ function pushMetaEvent(
   if (!name || typeof fbq !== 'function') return;
   const items = payload.items ?? [];
   fbq('track', name, {
-    content_type: 'product',
+    // Категорията се отчита като `product_group`, точно както го прави
+    // класическата тема - иначе Meta мери листинга като преглед на един продукт.
+    content_type: event === 'view_item_list' ? 'product_group' : 'product',
     content_ids: items.map((i) => String(i.item_id)),
     contents: items.map((i) => ({id: String(i.item_id), quantity: i.quantity ?? 1})),
     content_name: items[0]?.item_name,
@@ -181,7 +204,9 @@ function pushMetaEvent(
 /** Същото разделение като при Meta - касата се брои от платформата. */
 const TIKTOK_EVENTS: Record<string, string> = {
   view_item: 'ViewContent',
+  view_item_list: 'ViewContent',
   add_to_cart: 'AddToCart',
+  add_to_wishlist: 'AddToWishlist',
   search: 'Search',
 };
 
@@ -196,7 +221,7 @@ function pushTikTokEvent(
   ttq.track(name, {
     contents: items.map((i) => ({
       content_id: String(i.item_id),
-      content_type: 'product',
+      content_type: event === 'view_item_list' ? 'product_group' : 'product',
       content_name: i.item_name,
       quantity: i.quantity ?? 1,
       price: i.price,
@@ -222,6 +247,25 @@ export function useEcommerceEvent(
   useEffect(() => {
     pushEcommerce(event, JSON.parse(json));
   }, [event, json]);
+}
+
+/**
+ * Преглед на страница за Meta и TikTok.
+ *
+ * В класическия магазин всяко кликване е ново зареждане, значи пикселът сам
+ * праща по един PageView. Nitrogen сменя страницата без презареждане - там
+ * пикселът се инициализира ВЕДНЪЖ и после мълчи. Затова прегледите се пращат
+ * ръчно при всяка смяна на маршрута, иначе цялата сесия се брои като една
+ * страница.
+ *
+ * Първият преглед се пропуска: `fbq('init')` и `ttq.page()` вече го пращат при
+ * зареждането на пиксела.
+ */
+export function pushPageView() {
+  if (typeof window === 'undefined') return;
+  const w = window as any;
+  if (typeof w.fbq === 'function') w.fbq('track', 'PageView');
+  if (w.ttq && typeof w.ttq.page === 'function') w.ttq.page();
 }
 
 /* ------------------------------------------------------------------ */

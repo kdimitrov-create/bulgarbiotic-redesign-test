@@ -20,6 +20,7 @@ import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
 import {CATEGORY_EXTRA_PRODUCTS} from '~/lib/category-extra-products';
+import {useCcPage, useEcommerceEvent, numericId} from '~/lib/analytics';
 import {
   SINGLES_FIRST_CATEGORIES,
   fetchPackageHandles,
@@ -173,6 +174,24 @@ export default function CollectionPage() {
   const children = col.children?.nodes ?? [];
   const showChildren = col.displayChildren && children.length > 0;
   const totalCount = (products as any).totalCount ?? 0;
+
+  /* Измерване: категория. Класическата тема праща тук `ViewContent` с
+   * `content_type: product_group`. Подаваме първите продукти от листинга -
+   * толкова, колкото носи и оригиналът, без да пълним заявката с целия каталог. */
+  const listItems = ((products as any).nodes ?? []).slice(0, 10).map((p: any, i: number) => ({
+    item_id: numericId(p.id),
+    item_name: p.title,
+    item_category: col.title,
+    price: parseFloat(p.priceRange?.minVariantPrice?.amount ?? '0'),
+    index: i,
+    quantity: 1,
+  }));
+  useCcPage({type: 'category', id: numericId(col.id), name: col.title, url: `/category/${col.handle}`});
+  useEcommerceEvent('view_item_list', {
+    currency: (products as any).nodes?.[0]?.priceRange?.minVariantPrice?.currencyCode ?? 'EUR',
+    item_list_name: col.title,
+    items: listItems,
+  });
 
   // Hand-written hero intro per handle. Falls back to nothing if unknown —
   // the long CloudCart description is reserved for the <meta> SEO tag only.

@@ -1,10 +1,11 @@
-import {useEffect} from 'react';
+import {useEffect, useRef} from 'react';
 import {useRouteLoaderData, useLocation} from 'react-router';
 import {
   CONSENT_EVENT,
   hasConsent,
   getCcPageData,
   pushCcPageData,
+  pushPageView,
 } from '~/lib/analytics';
 
 /**
@@ -29,6 +30,7 @@ export function Analytics() {
     | {
         tracking?: {
           gtmId?: string | null;
+          consentGtmId?: string | null;
           metaPixelId?: string | null;
           tiktokPixelId?: string | null;
           gaId?: string | null;
@@ -37,6 +39,7 @@ export function Analytics() {
     | undefined;
 
   const gtmId = data?.tracking?.gtmId ?? null;
+  const consentGtmId = data?.tracking?.consentGtmId ?? null;
   const metaPixelId = data?.tracking?.metaPixelId ?? null;
   const tiktokPixelId = data?.tracking?.tiktokPixelId ?? null;
   const gaId = data?.tracking?.gaId ?? null;
@@ -47,7 +50,22 @@ export function Analytics() {
   /* Данните за страницата - преди контейнера, както в класическата тема */
   /* ---------------------------------------------------------------- */
   useEffect(() => {
-    pushCcPageData(getCcPageData(pathname));
+    // `locale` е единственото поле от cc_page_data, което контейнерът чете
+    // извън касата (проверено: другите пет са за Enhanced Conversions).
+    pushCcPageData({locale: 'bg_BG', ...getCcPageData(pathname)});
+  }, [pathname]);
+
+  /* ---------------------------------------------------------------- */
+  /* Преглед на страница при смяна на маршрут (SPA)                    */
+  /* ---------------------------------------------------------------- */
+  const firstRender = useRef(true);
+  useEffect(() => {
+    // Първият преглед идва от самата инициализация на пикселите.
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    pushPageView();
   }, [pathname]);
 
   /* ---------------------------------------------------------------- */
@@ -55,7 +73,7 @@ export function Analytics() {
   /* ---------------------------------------------------------------- */
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!gtmId && !metaPixelId && !tiktokPixelId && !gaId) return;
+    if (!gtmId && !consentGtmId && !metaPixelId && !tiktokPixelId && !gaId) return;
 
     function load() {
       // Съгласието се чете през `hasConsent()`, а не директно от storage:
@@ -66,13 +84,18 @@ export function Analytics() {
       if (w.__analyticsLoaded) return true;
       w.__analyticsLoaded = true;
 
-      if (gtmId) {
+      // Живият магазин зарежда ДВА контейнера: този с tag-овете и този със
+      // съгласието. Редът е същият - първо се вдига dataLayer-ът, после и двата.
+      const containers = [gtmId, consentGtmId].filter(Boolean) as string[];
+      if (containers.length) {
         w.dataLayer = w.dataLayer || [];
         w.dataLayer.push({'gtm.start': Date.now(), event: 'gtm.js'});
-        const s = document.createElement('script');
-        s.async = true;
-        s.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(gtmId);
-        document.head.appendChild(s);
+        for (const id of containers) {
+          const s = document.createElement('script');
+          s.async = true;
+          s.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(id);
+          document.head.appendChild(s);
+        }
       }
 
       // Само ако контейнерът липсва - иначе GA4 се брои два пъти.
@@ -148,7 +171,7 @@ export function Analytics() {
     }
     window.addEventListener(CONSENT_EVENT, onConsent);
     return () => window.removeEventListener(CONSENT_EVENT, onConsent);
-  }, [gtmId, metaPixelId, tiktokPixelId, gaId]);
+  }, [gtmId, consentGtmId, metaPixelId, tiktokPixelId, gaId]);
 
   return null;
 }

@@ -2,6 +2,7 @@ import {useFetcher, useRouteLoaderData} from 'react-router';
 import {useEffect, useState} from 'react';
 import {HeartIcon} from '@heroicons/react/24/outline';
 import {HeartIcon as HeartSolid} from '@heroicons/react/24/solid';
+import {pushEcommerce, numericId} from '~/lib/analytics';
 
 export function WishlistButton({
   productId,
@@ -39,6 +40,13 @@ export function WishlistButton({
       {productId},
       {method: next ? 'POST' : 'DELETE', action: '/api/wishlist'},
     );
+    // Само добавянето се отчита - класическата тема също няма събитие за
+    // махане от любими, а Meta и TikTok нямат такова в речника си.
+    if (next) {
+      pushEcommerce('add_to_wishlist', {
+        items: [{item_id: numericId(productId), item_name: '', quantity: 1}],
+      });
+    }
   };
 
   const sizeClasses = {

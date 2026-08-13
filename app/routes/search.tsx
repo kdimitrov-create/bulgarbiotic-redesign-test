@@ -1,4 +1,5 @@
 import {useLoaderData, useNavigate, useNavigation, useSearchParams} from 'react-router';
+import {useCcPage, useEcommerceEvent, numericId} from '~/lib/analytics';
 import {useEffect, useRef, useState, useCallback} from 'react';
 import type {Route} from './+types/search';
 import {getContext} from '~/lib/context';
@@ -56,6 +57,19 @@ export default function SearchPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
   const isSearching = navigation.state === 'loading';
+
+  /* Измерване: търсене. Класическата тема праща `Search` с търсената дума;
+   * без него Meta и TikTok не могат да строят аудитории по намерение. */
+  useCcPage({type: 'search', name: query});
+  useEcommerceEvent('search', {
+    search_term: query,
+    items: ((products as any)?.nodes ?? []).slice(0, 10).map((p: any, i: number) => ({
+      item_id: numericId(p.id),
+      item_name: p.title,
+      index: i,
+      quantity: 1,
+    })),
+  });
 
   // Input is fully local — never overwritten by URL/loader data.
   const [inputValue, setInputValue] = useState(query);
