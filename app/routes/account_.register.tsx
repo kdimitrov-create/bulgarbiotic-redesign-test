@@ -54,7 +54,7 @@ export default function AccountRegister() {
     <div className="mx-auto max-w-md py-12">
       <h1 className="text-2xl font-bold tracking-tight mb-2">Създаване на профил</h1>
       <p className="text-sm text-gray-500 mb-6">
-        After registering, we’ll email you a 6-digit sign-in code.
+        След регистрацията ще получиш 6-цифрен код за вход по имейл.
       </p>
 
       <Form method="POST" className="space-y-4">
@@ -107,12 +107,12 @@ export default function AccountRegister() {
           disabled={isSubmitting}
           className="w-full py-2.5 px-4 bg-brand text-white font-medium rounded-lg hover:opacity-90 disabled:opacity-60"
         >
-          {isSubmitting ? 'Creating…' : 'Създай профил'}
+          {isSubmitting ? 'Създавам…' : 'Създай профил'}
         </button>
       </Form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        Already have an account?{' '}
+        Вече имаш профил?{' '}
         <Link to="/account/login" className="text-brand hover:underline">
           Вход
         </Link>

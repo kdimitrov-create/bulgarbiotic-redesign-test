@@ -62,7 +62,7 @@ export default function AccountLogin() {
     <div className="mx-auto max-w-md py-12">
       <h1 className="text-2xl font-bold tracking-tight mb-2">Вход</h1>
       <p className="text-sm text-gray-500 mb-6">
-        We’ll email you a 6-digit code. No password required.
+        Ще ти изпратим 6-цифрен код по имейл. Не е нужна парола.
       </p>
 
       {!sent ? (
@@ -87,16 +87,22 @@ export default function AccountLogin() {
             disabled={isSubmitting}
             className="w-full py-2.5 px-4 bg-brand text-white font-medium rounded-lg hover:opacity-90 disabled:opacity-60"
           >
-            {isSubmitting ? 'Sending…' : 'Изпрати код'}
+            {isSubmitting ? 'Изпращам…' : 'Изпрати код'}
           </button>
         </Form>
       ) : (
         <Form method="POST" className="space-y-4">
           <input type="hidden" name="stage" value="code" />
           <input type="hidden" name="email" value={email} />
+          {/* Формулировката е нарочно условна.
+              Платформата приема заявката и не казва дали такъв профил
+              съществува и дали е активиран - това е защита срещу проверяване
+              кой имейл има регистрация. Затова обещание „изпратихме ти код"
+              е обещание, което понякога няма как да се изпълни: профил с
+              `active: false` не получава нищо. */}
           <p className="text-sm text-gray-600">
-            We’ve sent a 6-digit code to <strong className="text-dark">{email}</strong>.
-            Enter it below to sign in.
+            Ако <strong className="text-dark">{email}</strong> има активен профил,
+            кодът вече пътува натам. Въведи го по-долу.
           </p>
           <label className="block">
             <span className="block text-sm font-medium mb-1">Код за вход</span>
@@ -120,10 +126,10 @@ export default function AccountLogin() {
             disabled={isSubmitting}
             className="w-full py-2.5 px-4 bg-brand text-white font-medium rounded-lg hover:opacity-90 disabled:opacity-60"
           >
-            {isSubmitting ? 'Verifying…' : 'Потвърди и влез'}
+            {isSubmitting ? 'Проверявам…' : 'Потвърди и влез'}
           </button>
           <p className="text-center text-sm text-gray-500">
-            Didn’t get the code?{' '}
+            Не дойде ли код?{' '}
             <Link to="/account/login" className="text-brand hover:underline">
               Опитай пак
             </Link>
@@ -132,7 +138,7 @@ export default function AccountLogin() {
       )}
 
       <p className="mt-6 text-center text-sm text-gray-500">
-        No account yet?{' '}
+        Нямаш профил?{' '}
         <Link to="/account/register" className="text-brand hover:underline">
           Създай профил
         </Link>
