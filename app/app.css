@@ -5282,9 +5282,14 @@ img.pm-banner {
     border-top: 0;
   }
 }
-/* В двуколонното начало числата остават едно до друго, както си бяха: там
-   лявата колона е тясна и трите равни клетки се разпадаха. */
-.bb-row-pagehero .bb-prose .stat-pair { vertical-align: top; }
+/* В двуколонното начало числата остават едно до друго, но подписът им се
+   пренася: иначе дългият надпис на едното опира в другото и двата изглеждат
+   като едно изречение. */
+.bb-row-pagehero .bb-prose .stat-pair {
+  vertical-align: top;
+  max-width: 190px;
+  margin-right: 40px;
+}
 
 /* Заглавие на секция във вида на Beauty страницата. */
 .bb-row-headline.bb-lp .section-tag {
