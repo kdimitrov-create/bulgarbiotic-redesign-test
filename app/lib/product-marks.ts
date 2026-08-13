@@ -257,24 +257,31 @@ function scaleMoney(money: MarkMoney | null | undefined, quantity: number): Mark
 }
 
 /**
- * The price pair for one CART line — what this line costs now and what it cost
- * before the promotion, both as line totals for `quantity` items.
+ * Двете цени на един РЕД в количката: колко струва сега и колко е струвал.
  *
- * The cart is the one surface where the two numbers arrive the other way round
- * from the rest of the shop, and both halves were measured against the live API
- * (2 × Femin, a product under the store-wide campaign):
+ * Чете се от `cost` на самия ред, защото само там числата са пълни:
  *
- *   • `merchandise.price`     → 19.25 — the real price, promotion included
- *   • `cost.totalAmount`      → 63.12 for qty 2, i.e. 31.56 apiece — the MSRP.
- *     The Storefront cart does NOT fold CloudCart's order-level promotions in.
+ *   • `cost.amountPerQuantity`          — реалната цена за брой
+ *   • `cost.compareAtAmountPerQuantity` — зачертаната цена за брой
+ *   • `cost.totalAmount`                — реалната сума на реда
+ *   • `discountAllocations`             — кое правило колко е свалило
  *
- * So the line already carries both figures and nothing needs to be derived from
- * a discount percentage — which is what the 🛑 above forbids, and which used to
- * leave the drawer showing full MSRP whenever the admin mirror had no rule for a
- * product (category-scoped campaigns resolve to nothing there).
+ * ⚠️ Тук стоеше обратното твърдение: че `merchandise.price` е реалната цена, а
+ * `cost.totalAmount` е MSRP. Днес не е вярно и разликата не е козметична.
+ * Измерено на живо 2026-08-13, 2 бр. Femin с количествен пакет „Femin x2":
  *
- * Both halves are computed per unit and then multiplied by the quantity being
- * displayed, so an optimistic +/− keeps the two prices in step.
+ *   merchandise.price = 21,62   cost.amountPerQuantity = 22,49
+ *   cost.compareAtAmountPerQuantity = 31,56   cost.totalAmount = 44,98
+ *   alloc: PRODUCT · „Femin x2 пакет" · −18,14
+ *
+ * Тоест `merchandise.price` е каталожната цена на един брой и НЕ знае за
+ * количествения пакет, докато `cost` знае. Старата сметка показваше „плащаш
+ * 43,24, беше 44,98, спестяваш 1,74"; истината е „плащаш 44,98, беше 63,12,
+ * спестяваш 18,14". И количествен пакет, и промо код се появяват в `cost` -
+ * нищо не остава за пресмятане отстрани.
+ *
+ * Каталожната снимка остава резерва за тънките редове, които количката понякога
+ * връща без `cost`.
  */
 export function markPricingForLine(
   line: any,
@@ -282,22 +289,29 @@ export function markPricingForLine(
 ): {price: MarkMoney | null; compareAtPrice: MarkMoney | null} {
   const lineQty = Number(line?.quantity) || 0;
   const qty = Number.isFinite(quantity) ? Math.max(0, quantity as number) : lineQty;
-  // A line only knows its handle, so the catalogue snapshot is the fallback for
-  // the thin merchandise objects the cart sometimes ships.
   const shared = marksForHandle(line?.merchandise?.product?.handle);
+  const cost = line?.cost;
 
-  const unitNow: MarkMoney | null = line?.merchandise?.price ?? shared?.price ?? null;
-  const lineCost = line?.cost?.totalAmount;
+  const unitNow: MarkMoney | null =
+    cost?.amountPerQuantity ??
+    (cost?.totalAmount && lineQty > 0
+      ? {amount: String(parseFloat(cost.totalAmount.amount) / lineQty), currencyCode: cost.totalAmount.currencyCode}
+      : null) ??
+    line?.merchandise?.price ??
+    shared?.price ??
+    null;
+
   const unitWas: MarkMoney | null =
-    lineCost && lineQty > 0
-      ? {amount: String(parseFloat(lineCost.amount) / lineQty), currencyCode: lineCost.currencyCode}
-      : shared?.compareAtPrice ?? null;
+    cost?.compareAtAmountPerQuantity ??
+    line?.merchandise?.compareAtPrice ??
+    shared?.compareAtPrice ??
+    null;
 
   const was = scaleMoney(unitWas, qty);
   const price = scaleMoney(unitNow, qty) ?? was;
 
-  // Half a cent of tolerance: dividing a line total back to a unit price can
-  // land a hair above the real one, and that must not read as a promotion.
+  // Половин стотинка допуск: делене на сума по количество може да върне цена
+  // косъм над реалната, а това не бива да се чете като промоция.
   const wasAmount = was ? parseFloat(was.amount) : 0;
   const nowAmount = price ? parseFloat(price.amount) : 0;
   return {price, compareAtPrice: wasAmount > nowAmount + 0.005 ? was : null};
