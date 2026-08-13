@@ -5,6 +5,7 @@ import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {Pagination} from '~/components/Pagination';
 import {ProductMarks} from '~/components/ProductMarks';
+import {CardBuyButton} from '~/components/CardBuyButton';
 import {markPricing, markDiscount, setProductMarks} from '~/lib/product-marks';
 import {DiscountCountdown} from '~/components/DiscountCountdown';
 import {fetchProductMarks} from '~/lib/product-marks.server';
@@ -388,6 +389,12 @@ function PromoCard({product}: {product: any}) {
             Спестяваш <strong>{fmt(savedEur, 'EUR')}</strong>
           </div>
         )}
+        {/* Същият бутон като в категориите: продуктът влиза в количката, без
+            да се отваря детайлната страница (клиент, 2026-08-13). */}
+        <CardBuyButton
+          merchandiseId={product.variants?.nodes?.[0]?.id}
+          handle={product.handle}
+        />
       </div>
     </Link>
   );

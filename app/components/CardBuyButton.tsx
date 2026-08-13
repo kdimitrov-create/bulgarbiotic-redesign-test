@@ -1,6 +1,8 @@
 import {useState} from 'react';
+import {useEffect} from 'react';
 import {useNavigate, useFetcher} from 'react-router';
 import {CART_ACTION} from '~/lib/cart-action';
+import {useAside} from './Aside';
 
 /**
  * „Купи" на продуктова карта - витрината на началната и решетките в категориите
@@ -35,6 +37,13 @@ export function CardBuyButton({
   const isAdding = fetcher.state !== 'idle';
   const [resolving, setResolving] = useState(false);
   const navigate = useNavigate();
+  const {open} = useAside();
+
+  // Чекмеджето се отваря при всяко добавяне, откъдето и да идва.
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) open('cart');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.state, fetcher.data]);
 
   /**
    * Вариантът на продукта, ако картата не го е получила.

@@ -3,6 +3,7 @@ import {enhanceProducts} from '~/lib/product-images';
 import {enhanceArticleImages, setArticleImages} from '~/lib/article-images';
 import {fetchArticleImages} from '~/lib/blog-images.server';
 import {primaryBlogHandle} from '~/lib/blog.server';
+import {adminGql, adminOrigin, adminPat} from './admin-api.server';
 
 /**
  * Loading what the page-builder's data blocks ask for.
@@ -18,7 +19,7 @@ import {primaryBlogHandle} from '~/lib/blog.server';
 
 // Imported as a value, not only re-exported: `export {X} from '…'` forwards X
 // to consumers without binding it in this module, and this file uses it.
-import {EMPTY_BUILDER_DATA} from './builder-data';
+import {EMPTY_BUILDER_DATA, BUILDER_LINK_PATHS, collectBuilderLinks} from './builder-data';
 import type {BuilderData} from './builder-data';
 export {EMPTY_BUILDER_DATA};
 export type {BuilderData};
@@ -27,12 +28,15 @@ interface Needs {
   productIds: Set<string>;
   poolSize: number;
   articleCount: number;
+  /** Връзките от банери и слайдове, които трябва да станат адреси. */
+  links: Array<{type: string; id: string}>;
 }
 
 /** Which blocks in this design need catalogue data, and how much. */
 export function collectBuilderNeeds(design: any): Needs {
-  const needs: Needs = {productIds: new Set(), poolSize: 0, articleCount: 0};
+  const needs: Needs = {productIds: new Set(), poolSize: 0, articleCount: 0, links: []};
   if (!design) return needs;
+  needs.links = collectBuilderLinks(design);
 
   const walk = (node: any) => {
     if (!node || typeof node !== 'object') return;
@@ -77,9 +81,9 @@ export async function fetchBuilderData(
   needs: Needs,
 ): Promise<BuilderData> {
   const wantsProducts = needs.productIds.size > 0 || needs.poolSize > 0;
-  if (!wantsProducts && !needs.articleCount) return EMPTY_BUILDER_DATA;
+  if (!wantsProducts && !needs.articleCount && !needs.links.length) return EMPTY_BUILDER_DATA;
 
-  const [picked, pool, articles, articleImages] = await Promise.all([
+  const [picked, pool, articles, articleImages, linkHrefs] = await Promise.all([
     needs.productIds.size ? fetchByIds(env, [...needs.productIds]) : Promise.resolve([]),
     needs.poolSize ? storefront.getProducts(needs.poolSize).catch(() => []) : Promise.resolve([]),
     // The API returns the blog in its own order, not by date — the whole blog
@@ -94,6 +98,7 @@ export async function fetchBuilderData(
     // `image.url` for every article, so a block built in the panel would show
     // three blank frames without this.
     needs.articleCount ? fetchArticleImages(env) : Promise.resolve(null),
+    resolveBuilderLinks(env, needs.links),
   ]);
 
   const productsById: Record<string, any> = {};
@@ -142,7 +147,61 @@ export async function fetchBuilderData(
       width: 800,
       height: 600,
     }),
+    linkHrefs,
   };
+}
+
+/**
+ * Превръща двойките `вид:номер` от конструктора в истински адреси.
+ *
+ * Панелът пази връзката на банер или слайд като `link_type` + `link_value`, а
+ * за продукт, категория и страница стойността е НОМЕР. Дотук той отиваше право
+ * в `href`, тоест банерът на началната водеше на 404. Същият подход, който
+ * менюто вече ползва (`navigation.server.ts`): една заявка с aliases разрешава
+ * всички номера наведнъж.
+ *
+ * Тихо по конструкция: без токен или при грешка се връща празна карта и
+ * банерът остава без връзка. По-добре снимка без връзка, отколкото връзка
+ * към 404.
+ */
+async function resolveBuilderLinks(
+  env: Record<string, string | undefined>,
+  links: Array<{type: string; id: string}>,
+): Promise<Record<string, string>> {
+  if (!links.length) return {};
+  const pat = adminPat(env);
+  const origin = adminOrigin(env);
+  if (!pat || !origin) return {};
+
+  const QUERIES: Record<string, string> = {
+    product: 'product',
+    category: 'category',
+    page: 'page',
+    blog: 'blogCategory',
+    selection: 'smartCollection',
+  };
+  const usable = links.filter((l) => QUERIES[l.type] && /^\d+$/.test(l.id));
+  if (!usable.length) return {};
+
+  try {
+    const fields = usable.map(
+      (l, i) => `l${i}: ${QUERIES[l.type]}(id: "${l.id}") { urlHandle }`,
+    );
+    const data = await adminGql<Record<string, {urlHandle?: string} | null>>(
+      origin,
+      pat,
+      `query BuilderLinks { ${fields.join(' ')} }`,
+    );
+    const out: Record<string, string> = {};
+    usable.forEach((l, i) => {
+      const handle = data?.[`l${i}`]?.urlHandle;
+      if (handle) out[`${l.type}:${l.id}`] = BUILDER_LINK_PATHS[l.type](handle);
+    });
+    return out;
+  } catch (error) {
+    console.error('builder links: %s', (error as Error).message);
+    return {};
+  }
 }
 
 /** One request covers the blog; the merchant's `count` picks from the newest. */

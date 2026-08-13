@@ -2,6 +2,7 @@ import {useFetcher} from 'react-router';
 import {useEffect, type ReactNode} from 'react';
 import {pushEcommerce, idForHandle} from '~/lib/analytics';
 import {CART_ACTION} from '~/lib/cart-action';
+import {useAside} from './Aside';
 
 export function AddToCartButton({
   merchandiseId,
@@ -18,9 +19,14 @@ export function AddToCartButton({
 }) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state !== 'idle';
+  const {open} = useAside();
 
   useEffect(() => {
     if (fetcher.state === 'idle' && fetcher.data) {
+      // Чекмеджето се отваря при всяко добавяне, откъдето и да идва (клиент,
+      // 2026-08-13). Отваря се тук, а не в бутона, защото тук се знае, че
+      // добавянето наистина е минало.
+      open('cart');
       // Прехвърлянето и потвърждението са централни, виж CartSync.
 
       // `add_to_cart` е второто по важност събитие след purchase: от него се

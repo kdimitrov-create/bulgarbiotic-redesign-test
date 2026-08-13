@@ -11,12 +11,7 @@ import {Marquee} from '~/components/home/Marquee';
 import {Reviews} from '~/components/home/Reviews';
 import {ProductRail} from '~/components/home/ProductRail';
 import {BundlePrice} from '~/components/home/BundleFeature';
-import {
-  carouselSlides,
-  showcaseProducts,
-  EMPTY_BUILDER_DATA,
-  type BuilderData,
-} from '~/lib/builder-data';
+import {carouselSlides, showcaseProducts, EMPTY_BUILDER_DATA, type BuilderData, builderHref} from '~/lib/builder-data';
 
 /**
  * Renders CloudCart's page-builder tree into React markup.
@@ -240,7 +235,7 @@ function FoldedText({html}: {html: string}) {
   );
 }
 
-function Banner({block}: {block: BuilderNode}) {
+function Banner({block, data}: {block: BuilderNode; data?: BuilderData | null}) {
   const settings = block.settings ?? {};
   const list = entries(settings.banners);
   if (!list.length) return null;
@@ -261,9 +256,10 @@ function Banner({block}: {block: BuilderNode}) {
             className="bb-bd-banner-img"
           />
         );
-        // The panel writes the link as `link_value`; `link`/`url` are what a
-        // hand-written block uses.
-        const href = banner.link || banner.url || banner.link_value;
+        // Панелът пази връзката като `link_type` + `link_value`, а за продукт,
+        // категория и страница стойността е НОМЕР. Разрешаването е в
+        // `builderHref`; тук само се ползва резултатът.
+        const href = builderHref(banner, data);
         return (
           <div key={i} className="bb-bd-banner">
             {href ? (
@@ -382,8 +378,8 @@ function BundlePick({block, data}: {block: BuilderNode; data: BuilderData}) {
  * An image slider — the shop's own hero slider, driven by the slides the
  * merchant uploaded. Mobile gets its own file when they uploaded one.
  */
-function Carousel({block}: {block: BuilderNode}) {
-  const slides = carouselSlides(block.settings ?? {}).map((slide) => ({
+function Carousel({block, data}: {block: BuilderNode; data?: BuilderData | null}) {
+  const slides = carouselSlides(block.settings ?? {}, data).map((slide) => ({
     desktop: slide.src,
     mobile: slide.mobile,
     link: slide.link,
@@ -524,7 +520,7 @@ function renderBlock(
       return <CodeBlock key={idx} html={html} />;
     }
     case 'banner':
-      return <Banner key={idx} block={block} />;
+      return <Banner key={idx} block={block} data={data} />;
     case 'product-showcase':
     case 'bundle-products':
       // "Пакет на месеца" is one product shown as a feature, not as a card:
@@ -534,7 +530,7 @@ function renderBlock(
       }
       return <Showcase key={idx} block={block} data={data} />;
     case 'carousel':
-      return <Carousel key={idx} block={block} />;
+      return <Carousel key={idx} block={block} data={data} />;
     // „Продуктови отзиви" от панела: рисува се секцията с отзивите на магазина.
     // Имената се приемат и в двата вида, защото панелът пише едните с долна
     // черта (`request_review`), а другите с тире.

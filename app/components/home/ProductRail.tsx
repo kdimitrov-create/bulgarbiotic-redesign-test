@@ -1,5 +1,5 @@
 import {Link, useFetcher} from 'react-router';
-import {useRef} from 'react';
+import {useEffect, useRef} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {displayDiscountPercent} from '~/lib/active-discounts';
@@ -9,6 +9,7 @@ import {ProductMarks} from '~/components/ProductMarks';
 
 import {SHOW_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
+import {useAside} from '~/components/Aside';
 /**
  * The horizontal product slider used on the homepage — and by the page
  * builder's "Продуктова витрина" widget, so a showcase the merchant assembles
@@ -26,6 +27,13 @@ import {CART_ACTION} from '~/lib/cart-action';
 function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state !== 'idle';
+  const {open} = useAside();
+
+  // Чекмеджето се отваря при всяко добавяне, откъдето и да идва.
+  useEffect(() => {
+    if (fetcher.state === 'idle' && fetcher.data) open('cart');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.state, fetcher.data]);
   // Чекмеджето вече не изскача: клиентът остава на страницата и получава
   // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
   return (
