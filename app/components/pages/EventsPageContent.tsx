@@ -318,7 +318,7 @@ const EVENTS_CSS = `/* ===== Scoped namespace: .bb-events ===== */
 
   @font-face {
     font-family: 'BBDisplay';
-    src: local('Fraunces'), local('Georgia');
+    src: local('Montserrat'), local('Georgia');
   }
 
   .bb-events .bb-eyebrow {

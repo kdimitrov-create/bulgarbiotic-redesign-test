@@ -187,7 +187,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
                   <path d="M6 12l16 6 16-6" opacity="0.6" />
                   <line x1="22" y1="18" x2="22" y2="32" opacity="0.6" />
                   <rect x="34" y="22" width="18" height="12" rx="1.5" fill="rgba(245,239,227,0.06)" stroke="currentColor" strokeWidth="1.4" />
-                  <text x="43" y="30" textAnchor="middle" fontFamily="Manrope" fontWeight="800" fontSize="3.5" fill="#E3166C" stroke="none">лв</text>
+                  <text x="43" y="30" textAnchor="middle" fontFamily="Akrobat" fontWeight="800" fontSize="3.5" fill="#E3166C" stroke="none">лв</text>
                 </svg>
               </span>
               <span className="bb-ft-pay" title="Банков превод">

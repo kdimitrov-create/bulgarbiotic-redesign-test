@@ -2563,7 +2563,7 @@ html, body {
 /* Price block.
  *
  * Two states:
- * 1) Regular price → italic Fraunces EUR + small BGN under it.
+ * 1) Regular price → наклонена цена в евро + дребно в лева отдолу.
  * 2) On-sale price → big pink struck MSRP next to the EUR, prominent
  *    "−XX%" badge, and a "Спестяваш X €" line below. The discount badge
  *    has a small "pop" feel (subtle scale + shadow) so the eye lands on

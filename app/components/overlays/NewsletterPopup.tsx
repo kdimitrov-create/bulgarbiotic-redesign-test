@@ -283,7 +283,7 @@ export function NewsletterPopup() {
           .bb-welcome-code {
             flex: 1;
             padding: 14px 18px;
-            font-family: 'Manrope', 'Inter', monospace;
+            font-family: var(--font-sans), monospace;
             font-size: 22px;
             font-weight: 800;
             letter-spacing: 2.2px;

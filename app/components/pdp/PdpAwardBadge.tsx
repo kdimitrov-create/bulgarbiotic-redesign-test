@@ -19,7 +19,7 @@ export function PdpAwardBadge() {
       <span className="bb-pdp-award-medal" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="11" r="7" fill="#1a1a1a" stroke="#d4af6a" strokeWidth="1" />
-          <text x="12" y="14" textAnchor="middle" fill="#f4d585" fontSize="6" fontWeight="800" fontFamily="Manrope">25</text>
+          <text x="12" y="14" textAnchor="middle" fill="#f4d585" fontSize="6" fontWeight="800" fontFamily="Montserrat">25</text>
           <path d="M9 17l-2 5 3-1.5L12 22l2-1.5 3 1.5-2-5" fill="#c4974f" stroke="#a07c3a" strokeWidth="0.6" />
         </svg>
       </span>
