@@ -1,7 +1,7 @@
 import {redirect, data as routeData} from 'react-router';
 import type {Route} from './+types/cart-actions';
 import {getContext} from '~/lib/context';
-import {dropOfferGifts} from '~/lib/cart-gifts.server';
+import {dropUnearnedGifts} from '~/lib/cart-gifts.server';
 import type {CartData} from '@cloudcart/nitro';
 
 /**
@@ -93,11 +93,11 @@ export async function action({request, context}: Route.ActionArgs) {
   }
 
   const headers = new Headers();
-  // Подаръкът от кръстосаните оферти НЕ се слага оттук - слага го платформата
-  // при прехвърлянето на количката и само тя може да му напише нулевата цена.
-  // Тук се чистят редовете, които стар билд е добавил, иначе платформата вижда
-  // продукта вече вътре и не подарява нищо. Виж `cart-gifts.server.ts`.
-  cart = await dropOfferGifts(cart, ctx.cart);
+  // Подаръкът от кръстосаната оферта остава в количката, докато прагът е
+  // достигнат. Слага го платформата (нашата количка и нейната са един и същ
+  // обект), а тук само се маха, когато сумата падне под прага - виж
+  // `cart-gifts.server.ts`.
+  cart = await dropUnearnedGifts(cart, ctx.cart);
 
   if (ctx.session.isPending) {
     headers.set('Set-Cookie', await ctx.session.commit());

@@ -1,70 +1,85 @@
 import {cartOffers} from './cart-offers';
 
 /**
- * Маха от количката продуктите-подаръци на кръстосаните оферти. НЕ ги слага.
+ * Пази подаръка от кръстосаната оферта в количката, докато прагът е достигнат,
+ * и го маха чак когато сумата падне под него.
  *
- * Дълго време тук ставаше обратното: щом сумата минеше прага, кодът добавяше
- * подаръка сам. Резултатът беше точно оплакването на клиента - хавлията влизаше
- * в количката, но с редовните си 40 €, тоест подарък, за който се плаща.
+ * КАК ПОДАРЪКЪТ ВЛИЗА. Нашата количка и количката на платформата са ЕДИН И СЪЩ
+ * обект: `/checkout/adopt/<jwt>` вкарва нашата в нейната сесия по същия
+ * идентификатор. Затова щом платформата сложи подаръка, той се появява и при
+ * нас. Измерено на живо на bulgarbiotic.bg (2026-08-13), един и същ cart id
+ * преди и след прехвърлянето:
  *
- * Измерено на живо на bulgarbiotic.bg (2026-08-12), едно и също съдържание,
- * три пъти:
+ *   преди:  Family pack 104,40
+ *   след:   Family pack 104,40
+ *           Подарък - хавлия Bactology  ред 0,00  alloc „Подарък хавлия" -40,00
  *
- *   | кой слага хавлията          | cross_sell_id | цена     | междинна сума |
- *   |-----------------------------|---------------|----------|---------------|
- *   | ние, през Storefront API    | null          | 40,00 €  | 144,40 €      |
- *   | ние + `crossSellId` на реда | null          | 40,00 €  | 144,40 €      |
- *   | НИКОЙ - оставяме платформата | 60            |  0,00 €  | 104,40 €      |
+ * Тоест редът идва с нулева цена и няма нужда от нищо наше.
  *
- * Тоест: стойността, която нулира реда, е `cross_sell_id` върху него, а той се
- * пише САМО когато самата платформа е сложила реда. `CartLineInput.crossSellId`
- * съществува в Storefront API-то, но по описанието му е за отчитане на
- * реализациите, не за цена - подава се без грешка и не се записва.
+ * 🛑 ЗАЩО ТОЗИ ФАЙЛ ПРАВЕШЕ ОБРАТНОТО. Дотук той триеше подаръчните редове при
+ * ВСЯКО действие с количката. Причината беше вярна за времето си: докато ние
+ * добавяхме подаръка сами, наш ред с този продукт пречеше на платформата да
+ * сложи своя безплатен. Но сега редът е неин и триенето само го отнема - точно
+ * оплакването на клиента: вдигаш количеството на кой да е продукт и подаръкът
+ * изчезва.
  *
- * Затова единственият начин подаръкът да е подарък е да не го пипаме. В мига,
- * в който количката се прехвърли на платформата (`/checkout/adopt/<jwt>`,
- * `cart-sync.ts`), кръстосаната оферта се задейства сама, слага реда и му пише
- * 100 % отстъпка. Нашата работа свършва дотук: количката само ОБЯВЯВА подаръка
- * (виж `CartOffersStrip`), а редът се появява при плащането.
+ * ПРАВИЛОТО СЕГА (клиент, 2026-08-13):
+ *   • добавяне на продукт или вдигане на количество  → подаръкът ОСТАВА
+ *   • сваляне на количество или премахване, при което сумата падне под прага
+ *     → подаръкът СЕ МАХА
  *
- * ⚠️ Работи само когато офертата в панела е с изполване „каса/checkout".
- * `add_to_cart` е събитие на класическата тема - неин скрипт го праща при
- * добавяне. Nitrogen рисува свой DOM и такова събитие никога не стига до
- * платформата, значи оферта с `add_to_cart` не подарява нищо. Проверено:
- * bulgarbiotic.bg има №60 с „checkout" и подаръкът излиза; тестовото копие
- * има само „add_to_cart" и подарък не се дава.
+ * Прагът е този от самата оферта в панела (`minTotal`), не число в кода.
  */
 
 /**
- * Изхвърля всеки ред, който е награда на действаща оферта „подарък при поръчка
- * над X". Тиха е по конструкция: сгреши ли, количката остава каквато е, защото
- * един подарък не бива да събори добавянето на истински продукт.
+ * Сумата, срещу която се мери прагът: редовете БЕЗ подаръците.
  *
- * Маха и когато прагът е достигнат - точно тогава е най-важно, защото това е
- * редът, който платформата ще сложи безплатно на плащането. Оставим ли нашия,
- * тя вижда продукта вече вътре и не подарява нищо.
- *
- * Продуктите-подаръци не се купуват съзнателно (в каталога това са редове от
- * рода на „Подарък - хавлия Bactology"), затова махането им не отнема на
- * клиента нещо, което е поискал.
+ * Без това изваждане подарък от 40 лв. сам издърпва количката над прага и се
+ * самоподдържа, дори клиентът да е свалил всичко останало. Тук е дори по-важно,
+ * защото подаръкът идва с 0,00 - но офертата може да не е безплатна, а и цената
+ * му може да се промени.
  */
-export async function dropOfferGifts(cart: any, cartApi: any): Promise<any> {
-  const {gifts} = cartOffers();
-  const rewardVariants = new Set(
-    gifts.filter((gift) => gift.free && gift.variantId).map((gift) => gift.variantId as string),
-  );
-  if (!rewardVariants.size || !cart) return cart;
+function subtotalWithoutGifts(cart: any, giftVariants: Set<string>): number {
+  const lines = cart?.lines?.nodes ?? [];
+  return lines.reduce((sum: number, line: any) => {
+    if (giftVariants.has(line?.merchandise?.id)) return sum;
+    const amount = parseFloat(line?.cost?.totalAmount?.amount ?? '');
+    if (Number.isFinite(amount)) return sum + amount;
+    // Тънък ред без `cost`: пада на цената по бройка.
+    const unit = parseFloat(line?.merchandise?.price?.amount ?? '0');
+    const qty = Number(line?.quantity) || 0;
+    return sum + (Number.isFinite(unit) ? unit * qty : 0);
+  }, 0);
+}
 
-  const stale = (cart?.lines?.nodes ?? []).filter((line: any) =>
-    rewardVariants.has(line?.merchandise?.id),
-  );
-  if (!stale.length) return cart;
+/**
+ * Маха подаръка само когато вече не е заслужен. Тиха е по конструкция: сгреши
+ * ли, количката остава каквато е, защото един подарък не бива да събори
+ * действие с истински продукт.
+ */
+export async function dropUnearnedGifts(cart: any, cartApi: any): Promise<any> {
+  const {gifts} = cartOffers();
+  const withVariant = gifts.filter((gift) => gift.variantId);
+  if (!withVariant.length || !cart) return cart;
+
+  const giftVariants = new Set(withVariant.map((gift) => gift.variantId as string));
+  const subtotal = subtotalWithoutGifts(cart, giftVariants);
+
+  const unearned = (cart?.lines?.nodes ?? []).filter((line: any) => {
+    const gift = withVariant.find((g) => g.variantId === line?.merchandise?.id);
+    if (!gift) return false;
+    // Оферта без праг (задействана от конкретен продукт, не от сума) не се
+    // мери срещу нищо и не се маха оттук.
+    if (!(gift.minTotal > 0)) return false;
+    return subtotal < gift.minTotal;
+  });
+  if (!unearned.length) return cart;
 
   try {
-    const result = await cartApi.removeLines(stale.map((line: any) => line.id));
+    const result = await cartApi.removeLines(unearned.map((line: any) => line.id));
     return result?.cart ?? cart;
   } catch (error) {
-    console.warn('cart gifts: подаръчните редове останаха - %s', (error as Error).message);
+    console.warn('cart gifts: подаръчният ред остана - %s', (error as Error).message);
     return cart;
   }
 }
