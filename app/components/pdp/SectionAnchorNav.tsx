@@ -7,6 +7,8 @@ interface Section {
 
 interface Props {
   sections?: Section[];
+  /** Има ли този продукт раздел „Състав" - решава се на сървъра. */
+  hasIngredients?: boolean;
 }
 
 /**
@@ -63,7 +65,16 @@ function ensureIngredientsAnchor() {
  * Lives directly under the hero (above the long-form sections). Each link
  * scrolls smoothly to a `<section id="...">` further down the PDP.
  */
-export function SectionAnchorNav({sections = DEFAULT_SECTIONS}: Props = {}) {
+export function SectionAnchorNav({sections = DEFAULT_SECTIONS, hasIngredients}: Props = {}) {
+  /* Решено на сървъра, преди първото рисуване.
+   *
+   * ⚠️ Скриването не бива да чака браузъра: ефектите на този компонент не се
+   * изпълняват на живо (проверено 13.08 - нито котвата, нито лепкавото
+   * поведение тръгват), затова връзка, която се маха „после", не се махаше
+   * никога. Продуктовата страница вече знае има ли раздел със състав и го
+   * казва тук, тоест в изпратения HTML връзката просто липсва. */
+  const declared =
+    hasIngredients === undefined ? sections : sections.filter((s) => s.id !== 'ingredients' || hasIngredients);
   const [active, setActive] = useState<string>('');
   const [stuck, setStuck] = useState<boolean>(false);
   // Not every product has every section — "Съставки" only exists when the
@@ -84,7 +95,7 @@ export function SectionAnchorNav({sections = DEFAULT_SECTIONS}: Props = {}) {
     let frame = 0;
     const recheck = () => {
       ensureIngredientsAnchor();
-      const next = sections.filter((s) => document.getElementById(s.id)).map((s) => s.id);
+      const next = declared.filter((s) => document.getElementById(s.id)).map((s) => s.id);
       // ⚠️ Само при истинска промяна. Нов масив със същото съдържание води до
       // ново рисуване, то е промяна по DOM-а, наблюдателят пак ще се обади -
       // и въртележката няма край.
@@ -108,9 +119,9 @@ export function SectionAnchorNav({sections = DEFAULT_SECTIONS}: Props = {}) {
       observer.disconnect();
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [sections]);
+  }, [sections, hasIngredients]);
 
-  const visibleSections = present ? sections.filter((s) => present.includes(s.id)) : sections;
+  const visibleSections = present ? declared.filter((s) => present.includes(s.id)) : declared;
 
   // Track which section is in viewport to highlight the matching tab
   useEffect(() => {

@@ -7,6 +7,7 @@ import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
 import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
 import {videoTitle} from '~/lib/product-video-titles';
+import {withIngredientsAnchor} from '~/lib/ingredients-anchor';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductImageGallery} from '~/components/ProductImageGallery';
@@ -115,6 +116,10 @@ export default function ProductPage() {
     ],
   });
 
+  /* Котвата „Съставки" се слага в HTML-а тук, а не с ефект в браузъра, и
+   * оттук се знае дали разделът изобщо съществува за този продукт. */
+  const {html: describedHtml, hasIngredients} = withIngredientsAnchor(product.descriptionHtml);
+
   // Key benefits extracted from the CMS description — rendered high on the page
   // (client: "Ключови ползи" raised up as focus, before scrolling past the hero).
   const keyBenefits = product.descriptionHtml
@@ -154,11 +159,11 @@ export default function ProductPage() {
       <CertificationsStrip />
 
       {/* Sticky jump-to-section nav (Slice 3) */}
-      <SectionAnchorNav />
+      <SectionAnchorNav hasIngredients={hasIngredients} />
 
       {/* Product description at the top (client reorder: "описанието най-горе") -
           extracted from the old tabs; still collapses with "прочети повече". */}
-      <ProductDescription descriptionHtml={product.descriptionHtml} />
+      <ProductDescription descriptionHtml={describedHtml} />
 
       {/* FAQ accordion moved up (client 2026-07): now sits directly above the
           "Как работи пробиотикът" video section. Per-product questions. */}
