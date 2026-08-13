@@ -8,6 +8,7 @@ import {fetchMainMenu, fetchFooterMenu} from '~/lib/navigation.server';
 import {fetchThemeModules} from '~/lib/theme-modules.server';
 import {fetchCustomCss} from '~/lib/custom-css.server';
 import {resolveTracking} from '~/lib/tracking.server';
+import {envValue} from '~/lib/env.server';
 import {setThemeModules, forClient} from '~/lib/theme-modules';
 import {setProductMarks} from '~/lib/product-marks';
 import {fetchQuantityPackages} from '~/lib/quantity-packages.server';
@@ -76,7 +77,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setThemeModules(themeModules);
   setPromoCodes(promos);
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -90,6 +91,13 @@ export function Layout({children}: {children: React.ReactNode}) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="theme-color" content="#0a2540" />
+        {/* Снимките идват от друг домейн, а браузърът разбира това чак когато
+          * стигне до тях в HTML-а: чак тогава тръгват DNS, TLS и връзката, и
+          * чак после самата картинка. Тези два реда правят ръкостискането
+          * предварително, докато страницата още се чете. Първата видима снимка
+          * е точно оттам, тоест печалбата е върху най-бавното нещо на екрана. */}
+        <link rel="preconnect" href="https://cdncloudcart.com" crossOrigin="anonymous" />
+        {data?.storeDomain ? <link rel="preconnect" href={`https://${data.storeDomain}`} /> : null}
         {canonical ? <link rel="canonical" href={canonical} /> : null}
         <Meta />
         <Links />

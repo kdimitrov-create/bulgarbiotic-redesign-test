@@ -123,7 +123,15 @@ export function CapsuleScience() {
               className="bb-cap-frame"
               style={{opacity: i === 0 ? 1 : 0}}
             >
-              <img src={src} alt={`Capsule frame ${i}`} />
+              {/* ⚠️ `loading="lazy"` не е дребна добавка.
+                *
+                * Без него React вдига всеки от петте кадъра с
+                * `<link rel="preload" as="image">` в главата на документа.
+                * Тази секция стои далеч надолу по страницата, тоест браузърът
+                * дърпаше пет второстепенни картинки с най-висок приоритет,
+                * докато първата видима снимка чакаше реда си. Анимацията се
+                * скролва - кадрите имат предостатъчно време да дойдат. */}
+              <img src={src} alt="" aria-hidden="true" loading="lazy" decoding="async" />
             </div>
           ))}
           {/* Callouts — absolutely positioned overlays on desktop, but the
