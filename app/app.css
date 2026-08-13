@@ -4993,9 +4993,23 @@ img.pm-banner {
   padding-left: calc(36px + var(--bb-row-gutter));
   padding-right: calc(36px + var(--bb-row-gutter));
 }
+/* Колоните се разстилат по ширината, колкото и да са. Иначе ред с три карти
+   заемаше три от четирите места и стоеше изместен вляво (клиент, 13.08). */
+.bb-row-forms:has(> .bb-bd-col:nth-child(2):last-child) { grid-template-columns: repeat(2, 1fr); }
+.bb-row-forms:has(> .bb-bd-col:nth-child(3):last-child) { grid-template-columns: repeat(3, 1fr); }
+.bb-row-forms:has(> .bb-bd-col:nth-child(5):last-child) { grid-template-columns: repeat(5, 1fr); }
+.bb-row-forms:has(> .bb-bd-col:nth-child(6):last-child) { grid-template-columns: repeat(3, 1fr); }
 @media (max-width: 980px) {
-  .bb-row-forms { grid-template-columns: 1fr 1fr; column-gap: 14px; row-gap: 14px;
-                  padding-left: 22px; padding-right: 22px; }
+  .bb-row-forms,
+  .bb-row-forms:has(> .bb-bd-col:nth-child(3):last-child),
+  .bb-row-forms:has(> .bb-bd-col:nth-child(5):last-child),
+  .bb-row-forms:has(> .bb-bd-col:nth-child(6):last-child) {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+    row-gap: 14px;
+    padding-left: 22px;
+    padding-right: 22px;
+  }
 }
 .bb-row-forms > .bb-bd-col {
   grid-column: auto;
@@ -5428,6 +5442,78 @@ img.pm-banner {
 @media (max-width: 420px) {
   .bb-row-founder.bb-lp .bb-prose .stickers span { padding: 5px 10px; font-size: 11.5px; }
   .bb-row-founder.bb-lp .bb-prose .stickers { gap: 4px; right: 0; }
+}
+/* Съставките: етикет и списък с розови точки, в собствено кремаво поле. */
+.bb-row-founder.bb-lp .bb-prose .ing-label {
+  margin: 0;
+  padding: 18px 20px 10px;
+  background: var(--color-cream-2);
+  border-radius: 14px 14px 0 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(10, 37, 64, 0.55);
+}
+.bb-row-founder.bb-lp .bb-prose .ing-label + ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 24px;
+  padding: 0 20px 18px;
+  background: var(--color-cream-2);
+  border-radius: 0 0 14px 14px;
+}
+.bb-row-founder.bb-lp .bb-prose .ing-label + ul li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(10, 37, 64, 0.85);
+}
+.bb-row-founder.bb-lp .bb-prose .ing-label + ul li::before {
+  content: "";
+  flex-shrink: 0;
+  width: 6px; height: 6px;
+  margin-top: 7px;
+  border-radius: 999px;
+  background: var(--color-brand-pink);
+  box-shadow: 0 0 0 3px var(--color-pink-1);
+}
+.bb-row-founder.bb-lp .bb-prose .ing-label + ul strong {
+  font-weight: 800;
+  color: var(--color-ink);
+}
+/* Двете плочки „Профилактика" и „Лечение" стоят една до друга. */
+.bb-row-founder.bb-lp .bb-prose .tile {
+  display: inline-block;
+  vertical-align: top;
+  width: calc(50% - 6px);
+  margin: 0 0 28px;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid rgba(10, 37, 64, 0.08);
+  border-top: 3px solid var(--color-brand-pink);
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(10, 37, 64, 0.72);
+}
+.bb-row-founder.bb-lp .bb-prose .tile:first-of-type { margin-right: 10px; }
+.bb-row-founder.bb-lp .bb-prose .tile.prevent { border-top-color: #22c55e; }
+.bb-row-founder.bb-lp .bb-prose .tile strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--color-ink);
+}
+@media (max-width: 540px) {
+  .bb-row-founder.bb-lp .bb-prose .tile { width: 100%; margin-right: 0; }
 }
 .bb-row-founder.bb-lp .bb-prose h2 {
   font-family: var(--font-serif);
