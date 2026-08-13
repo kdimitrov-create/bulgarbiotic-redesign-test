@@ -61,15 +61,19 @@ export default function SearchPage() {
   /* Измерване: търсене. Класическата тема праща `Search` с търсената дума;
    * без него Meta и TikTok не могат да строят аудитории по намерение. */
   useCcPage({type: 'search', name: query});
-  useEcommerceEvent('search', {
-    search_term: query,
-    items: ((products as any)?.nodes ?? []).slice(0, 10).map((p: any, i: number) => ({
-      item_id: numericId(p.id),
-      item_name: p.title,
-      index: i,
-      quantity: 1,
-    })),
-  });
+  useEcommerceEvent(
+    'search',
+    {
+      search_term: query,
+      items: ((products as any)?.nodes ?? []).slice(0, 10).map((p: any, i: number) => ({
+        item_id: numericId(p.id),
+        item_name: p.title,
+        index: i,
+        quantity: 1,
+      })),
+    },
+    Boolean(query),
+  );
 
   // Input is fully local — never overwritten by URL/loader data.
   const [inputValue, setInputValue] = useState(query);

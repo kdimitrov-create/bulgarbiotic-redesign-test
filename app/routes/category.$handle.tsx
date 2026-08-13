@@ -187,11 +187,15 @@ export default function CollectionPage() {
     quantity: 1,
   }));
   useCcPage({type: 'category', id: numericId(col.id), name: col.title, url: `/category/${col.handle}`});
-  useEcommerceEvent('view_item_list', {
-    currency: (products as any).nodes?.[0]?.priceRange?.minVariantPrice?.currencyCode ?? 'EUR',
-    item_list_name: col.title,
-    items: listItems,
-  });
+  useEcommerceEvent(
+    'view_item_list',
+    {
+      currency: (products as any).nodes?.[0]?.priceRange?.minVariantPrice?.currencyCode ?? 'EUR',
+      item_list_name: col.title,
+      items: listItems,
+    },
+    listItems.length > 0,
+  );
 
   // Hand-written hero intro per handle. Falls back to nothing if unknown —
   // the long CloudCart description is reserved for the <meta> SEO tag only.

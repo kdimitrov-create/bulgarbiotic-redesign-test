@@ -242,11 +242,20 @@ function pushTikTokEvent(
 export function useEcommerceEvent(
   event: string,
   payload: {currency?: string; value?: number; items: EcomItem[]; [key: string]: unknown},
+  /**
+   * Изключва събитието, без да се нарушава редът на hook-овете.
+   *
+   * Нужно е, защото празната страница също се рендерира: `/search` без дума
+   * щеше да праща `Search` с празен низ, а празна категория - `ViewContent`
+   * без нито един продукт. Класическата тема не праща нито едно от двете.
+   */
+  enabled = true,
 ) {
   const json = JSON.stringify(payload);
   useEffect(() => {
+    if (!enabled) return;
     pushEcommerce(event, JSON.parse(json));
-  }, [event, json]);
+  }, [event, json, enabled]);
 }
 
 /**
