@@ -5230,7 +5230,14 @@ img.pm-banner {
   top: -120px; right: -100px;
   width: 380px; height: 380px;
 }
-.bb-row-pagehero.bb-bty .section-tag { justify-content: center; }
+/* Надсловът тук е само разреден розов текст - без чертичката, с която идва
+   `section-tag` на останалите секции. */
+.bb-row-pagehero.bb-bty .section-tag {
+  justify-content: center;
+  letter-spacing: 2.4px;
+  margin-bottom: 18px;
+}
+.bb-row-pagehero.bb-bty .section-tag::before { display: none; }
 .bb-row-pagehero.bb-bty .bb-prose h2 {
   font-family: var(--font-serif);
   font-weight: 400;
@@ -5245,28 +5252,29 @@ img.pm-banner {
   max-width: 620px;
   margin: 0 auto 36px;
 }
-/* Числата: три равни колони под тънка линия. */
+/* Числата: три равни колони под една тънка линия. Абзаците са слепени, затова
+   отделните им горни ръбове изглеждат като една непрекъсната черта. */
 .bb-row-pagehero.bb-bty .bb-prose .stat-pair {
   display: inline-flex;
-  align-items: center;
-  margin: 0;
-  width: 33%;
-  padding-top: 32px;
-}
-.bb-row-pagehero.bb-bty .bb-prose .stat-pair:first-of-type {
-  border-top: 1px solid rgba(10, 37, 64, 0.12);
-  padding-left: 0;
-}
-.bb-row-pagehero.bb-bty .bb-prose .stat-pair,
-.bb-row-pagehero.bb-bty .bb-prose .stat-pair ~ .stat-pair {
-  border-top: 1px solid rgba(10, 37, 64, 0.12);
   flex-direction: column;
   justify-content: flex-start;
+  width: 200px;
+  margin: 0;
+  padding-top: 32px;
+  border-top: 1px solid rgba(10, 37, 64, 0.12);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: rgba(10, 37, 64, 0.55);
 }
 .bb-row-pagehero.bb-bty .bb-prose .stat-pair strong {
   font-size: clamp(32px, 4.4vw, 44px);
   letter-spacing: -1.4px;
   margin-bottom: 6px;
+}
+@media (max-width: 540px) {
+  .bb-row-pagehero.bb-bty .bb-prose .stat-pair { width: 100%; padding-top: 16px; }
+  .bb-row-pagehero.bb-bty .bb-prose .stat-pair ~ .stat-pair { border-top: 0; }
 }
 
 /* Заглавие на секция във вида на Beauty страницата. */
