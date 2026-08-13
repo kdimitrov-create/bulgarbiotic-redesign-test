@@ -1517,15 +1517,19 @@ body::after {
 
 /* ─── Sticky element stack — cookie banner + FAB + mobile-sticky-cart
        all share bottom-right real estate. Lift each above the others. ─── */
-@media (max-width: 720px) {
-  body.bb-pdp-sticky-active .bb-finder-fab {
-    /* Sticky cart bar is ~76px tall; FAB sits 12px above it */
-    bottom: 100px !important;
-  }
-  body.bb-pdp-sticky-active .bb-cookie {
-    /* Cookie banner — when sticky cart is showing, push it up too */
-    bottom: 92px !important;
-  }
+/* ⚠️ БЕЗ горна граница на ширината.
+ *
+ * Дотук вдигането важеше само до 720px, а лентата с „Купи" се показва и на
+ * таблет. Резултатът: на 820px плаващото копче „Намери своя пробиотик" лягаше
+ * точно върху бутона за купуване - тоест закриваше най-важното действие на
+ * страницата. Щом лентата е на екрана, всичко в долния десен ъгъл се вдига
+ * над нея, независимо от ширината. */
+body.bb-pdp-sticky-active .bb-finder-fab {
+  /* Лентата е ~76px висока; копчето стои 12px над нея. */
+  bottom: 100px !important;
+}
+body.bb-pdp-sticky-active .bb-cookie {
+  bottom: 92px !important;
 }
 
 /* When the mobile nav drawer is open, hide every other floating overlay

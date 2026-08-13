@@ -397,10 +397,19 @@ export function PromoBar() {
             width: 100%;
             min-width: 0;
           }
+          /* ⚠️ Съобщението се ПРЕНАСЯ, не се реже.
+           *
+           * Дотук стоеше на един ред с многоточие и на телефон излизаше
+           * „Безплатна доставка при пор…" - тоест точно стойността на
+           * офертата оставаше скрита. Два реда са позволени; повече от два
+           * се отрязват, за да не расте лентата безкрайно. */
           .bb-promo-text strong {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
+            line-height: 1.25;
             min-width: 0;
             flex: 1;
           }
