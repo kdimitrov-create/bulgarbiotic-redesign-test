@@ -5446,6 +5446,7 @@ img.pm-banner {
 /* Съставките: етикет и списък с розови точки, в собствено кремаво поле. */
 .bb-row-founder.bb-lp .bb-prose .ing-label {
   margin: 0;
+  max-width: 560px;
   padding: 18px 20px 10px;
   background: var(--color-cream-2);
   border-radius: 14px 14px 0 0;
@@ -5456,6 +5457,7 @@ img.pm-banner {
   color: rgba(10, 37, 64, 0.55);
 }
 .bb-row-founder.bb-lp .bb-prose .ing-label + ul {
+  max-width: 560px;
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -5489,6 +5491,7 @@ img.pm-banner {
 /* Двете плочки „Профилактика" и „Лечение" стоят една до друга. */
 .bb-row-founder.bb-lp .bb-prose .tile {
   display: inline-block;
+  max-width: 275px;
   vertical-align: top;
   width: calc(50% - 6px);
   margin: 0 0 28px;
