@@ -59,6 +59,17 @@ export function Header({shop, menu, cart}: HeaderProps) {
   const cartBtnRef = useRef<HTMLButtonElement>(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
+  /* Лентата мери сама себе си.
+   *
+   * ⚠️ Менюто идва от панела, тоест броят и дължината на имената се менят
+   * без да пипаме код. При Montserrat на 16px осем елемента вече не се
+   * събират и текстът лягаше върху логото и иконите. Затова, когато редът
+   * не стига, минаваме на бургер - същото поведение като на таблет, вместо
+   * счупена лента. Нуждата се запомня, докато навигацията е видима, иначе
+   * скритата навигация мери нула и режимът щеше да се самозаключи. */
+  const [navCompact, setNavCompact] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+  const navNeedRef = useRef(0);
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const megaCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -147,8 +158,34 @@ export function Header({shop, menu, cart}: HeaderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    const measure = () => {
+      const nav = navRef.current;
+      if (!navCompact) {
+        // Видима е: питаме самата колона, а не пресмятаме мястото наум.
+        // Сметка „ширина минус лого минус икони" излиза по-щедра от реалната
+        // колона в решетката и режимът не се включваше, докато редът вече
+        // се режеше.
+        if (!nav) return;
+        navNeedRef.current = nav.scrollWidth;
+        setNavCompact(nav.scrollWidth > nav.clientWidth + 1);
+        return;
+      }
+      // Скрита е и мери нула, затова се пита свободното място в лентата.
+      const inner = document.querySelector<HTMLElement>('.bb-header-inner');
+      const logo = document.querySelector<HTMLElement>('.bb-logo-link');
+      const actions = document.querySelector<HTMLElement>('.bb-header-actions');
+      if (!inner || !navNeedRef.current) return;
+      const room = inner.clientWidth - (logo?.offsetWidth ?? 0) - (actions?.offsetWidth ?? 0) - 96;
+      if (navNeedRef.current <= room) setNavCompact(false);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [navCompact, items]);
+
   return (
-    <header ref={headerRef} className="bb-header">
+    <header ref={headerRef} className={`bb-header${navCompact ? ' bb-header--compact' : ''}`}>
       <div className="bb-container bb-header-inner">
         {/* Mobile-only hamburger pinned to the LEFT edge of the header — this
          * matches the elegant "burger / logo-center / search+cart" pattern
@@ -171,7 +208,7 @@ export function Header({shop, menu, cart}: HeaderProps) {
           <img className="bb-logo" src="/logo.svg" alt={shop.name} />
         </Link>
 
-        <nav className="bb-nav">
+        <nav className="bb-nav" ref={navRef}>
           {items.map((item) => {
             // The "Продукти" item is enhanced with a hover mega-menu.
             // Treat any nav item that targets /category/all-products (or
@@ -393,6 +430,16 @@ export function Header({shop, menu, cart}: HeaderProps) {
            long menu label from the admin panel shrank the logo to a stamp. */
         .bb-nav { grid-area: nav; min-width: 0; }
         .bb-header-actions { grid-area: actions; }
+        /* Свит режим: редът не стига, минаваме на бургер. Правилата са
+           същите като на таблет, само че се пускат по мярка, а не по ширина. */
+        .bb-header--compact .bb-header-inner {
+          grid-template-columns: auto 1fr auto;
+          grid-template-areas: "burger logo actions";
+        }
+        .bb-header--compact .bb-nav { display: none; }
+        .bb-header--compact .bb-nav-toggle--left { display: flex !important; }
+        .bb-header--compact .bb-logo-link { justify-self: center; }
+
         @media (max-width: 1100px) {
           /* Tablet + mobile: swap layout to burger-center-actions */
           .bb-header-inner {
@@ -428,7 +475,17 @@ export function Header({shop, menu, cart}: HeaderProps) {
            Забраната за пренасяне върви заедно с това: на по-голям кегел дългите имена
            („Абонирай се за бюлетин") се пречупваха на два реда и разбиваха
            реда. Под 1100px менюто и бездруго се скрива в чекмеджето. */
-        .bb-nav { display: flex; gap: 30px; justify-content: center; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; }
+        /* ⚠️ Разстоянието е гъвкаво, не заковано на 30px.
+         * Montserrat е чувствително по-широк от Akrobat, а менюто порасна на
+         * 16px и на 8 елемента. При закованите 30px редът искаше 1010px в
+         * 932px налични - излизаше извън мястото си и стъпваше върху логото
+         * отляво и върху иконите отдясно. Свива се според ширината на екрана,
+         * а кегелът остава 16px, както е искането. */
+        .bb-nav { display: flex; gap: clamp(10px, 1vw, 24px); justify-content: center; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; }
+        /* Предпазител: каквото не се събере, се отрязва в собствената си
+         * колона, вместо да се изсипе върху логото и иконите. Преливането е
+         * видимо (последният елемент се реже), но не чупи цялата лента. */
+        .bb-nav { overflow: hidden; }
         .bb-nav-link { white-space: nowrap; }
         @media (max-width: 1100px) { .bb-nav { display: none; } }
         .bb-nav-link {
