@@ -5255,7 +5255,7 @@ img.pm-banner {
 }
 /* Числата: три равни колони под една тънка линия. Абзаците са слепени, затова
    отделните им горни ръбове изглеждат като една непрекъсната черта. */
-.bb-row-pagehero.bb-lp .bb-prose .stat-pair {
+.bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair {
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -5268,15 +5268,23 @@ img.pm-banner {
   letter-spacing: 0.4px;
   color: rgba(10, 37, 64, 0.55);
 }
-.bb-row-pagehero.bb-lp .bb-prose .stat-pair strong {
+.bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair strong {
   font-size: clamp(32px, 4.4vw, 44px);
   letter-spacing: -1.4px;
   margin-bottom: 6px;
 }
 @media (max-width: 540px) {
-  .bb-row-pagehero.bb-lp .bb-prose .stat-pair { width: 100%; padding-top: 16px; }
-  .bb-row-pagehero.bb-lp .bb-prose .stat-pair ~ .stat-pair { border-top: 0; }
+  .bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair {
+    width: 100%;
+    padding-top: 16px;
+  }
+  .bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair ~ .stat-pair {
+    border-top: 0;
+  }
 }
+/* В двуколонното начало числата остават едно до друго, както си бяха: там
+   лявата колона е тясна и трите равни клетки се разпадаха. */
+.bb-row-pagehero .bb-prose .stat-pair { vertical-align: top; }
 
 /* Заглавие на секция във вида на Beauty страницата. */
 .bb-row-headline.bb-lp .section-tag {
