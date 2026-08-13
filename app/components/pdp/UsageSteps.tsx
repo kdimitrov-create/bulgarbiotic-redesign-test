@@ -194,7 +194,7 @@ export function UsageSteps({
           letter-spacing: -0.3px;
         }
         .bb-usage-step-desc {
-          font-size: 13px;
+          font-size: 14px;
           color: rgba(10, 37, 64, 0.7);
           line-height: 1.55;
           margin: 0;

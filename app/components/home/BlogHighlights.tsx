@@ -263,7 +263,7 @@ export function BlogCards({articles, perRow = 3}: {articles: Article[]; perRow?:
           overflow: hidden;
         }
         .bb-blog-excerpt {
-          font-size: 13.5px;
+          font-size: 15px;
           color: rgba(10, 37, 64, 0.65);
           line-height: 1.6;
           margin-bottom: 16px;

@@ -422,7 +422,14 @@ export function Header({shop, menu, cart}: HeaderProps) {
           .bb-header.shrunk .bb-logo { height: 36px; }
         }
 
-        .bb-nav { display: flex; gap: 30px; justify-content: center; font-size: 14px; font-weight: 600; letter-spacing: 0.2px; }
+        /* 16px по искане на клиента: на 14px изглеждаше дребно, още повече след
+           като текстът мина на Akrobat - той е с около 18% по-тесни букви от
+           Manrope, тоест при същите пиксели се чете по-ситно.
+           Забраната за пренасяне върви заедно с това: на по-голям кегел дългите имена
+           („Абонирай се за бюлетин") се пречупваха на два реда и разбиваха
+           реда. Под 1100px менюто и бездруго се скрива в чекмеджето. */
+        .bb-nav { display: flex; gap: 30px; justify-content: center; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; }
+        .bb-nav-link { white-space: nowrap; }
         @media (max-width: 1100px) { .bb-nav { display: none; } }
         .bb-nav-link {
           color: var(--color-ink);

@@ -200,7 +200,7 @@ export function Stories() {
           color: var(--color-ink); max-width: 660px;
         }
         .bb-stories-h2 .accent { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--color-brand-pink); }
-        .bb-stories-lead { font-size: 13px; color: rgba(10,37,64,0.55); margin-top: 12px; max-width: 480px; }
+        .bb-stories-lead { font-size: 14.5px; color: rgba(10,37,64,0.55); margin-top: 12px; max-width: 480px; }
 
         .bb-now-playing {
           display: inline-flex; align-items: center; gap: 8px;

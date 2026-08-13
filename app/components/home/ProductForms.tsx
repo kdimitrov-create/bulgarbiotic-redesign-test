@@ -239,7 +239,7 @@ export function ProductForms() {
         .bb-form-desc {
           position: relative;
           z-index: 1;
-          font-size: 13px;
+          font-size: 14px;
           line-height: 1.55;
           color: rgba(10, 37, 64, 0.7);
           margin-bottom: 18px;

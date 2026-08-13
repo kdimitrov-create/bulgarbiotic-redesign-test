@@ -206,7 +206,7 @@ export function ReviewList({reviews, summary, totalCount}: ReviewListProps) {
           letter-spacing: -0.2px;
         }
         .bb-review-comment {
-          font-size: 13.5px;
+          font-size: 15px;
           line-height: 1.65;
           color: rgba(10, 37, 64, 0.78);
           margin: 0;

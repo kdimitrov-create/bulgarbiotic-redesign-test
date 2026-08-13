@@ -126,8 +126,8 @@ export function RelatedArticles({articles, currentHandle}: Props) {
           margin: 0 0 6px;
         }
         .bb-related-card-sub {
-          font-size: 13px;
-          line-height: 1.5;
+          font-size: 14px;
+          line-height: 1.55;
           color: rgba(10, 37, 64, 0.62);
           margin: 0;
         }
