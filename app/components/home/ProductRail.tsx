@@ -1,5 +1,5 @@
-import {Link} from 'react-router';
-import {useRef, useState} from 'react';
+import {Link, useFetcher} from 'react-router';
+import {useRef} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {displayDiscountPercent} from '~/lib/active-discounts';
@@ -8,8 +8,7 @@ import {DiscountCountdown} from '~/components/DiscountCountdown';
 import {ProductMarks} from '~/components/ProductMarks';
 
 import {SHOW_BGN} from '~/lib/currency';
-import {announceOffer, platformAdd} from '~/lib/platform-cart';
-import {announceCartAdd} from '~/lib/cart-sync';
+import {CART_ACTION} from '~/lib/cart-action';
 /**
  * The horizontal product slider used on the homepage — and by the page
  * builder's "Продуктова витрина" widget, so a showcase the merchant assembles
@@ -25,16 +24,10 @@ import {announceCartAdd} from '~/lib/cart-sync';
  * drawer on success. Client: add buy + favorites buttons to the carousel.
  */
 function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
-  const [isAdding, setAdding] = useState(false);
-  // Слага в количката на магазина, като всеки друг бутон - иначе продуктът
-  // отива в наша отделна количка и платформата не вижда добавянето.
-  async function add() {
-    setAdding(true);
-    const result = await platformAdd(merchandiseId, 1);
-    setAdding(false);
-    announceCartAdd(result.ok ? undefined : result.message ?? undefined);
-    if (result.offer) announceOffer(result.offer);
-  }
+  const fetcher = useFetcher();
+  const isAdding = fetcher.state !== 'idle';
+  // Чекмеджето вече не изскача: клиентът остава на страницата и получава
+  // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
   return (
     <button
       type="button"
@@ -43,7 +36,10 @@ function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        void add();
+        fetcher.submit(
+          {action: 'ADD_TO_CART', merchandiseId, quantity: '1'},
+          {method: 'post', action: CART_ACTION},
+        );
       }}
     >
       {isAdding ? (

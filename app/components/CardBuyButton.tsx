@@ -1,7 +1,6 @@
 import {useState} from 'react';
-import {useNavigate} from 'react-router';
-import {announceCartAdd} from '~/lib/cart-sync';
-import {announceOffer, platformAdd} from '~/lib/platform-cart';
+import {useNavigate, useFetcher} from 'react-router';
+import {CART_ACTION} from '~/lib/cart-action';
 
 /**
  * „Купи" на продуктова карта - витрината на началната и решетките в категориите
@@ -10,8 +9,8 @@ import {announceOffer, platformAdd} from '~/lib/platform-cart';
  * Винаги е `<button>`, никога `<a>`, за да може да стои вътре в `<Link>`-а на
  * картата, без да се вложат две връзки.
  *
- * Слага в количката на магазина, същият път като на продуктовата страница
- * (`app/lib/platform-cart.ts`).
+ * Слага в количката през Storefront API-то, същият път като на продуктовата
+ * страница.
  *
  * Листинговата заявка не носи `variants`, затова в решетките `merchandiseId`
  * идва празен и бутонът дотук отваряше продуктовата страница вместо да добавя
@@ -32,7 +31,9 @@ export function CardBuyButton({
   merchandiseId?: string;
   handle: string;
 }) {
-  const [isAdding, setAdding] = useState(false);
+  const fetcher = useFetcher();
+  const isAdding = fetcher.state !== 'idle';
+  const [resolving, setResolving] = useState(false);
   const navigate = useNavigate();
 
   /**
@@ -55,35 +56,31 @@ export function CardBuyButton({
   }
 
   async function add() {
-    setAdding(true);
+    setResolving(true);
     const variant = merchandiseId ?? (await resolveVariant());
+    setResolving(false);
     if (!variant) {
-      setAdding(false);
       navigate(`/product/${handle}`);
       return;
     }
-    const result = await platformAdd(variant, 1);
-    setAdding(false);
-    if (!result.ok) {
-      announceCartAdd(result.message ?? 'Продуктът не можа да бъде добавен');
-      return;
-    }
-    announceCartAdd();
-    if (result.offer) announceOffer(result.offer);
+    fetcher.submit(
+      {action: 'ADD_TO_CART', merchandiseId: variant, quantity: '1'},
+      {method: 'post', action: CART_ACTION},
+    );
   }
 
   return (
     <button
       type="button"
       className="bb-card-buy"
-      disabled={isAdding}
+      disabled={isAdding || resolving}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         void add();
       }}
     >
-      {isAdding ? (
+      {isAdding || resolving ? (
         'Добавям…'
       ) : (
         <>

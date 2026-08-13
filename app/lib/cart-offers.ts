@@ -66,12 +66,6 @@ export function cartOffers(): CartOffers {
   return current;
 }
 
-/** Офертата с този номер, каквато я знаем от панела. За модала. */
-export function offerById(id: string | null | undefined): GiftOffer | null {
-  if (!id) return null;
-  return current.gifts.find((gift) => gift.id === String(id)) ?? null;
-}
-
 export interface GiftProgress extends GiftOffer {
   earned: boolean;
   /** How much more has to go in the basket. 0 once earned. */
@@ -87,9 +81,6 @@ export interface GiftProgress extends GiftOffer {
 
 export function giftProgress(subtotal: number): GiftProgress[] {
   return current.gifts
-    // Лентата говори само за подаръци с праг: „още X и получаваш Y". Останалите
-    // оферти ги предлага платформата в момента, в който сметне за нужно.
-    .filter((gift) => gift.free && gift.minTotal > 0)
     .map((gift) => {
       const earned = subtotal >= gift.minTotal;
       return {

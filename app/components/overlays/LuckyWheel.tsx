@@ -1,6 +1,9 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {rememberPromo} from '../PendingPromo';
-import {CART_CHANGED_EVENT, platformAdd, platformApplyDiscount} from '~/lib/platform-cart';
+import {useFetcher, useFetchers} from 'react-router';
+import {CART_ACTION} from '~/lib/cart-action';
+
+const FETCHER_KEY = 'lucky-wheel';
 
 /**
  * Колело на късмета — Nitrogen версия.
@@ -118,32 +121,29 @@ export function LuckyWheel() {
   const [toast, setToast] = useState<string | null>(null);
 
   const openRef = useRef(false);
+  const fetcher = useFetcher({key: FETCHER_KEY});
+  const fetchers = useFetchers();
+  const pendingCode = useRef<string | null>(null);
   const wasAdding = useRef(false);
-  /** Добавянето на самата награда не бива да отваря колелото пак. */
-  const ourOwnAdd = useRef(false);
-  const [changeTick, setChangeTick] = useState(0);
   const toastTimer = useRef<number | undefined>(undefined);
 
   openRef.current = open;
 
-  /* Засичане на добавяне в количката. Гледаше fetcher-ите към нашия адрес, но
-     „Купи" вече говори направо с количката на магазина и такъв fetcher няма.
-     Сигналът е същият за всички бутони: `CART_CHANGED_EVENT`. Наградата на
-     самото колело не се брои - тя вдига флага сама, за да не се самозапали. */
-  useEffect(() => {
-    function onChange() {
-      if (ourOwnAdd.current) {
-        ourOwnAdd.current = false;
-        return;
-      }
-      wasAdding.current = true;
-      setChangeTick((n) => n + 1);
-    }
-    window.addEventListener(CART_CHANGED_EVENT, onChange);
-    return () => window.removeEventListener(CART_CHANGED_EVENT, onChange);
-  }, []);
+  /* Засичане на добавяне в количката: всеки ЧУЖД fetcher към адреса на
+     количката с ADD_TO_CART. Нашият собствен (за наградата) се изключва по
+     ключ, за да не се самозапали колелото. */
+  const someoneAdding = fetchers.some(
+    (f) =>
+      f.key !== FETCHER_KEY &&
+      f.formAction === CART_ACTION &&
+      f.formData?.get('action') === 'ADD_TO_CART',
+  );
 
   useEffect(() => {
+    if (someoneAdding) {
+      wasAdding.current = true;
+      return;
+    }
     if (!wasAdding.current) return;
     wasAdding.current = false;
     if (!mayShow() || openRef.current) return;
@@ -151,7 +151,7 @@ export function LuckyWheel() {
       if (!openRef.current) setOpen(true);
     }, OPEN_DELAY_MS);
     return () => window.clearTimeout(t);
-  }, [changeTick]);
+  }, [someoneAdding]);
 
   // Заключваме скролването на страницата, докато прозорецът е отворен + ESC.
   useEffect(() => {
@@ -170,6 +170,17 @@ export function LuckyWheel() {
 
   /* Щом продуктът-награда влезе в количката, прилагаме неговия 100% код.
      Редът е задължителен - код преди продукта не важи за нищо. */
+  /* Щом продуктът-награда влезе в количката, прилагаме неговия 100% код. */
+  useEffect(() => {
+    if (fetcher.state !== 'idle' || !fetcher.data) return;
+    const code = pendingCode.current;
+    if (!code) return;
+    pendingCode.current = null;
+    fetcher.submit({action: 'APPLY_DISCOUNT', code}, {method: 'post', action: CART_ACTION});
+    showToast('Промо кодът е добавен в количката');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetcher.state, fetcher.data]);
+
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
 
   function showToast(text: string) {
@@ -221,22 +232,23 @@ export function LuckyWheel() {
 
     if (p.merchandiseId) {
       setResult(p.wonText || `🎉 Спечели: ${p.label.replace(/\n/g, ' ')}`);
-      ourOwnAdd.current = true;
       // Редът е задължителен: продуктът първо, кодът след него. Код върху
       // количка без своя продукт не важи за нищо.
-      void platformAdd(p.merchandiseId, 1).then(async (result) => {
-        if (result.ok && p.freeCode) {
-          await platformApplyDiscount(p.freeCode);
-          showToast('Промо кодът е добавен в количката');
-        }
-      });
+      pendingCode.current = p.freeCode ?? null;
+      fetcher.submit(
+        {action: 'ADD_TO_CART', merchandiseId: p.merchandiseId, quantity: '1'},
+        {method: 'post', action: CART_ACTION},
+      );
     } else {
       // Кодът се запомня ВИНАГИ. Прилагането върху празна количка минава без
       // грешка, но не се запазва (проверено срещу живото API), а при завъртане
       // количката почти винаги е празна - затова спечеленият код изчезваше.
       // `PendingPromo` го слага при първото добавяне на продукт.
       rememberPromo(p.code!);
-      void platformApplyDiscount(p.code!);
+      fetcher.submit(
+        {action: 'APPLY_DISCOUNT', code: p.code!},
+        {method: 'post', action: CART_ACTION},
+      );
       setResult(
         `🎉 Спечели: ${p.label} отстъпка\nКодът ${p.code} е запазен и ще се приложи в количката ти.`,
       );
