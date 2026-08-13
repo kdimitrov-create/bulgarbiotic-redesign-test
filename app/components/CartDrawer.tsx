@@ -8,7 +8,6 @@ import {displayDiscountPercent, freeShippingOver} from '~/lib/active-discounts';
 import {markPricingForLine, marksForHandle} from '~/lib/product-marks';
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
-import {promoDiscountEur} from '~/lib/promo-codes';
 import {numericId} from '~/lib/analytics';
 import {CartOffersStrip} from './CartOffers';
 
@@ -83,43 +82,32 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
   const lines = cart?.lines?.nodes ?? [];
   const isEmpty = !cart || cart.totalQuantity === 0;
 
-  // Storefront cart.cost is always MSRP — it doesn't fold in CloudCart's
-  // order-level auto-discounts. The saving is therefore the gap between that
-  // MSRP and the real price each line already carries on its variant; see
-  // `markPricingForLine`. Never a percentage applied to a catalogue price.
-  const rawSubtotal = bothCurrencies(cart?.cost?.subtotalAmount);
-  const rawTotal = bothCurrencies(cart?.cost?.totalAmount);
-  let totalDiscountEur = 0;
+  /**
+   * Сметката се ЧЕТЕ от количката, не се смята тук.
+   *
+   * Реалната сума е сборът на редовете, който съвпада с `cost.subtotalAmount`.
+   * Всяка отстъпка вече е вътре: автоматичните правила, количествените пакети и
+   * промо кодът. Проверено на живо 2026-08-13 - 2 бр. Pets с код AUGUST10 карат
+   * реда от 42,94 на 38,65, без нищо да смятаме отстрани.
+   *
+   * 🛑 `cost.totalAmount` НЕ се ползва. На bulgarbiotic.bg връща ТОЧНО
+   * половината от сумата (147,34 сбор на редовете срещу 73,67 в полето, при три
+   * различни колички), а самото API казва, че `cost` е „за логика, не за
+   * показване" - за показване е `totals`, обобщението на търговеца.
+   */
+  let payableEur = 0;
+  let msrpEur = 0;
   for (const l of lines as any[]) {
     const {price, compareAtPrice} = markPricingForLine(l);
-    if (!compareAtPrice) continue;
-    totalDiscountEur += bothCurrencies(compareAtPrice).eur - bothCurrencies(price).eur;
+    const now = bothCurrencies(price).eur;
+    payableEur += now;
+    msrpEur += compareAtPrice ? bothCurrencies(compareAtPrice).eur : now;
   }
-  const subtotal = {
-    eur: Math.max(0, rawSubtotal.eur - totalDiscountEur),
-    bgn: Math.max(0, rawSubtotal.bgn - totalDiscountEur * EUR_TO_BGN),
-  };
+  const savedEur = Math.max(0, msrpEur - payableEur);
+  const subtotal = {eur: payableEur, bgn: payableEur * EUR_TO_BGN};
+  const rawTotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
+  const total = {eur: payableEur, bgn: payableEur * EUR_TO_BGN};
 
-  /* Промо кодът - същата сметка като на страницата на количката. Storefront
-     API-то приема кода, но връща непроменена сума, затова се смята тук. */
-  const promoEur = promoDiscountEur(
-    (cart as any)?.discountCodes,
-    subtotal.eur,
-    (lines as any[]).map((l) => ({
-      handle: String(l.merchandise?.product?.handle ?? ''),
-      lineEur: bothCurrencies(l.cost?.totalAmount).eur,
-    })),
-  );
-  // Подаръкът от кръстосана оферта не участва в сметката, защото изобщо не е
-  // ред тук: слага го платформата при прехвърлянето на количката и точно
-  // затова излиза с 0,00 €. Сумата отгоре и сумата на касата съвпадат.
-  // Подробностите и измерването: `cart-gifts.server.ts`.
-  const savedEur = totalDiscountEur + promoEur;
-
-  const total = {
-    eur: Math.max(0, rawTotal.eur - savedEur),
-    bgn: Math.max(0, rawTotal.bgn - savedEur * EUR_TO_BGN),
-  };
   // Threshold + progress live in EUR because the store's base currency
   // is EUR (verified via generalSettings.currency). The Bulgarian-lev
   // value is shown alongside as a convenience.

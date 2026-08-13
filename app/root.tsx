@@ -14,8 +14,6 @@ import {setProductMarks} from '~/lib/product-marks';
 import {fetchQuantityPackages} from '~/lib/quantity-packages.server';
 import {setQuantityPackages} from '~/lib/quantity-packages';
 import {fetchCartOffers} from '~/lib/cart-offers.server';
-import {fetchPromoCodes} from '~/lib/promo-codes.server';
-import {setPromoCodes} from '~/lib/promo-codes';
 import {setCartOffers} from '~/lib/cart-offers';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {AsideProvider, Aside} from '~/components/Aside';
@@ -49,7 +47,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // and they read this module synchronously.
   // Labels and banners ride along for the same reason: the listing queries do
   // not return them, so without this the badges only ever appear on the PDP.
-  const [live, marks, packages, offers, adminMenu, adminFooter, themeModules, customCss, promos] = await Promise.all([
+  const [live, marks, packages, offers, adminMenu, adminFooter, themeModules, customCss, ] = await Promise.all([
     fetchAutoDiscounts(env),
     fetchProductMarks(env),
     fetchQuantityPackages(env),
@@ -67,7 +65,6 @@ export async function loader({context, request}: Route.LoaderArgs) {
     fetchCustomCss(env),
     // Стойността на промо кодовете: Storefront API-то приема кода, но не
     // мени сметката, затова количката я смята сама по данните от админа.
-    fetchPromoCodes(env),
   ]);
   setAutoDiscounts(live?.discounts, live?.handles);
   setFreeShippingOver(live?.freeShippingOver);
@@ -75,7 +72,6 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setQuantityPackages(packages);
   setCartOffers(offers);
   setThemeModules(themeModules);
-  setPromoCodes(promos);
 
   return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }

@@ -7,7 +7,6 @@ import {fallbackToPlaceholder} from './CartDrawer';
 import {CartOffersStrip} from './CartOffers';
 import {markPricingForLine} from '~/lib/product-marks';
 import {displayDiscountPercent} from '~/lib/active-discounts';
-import {promoDiscountEur} from '~/lib/promo-codes';
 import {numericId} from '~/lib/analytics';
 import {SHOW_BGN} from '~/lib/currency';
 import {
@@ -33,41 +32,28 @@ export function CartPage({cart}: {cart: CartData | null}) {
 
   if (isEmpty) return <CartPageEmpty />;
 
-  // Спестеното е разликата между двете цени, които редът вече носи, точно както
-  // в чекмеджето (`markPricingForLine`).
-  //
-  // 🛑 Тук се умножаваше по процента на правило от админа. Това е грешно два
-  // пъти: правилата с промо код важат само след въвеждане, а каталожната цена
-  // вече съдържа автоматичната отстъпка, тоест процентът се сваляше втори път.
-  // Резултатът беше сметка под тази, която касата събира.
-  const rawSubtotal = bothCurrencies(cart?.cost?.subtotalAmount);
-  const rawTotal = bothCurrencies(cart?.cost?.totalAmount);
-  let totalDiscountEur = 0;
+  /**
+   * Сметката се ЧЕТЕ от количката, не се смята тук - същото като в чекмеджето.
+   *
+   * 🛑 `cost.totalAmount` НЕ се ползва: на bulgarbiotic.bg връща точно
+   * половината от сумата, а самото API казва, че `cost` е „за логика, не за
+   * показване". Реалната сума е сборът на редовете, който вече съдържа
+   * правилата, количествените пакети и промо кода.
+   */
+  let payableEur = 0;
+  let msrpEur = 0;
   for (const l of lines as any[]) {
     const {price, compareAtPrice} = markPricingForLine(l);
-    if (!compareAtPrice) continue;
-    totalDiscountEur += bothCurrencies(compareAtPrice).eur - bothCurrencies(price).eur;
+    const now = bothCurrencies(price).eur;
+    payableEur += now;
+    msrpEur += compareAtPrice ? bothCurrencies(compareAtPrice).eur : now;
   }
-  const subtotalEur = Math.max(0, rawSubtotal.eur - totalDiscountEur);
-
-  /* Промо кодът се приспада отделно. Storefront API-то го приема, но не мени
-     `cart.cost` - без тази сметка количката показваше цената БЕЗ кода, а
-     checkout-ът после я показваше с него. */
-  const promoEur = promoDiscountEur(
-    (cart as any)?.discountCodes,
-    subtotalEur,
-    (lines as any[]).map((l) => ({
-      handle: String(l.merchandise?.product?.handle ?? ''),
-      lineEur: bothCurrencies(l.cost?.totalAmount).eur,
-    })),
-  );
-
-  // Подаръкът от кръстосана оферта не участва в сметката, защото изобщо не е
-  // ред тук: слага го платформата при прехвърлянето на количката и точно
-  // затова излиза с 0,00 €. Подробностите: `cart-gifts.server.ts`.
-  const savedEur = totalDiscountEur + promoEur;
-  const totalEur = Math.max(0, rawTotal.eur - savedEur);
-  const totalBgn = Math.max(0, rawTotal.bgn - savedEur * EUR_TO_BGN);
+  const savedEur = Math.max(0, msrpEur - payableEur);
+  const subtotalEur = payableEur;
+  const rawSubtotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
+  const rawTotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
+  const totalEur = payableEur;
+  const totalBgn = payableEur * EUR_TO_BGN;
 
   const shippingTarget = freeShippingTargetEur();
   const remainingEur = Math.max(0, shippingTarget - subtotalEur);
