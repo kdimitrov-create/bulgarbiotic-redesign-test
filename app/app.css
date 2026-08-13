@@ -5255,7 +5255,7 @@ img.pm-banner {
 }
 /* Числата: три равни колони под една тънка линия. Абзаците са слепени, затова
    отделните им горни ръбове изглеждат като една непрекъсната черта. */
-.bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair {
+.bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose p.stat-pair {
   display: inline-flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -5268,13 +5268,13 @@ img.pm-banner {
   letter-spacing: 0.4px;
   color: rgba(10, 37, 64, 0.55);
 }
-.bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair strong {
+.bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose p.stat-pair strong {
   font-size: clamp(32px, 4.4vw, 44px);
   letter-spacing: -1.4px;
   margin-bottom: 6px;
 }
 @media (max-width: 540px) {
-  .bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose .stat-pair {
+  .bb-row-pagehero.bb-lp:has(> .bb-bd-col:only-child) .bb-prose p.stat-pair {
     width: 100%;
     padding-top: 16px;
   }
@@ -5285,10 +5285,13 @@ img.pm-banner {
 /* В двуколонното начало числата остават едно до друго, но подписът им се
    пренася: иначе дългият надпис на едното опира в другото и двата изглеждат
    като едно изречение. */
-.bb-row-pagehero .bb-prose .stat-pair {
+/* ⚠️ `p.stat-pair`, а не `.stat-pair`: правилото за абзаците в същия ред носи
+   един елемент повече и иначе печели - числата взимаха неговите `max-width`
+   и центриране. */
+.bb-row-pagehero .bb-prose p.stat-pair {
   vertical-align: top;
   max-width: 190px;
-  margin-right: 40px;
+  margin: 0 40px 0 0;
 }
 
 /* Заглавие на секция във вида на Beauty страницата. */
