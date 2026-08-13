@@ -141,11 +141,19 @@ export default function App() {
     .map((f) => (f.data as any).cart)
     .pop();
   const cart = latestCart ? Promise.resolve(latestCart) : (data?.cart ?? Promise.resolve(null));
+  // Обобщението следва същия път: прясното от действието бие това от loader-а.
+  const latestSummary = cartFetchers
+    .filter((f) => f.formAction === CART_ACTION && (f.data as any)?.cart)
+    .map((f) => (f.data as any).cartSummary)
+    .pop();
+  const cartSummary = latestSummary !== undefined
+    ? Promise.resolve(latestSummary)
+    : (data?.cartSummary ?? Promise.resolve(null));
 
   return (
     <AsideProvider>
       <Aside type="cart" heading="КОШНИЦА">
-        <CartDrawer cart={cart} />
+        <CartDrawer cart={cart} summary={cartSummary} />
       </Aside>
       <PageLayout
         shop={shop}

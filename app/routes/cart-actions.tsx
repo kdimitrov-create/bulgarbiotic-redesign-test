@@ -2,6 +2,7 @@ import {redirect, data as routeData} from 'react-router';
 import type {Route} from './+types/cart-actions';
 import {getContext} from '~/lib/context';
 import {dropUnearnedGifts} from '~/lib/cart-gifts.server';
+import {fetchCartSummary} from '~/lib/cart-totals.server';
 import type {CartData} from '@cloudcart/nitro';
 
 /**
@@ -115,5 +116,14 @@ export async function action({request, context}: Route.ActionArgs) {
    * всеки продукт. Прехвърлянето вече става тихо от браузъра, веднага след
    * добавянето: виж `app/lib/cart-sync.ts`.
    */
-  return routeData({cart, errors}, {headers});
+  /* Обобщението пътува заедно с количката.
+     Правилата за количката се смятат от платформата при всяка промяна, а
+     чекмеджето рисува веднага от отговора на действието. Вземе ли обобщението
+     от loader-а, то изостава с една стъпка и сумата подскача. */
+  const cartSummary = await fetchCartSummary(
+    ctx.env as Record<string, string | undefined>,
+    (cart as any)?.id,
+  );
+
+  return routeData({cart, cartSummary, errors}, {headers});
 }

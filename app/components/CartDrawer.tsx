@@ -6,6 +6,7 @@ import {getEnhancedFeatured} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {displayDiscountPercent, freeShippingOver} from '~/lib/active-discounts';
 import {markPricingForLine, marksForHandle} from '~/lib/product-marks';
+import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from '~/lib/cart-summary';
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
 import {numericId} from '~/lib/analytics';
@@ -60,7 +61,13 @@ export function bothCurrencies(money: {amount: string; currencyCode?: string} | 
   return {eur, bgn};
 }
 
-export function CartDrawer({cart}: {cart: Promise<CartData | null>}) {
+export function CartDrawer({
+  cart,
+  summary,
+}: {
+  cart: Promise<CartData | null>;
+  summary?: Promise<CartSummary | null>;
+}) {
   return (
     <Suspense
       fallback={
@@ -70,14 +77,16 @@ export function CartDrawer({cart}: {cart: Promise<CartData | null>}) {
         </div>
       }
     >
-      <Await resolve={cart}>
-        {(resolvedCart) => <CartDrawerInner cart={resolvedCart} />}
+      <Await resolve={Promise.all([cart, summary ?? Promise.resolve(null)])}>
+        {([resolvedCart, resolvedSummary]: [CartData | null, CartSummary | null]) => (
+          <CartDrawerInner cart={resolvedCart} summary={resolvedSummary} />
+        )}
       </Await>
     </Suspense>
   );
 }
 
-function CartDrawerInner({cart}: {cart: CartData | null}) {
+function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: CartSummary | null}) {
   const {close} = useAside();
   const lines = cart?.lines?.nodes ?? [];
   const isEmpty = !cart || cart.totalQuantity === 0;
@@ -103,10 +112,19 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
     payableEur += now;
     msrpEur += compareAtPrice ? bothCurrencies(compareAtPrice).eur : now;
   }
-  const savedEur = Math.max(0, msrpEur - payableEur);
-  const subtotal = {eur: payableEur, bgn: payableEur * EUR_TO_BGN};
+  /* Обобщението на търговеца е истината за сумата.
+     Сборът на редовете не познава ПРАВИЛАТА ЗА КОЛИЧКАТА - те се прилагат от
+     платформата и идват като собствен ред в `totals`. Без това чекмеджето
+     показва сума над тази, която касата събира. */
+  const summaryTotal = money(totalLine(summary));
+  const summarySubtotal = money(subtotalLine(summary));
+  const adjustments = adjustmentLines(summary);
+  const payable = summaryTotal ?? payableEur;
+  const shownSubtotal = summarySubtotal ?? payableEur;
+  const savedEur = Math.max(0, msrpEur - payable);
+  const subtotal = {eur: shownSubtotal, bgn: shownSubtotal * EUR_TO_BGN};
   const rawTotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
-  const total = {eur: payableEur, bgn: payableEur * EUR_TO_BGN};
+  const total = {eur: payable, bgn: payable * EUR_TO_BGN};
 
   // Threshold + progress live in EUR because the store's base currency
   // is EUR (verified via generalSettings.currency). The Bulgarian-lev
@@ -146,7 +164,7 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
             <div className="bb-cd-shipping-fill" style={{width: `${shippingPct}%`}} />
           </div>
           {/* The merchant's gift offers and cart rules, live from the panel. */}
-          <CartOffersStrip subtotalEur={subtotal.eur} />
+          <CartOffersStrip subtotalEur={subtotal.eur} messages={summary?.messages ?? []} />
         </div>
       )}
 
@@ -209,6 +227,18 @@ function CartDrawerInner({cart}: {cart: CartData | null}) {
             {/* Single-line grand total — shipping already communicated
                 up top by the progress bar, VAT note moved to subtitle.
                 Drops 3 separate rows → 1 row + 1 subtitle. */}
+            {/* Редовете на търговеца между междинната и крайната сума:
+                правила за количката, отстъпки, доставка. */}
+            {adjustments.length > 0 && (
+              <div className="bb-cd-adjust">
+                {adjustments.map((row) => (
+                  <div key={row.key ?? row.name} className="bb-cd-adjust-row">
+                    <span>{row.name || row.key}</span>
+                    <span>{fmtEur(money(row) ?? 0)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="bb-cd-grand">
               <div className="bb-cd-grand-lbl-col">
                 <div className="bb-cd-grand-lbl">Крайна сума</div>

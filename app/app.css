@@ -4443,6 +4443,16 @@ img.pm-banner {
    Слайдовете стоят един върху друг, за да не подскача височината при смяна;
    най-високият държи мястото. */
 .bb-bd-carousel { display: block; }
+
+/* Редовете на търговеца в чекмеджето: правило за количката, отстъпка, доставка.
+   Идват от `Cart.totals` и стоят между продуктите и крайната сума. */
+.bb-cd-adjust { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 2px; }
+.bb-cd-adjust-row {
+  display: flex; justify-content: space-between; gap: 12px;
+  font-size: 13px; color: rgba(10, 37, 64, 0.72);
+}
+.bb-cd-adjust-row span:last-child { font-weight: 700; color: var(--color-ink); white-space: nowrap; }
+
 .bb-bd-carousel-stage { display: grid; }
 .bb-bd-carousel-slide {
   grid-area: 1 / 1;
