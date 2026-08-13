@@ -141,9 +141,9 @@ export function Award() {
               })}
             </g>
             {/* "2025" badge text */}
-            <text x="100" y="78" textAnchor="middle" fill="#d4af6a" fontSize="11" fontWeight="700" letterSpacing="2.4" fontFamily="Manrope, sans-serif">BGOLDEN</text>
-            <text x="100" y="106" textAnchor="middle" fill="#f4d585" fontSize="34" fontWeight="800" fontFamily="Fraunces, serif" fontStyle="italic">2025</text>
-            <text x="100" y="125" textAnchor="middle" fill="#d4af6a" fontSize="8" fontWeight="600" letterSpacing="1.8" fontFamily="Manrope, sans-serif">AWARDS</text>
+            <text x="100" y="78" textAnchor="middle" fill="#d4af6a" fontSize="11" fontWeight="700" letterSpacing="2.4" fontFamily="Montserrat, sans-serif">BGOLDEN</text>
+            <text x="100" y="106" textAnchor="middle" fill="#f4d585" fontSize="34" fontWeight="800" fontFamily="Montserrat, sans-serif" fontStyle="italic">2025</text>
+            <text x="100" y="125" textAnchor="middle" fill="#d4af6a" fontSize="8" fontWeight="600" letterSpacing="1.8" fontFamily="Montserrat, sans-serif">AWARDS</text>
             <defs>
               <radialGradient id="bb-gold-grad" cx="40%" cy="35%" r="75%">
                 <stop offset="0%" stopColor="#f4d585" />

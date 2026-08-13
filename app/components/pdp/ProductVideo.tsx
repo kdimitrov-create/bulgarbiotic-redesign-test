@@ -277,7 +277,7 @@ function CapsuleJourneyAnimation({handle}: {handle?: string}) {
                 fontSize="11"
                 fontWeight="800"
                 fill="#fdeef3"
-                fontFamily="Manrope, sans-serif"
+                fontFamily="Akrobat, sans-serif"
               >{i + 1}</text>
 
               {/* Label below */}
@@ -287,7 +287,7 @@ function CapsuleJourneyAnimation({handle}: {handle?: string}) {
                 fontSize="12"
                 fontWeight="800"
                 fill="#0a2540"
-                fontFamily="Manrope, sans-serif"
+                fontFamily="Akrobat, sans-serif"
               >{s.label.replace(/^\d+\.\s*/, '')}</text>
               {wrapSub(s.sub).map((line, li) => (
                 <text
@@ -298,7 +298,7 @@ function CapsuleJourneyAnimation({handle}: {handle?: string}) {
                   fontWeight="600"
                   fill="#0a2540"
                   fillOpacity="0.55"
-                  fontFamily="Manrope, sans-serif"
+                  fontFamily="Akrobat, sans-serif"
                 >{line}</text>
               ))}
 
@@ -341,7 +341,7 @@ function CapsuleJourneyAnimation({handle}: {handle?: string}) {
             fill="#0a2540"
             fillOpacity="0.55"
             letterSpacing="0.8"
-            fontFamily="Manrope, sans-serif"
+            fontFamily="Akrobat, sans-serif"
           >ПЪТЯТ НА ДОБРИТЕ БАКТЕРИИ НА BACTOLOGY</text>
         </g>
       </svg>
