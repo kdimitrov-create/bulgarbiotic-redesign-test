@@ -1,4 +1,49 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&display=swap');
+/* Типографията по brandbook на клиента: Montserrat за заглавия, Akrobat за
+ * дребния текст. Решено от клиента на 13.08.2026.
+ *
+ * Montserrat идва от Google Fonts. Akrobat го няма там, затова стои при нас в
+ * `public/fonts` - лицензът на Fontfabric (FFF EULA 2.0) изрично позволява
+ * търговска употреба, @font-face и уеб пакети от файловете, без ограничение на
+ * показванията. Забранено е шрифтът да се МОДИФИЦИРА, затова файловете са само
+ * преобразувани към woff2 и НЕ са подрязани по знаци.
+ *
+ * ⭐ И двата носят български форми на буквите: Akrobat има `cyrl/BGR` с `locl`
+ * (проверено в самите файлове), Montserrat също. Тоест „в", „д", „и", „к", „п"
+ * се изписват по български, а не по руски - капанът, в който Roboto ни вкара.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap');
+
+/* Akrobat няма Medium (500), а сайтът го ползва на 27 места. Затова лицата са
+ * обявени с ДИАПАЗОН на дебелината: браузърът взима най-близкото истинско лице
+ * вместо да опъва изкуствено буквите. */
+@font-face {
+  font-family: 'Akrobat';
+  src: url('/fonts/Akrobat-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Akrobat';
+  src: url('/fonts/Akrobat-SemiBold.woff2') format('woff2');
+  font-weight: 500 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Akrobat';
+  src: url('/fonts/Akrobat-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Akrobat';
+  src: url('/fonts/Akrobat-ExtraBold.woff2') format('woff2');
+  font-weight: 800 900;
+  font-style: normal;
+  font-display: swap;
+}
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @plugin "@tailwindcss/forms" {
@@ -44,8 +89,19 @@
   --color-gray-900: #0A2540;
   --color-gray-950: #061625;
 
-  --font-sans: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-serif: 'Fraunces', Georgia, serif;
+  /* Дребният текст и всичко в интерфейса. */
+  --font-sans: 'Akrobat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Заглавията. */
+  --font-heading: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* ⚠️ Името остава `--font-serif`, макар че вече не е серифен шрифт.
+   * Смисълът му е „лицето на акцентите" и се ползва на 44 места в този файл
+   * плюс 64 в компонентите. Преименуването е отделна работа и щеше да смеси
+   * две промени в една; тук се сменя само какво сочи.
+   *
+   * Дотук сочеше наклонения Fraunces - подписът на редизайна. Brandbook-ът
+   * познава два шрифта, затова акцентите минават към Montserrat. Това е
+   * най-видимата разлика в цялата смяна. */
+  --font-serif: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 @layer base {
@@ -60,6 +116,15 @@
     min-height: 100vh;
     background: var(--color-cream-1);
     font-family: var(--font-sans);
+  }
+
+  /* Заглавията минават на Montserrat, останалото остава на Akrobat.
+   *
+   * Дотук всичко наследяваше един шрифт от `body`. Правилото е нарочно тук, в
+   * основния слой, а не с класове: така всяко заглавие го получава - и тези в
+   * съдържанието от панела, което никой клас не покрива. */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
   }
 
   a { color: inherit; text-decoration: none; }
