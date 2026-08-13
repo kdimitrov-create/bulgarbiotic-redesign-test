@@ -5250,6 +5250,17 @@ img.pm-banner {
   object-fit: contain;
   border-radius: 0;
 }
+/* Без качена снимка картата носи розова точка вместо иконка - така изглежда
+   довършена и докато истинските икони на щамовете ги няма. */
+.bb-row-strains > .bb-bd-col:not(:has(.bb-bd-banners)) .bb-bd-text::before {
+  content: "";
+  float: left;
+  width: 10px; height: 10px;
+  margin: 7px 12px 0 0;
+  border-radius: 999px;
+  background: var(--color-brand-pink);
+  opacity: 0.75;
+}
 .bb-row-strains .bb-bd-text { margin: 0; }
 .bb-row-strains .bb-prose p {
   margin: 0;
