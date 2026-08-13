@@ -112,7 +112,13 @@ export async function fetchBuilderData(
   // показваше статии отпреди месеци - други от тези, които клиентът вижда в
   // панела (2026-08-13). По-голямото id значи по-скоро добавена статия, точно
   // както ги подрежда и самият панел; датата остава резерва.
+  // Номерът на статията идва от собственото ѝ id (`gid://cloudcart/Article/112`)
+  // и само ако там го няма - от картата на админа. Нарочно в този ред: админът
+  // иска токен, а токен на живо може да няма (на 2026-08-13 storefront 111
+  // нямаше нито една променлива на средата).
   const adminId = (article: any): number | null => {
+    const own = String(article?.id ?? '').match(/Article\/(\d+)/)?.[1];
+    if (own) return Number(own);
     const id = articleImages?.[article?.handle]?.id;
     return typeof id === 'number' && Number.isFinite(id) ? id : null;
   };
