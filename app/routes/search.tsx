@@ -1,5 +1,5 @@
 import {useLoaderData, useNavigate, useNavigation, useSearchParams} from 'react-router';
-import {useCcPage, useEcommerceEvent, numericId} from '~/lib/analytics';
+import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
 import {useEffect, useRef, useState, useCallback} from 'react';
 import type {Route} from './+types/search';
 import {getContext} from '~/lib/context';
@@ -60,6 +60,9 @@ export default function SearchPage() {
 
   /* Измерване: търсене. Класическата тема праща `Search` с търсената дума;
    * без него Meta и TikTok не могат да строят аудитории по намерение. */
+  setProductIds(Object.fromEntries(
+    (((products as any)?.nodes) ?? []).map((p: any) => [p.handle, String(numericId(p.id))]),
+  ));
   useCcPage({type: 'search', name: query});
   useEcommerceEvent(
     'search',

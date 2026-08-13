@@ -5,7 +5,7 @@ import {bestDiscountFor, displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing} from '~/lib/product-marks';
 import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
-import {useCcPage, useEcommerceEvent, numericId} from '~/lib/analytics';
+import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
 import {ProductForm} from '~/components/ProductForm';
 import {ProductImageGallery} from '~/components/ProductImageGallery';
@@ -86,6 +86,9 @@ export default function ProductPage() {
    * страница, значи трябва да ги направи вместо нея, иначе Meta и TikTok
    * виждат поръчки без нито един преглед преди тях. */
   const trackedId = numericId(product.id);
+  // Бутонът за количка знае само handle-а - тук му оставяме числото, за да
+  // тръгне `add_to_cart` със същото id, с което тръгва и `view_item`.
+  setProductIds({[product.handle]: String(trackedId)});
   useCcPage({
     type: 'product',
     id: trackedId,

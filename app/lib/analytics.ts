@@ -43,8 +43,25 @@ export type CcPageData = {type: string; [key: string]: unknown};
  */
 let idsByHandle: Record<string, string> = {};
 
+/**
+ * Добавя, а НЕ замества.
+ *
+ * ⚠️ Хванато на живо: `add_to_cart` пращаше към Meta `content_ids:
+ * ["bactology-pets"]` - тоест handle-а, докато `view_item` пращаше "79".
+ * Картата беше празна, защото никой не я пълнеше, и `idForHandle` връщаше
+ * самия handle. Каталогът на Meta и продуктовият feed работят с голото число,
+ * значи такова събитие не се връзва с нито един продукт и ремаркетингът мълчи.
+ *
+ * Заместването беше опасно само по себе си: страницата на продукта знае едно
+ * id, листингът - двадесет, и който запише втори, триеше първия.
+ */
 export function setProductIds(next: Record<string, string> | null | undefined) {
-  if (next && Object.keys(next).length) idsByHandle = next;
+  // Само в браузъра. На Nova модулът живее в isolate, който обслужва много
+  // заявки една след друга - пълним ли картата и на сървъра, тя расте с всеки
+  // посетител и вече не е негова. А и трябва само на кликанията, тоест на
+  // клиента.
+  if (typeof window === 'undefined') return;
+  if (next && Object.keys(next).length) idsByHandle = {...idsByHandle, ...next};
 }
 
 /** Продуктовото id за handle, или самия handle, ако картата не го знае. */

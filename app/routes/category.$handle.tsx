@@ -20,7 +20,7 @@ import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
 import {CATEGORY_EXTRA_PRODUCTS} from '~/lib/category-extra-products';
-import {useCcPage, useEcommerceEvent, numericId} from '~/lib/analytics';
+import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
 import {
   SINGLES_FIRST_CATEGORIES,
   fetchPackageHandles,
@@ -186,6 +186,11 @@ export default function CollectionPage() {
     index: i,
     quantity: 1,
   }));
+  // Картите в листинга също добавят в количката - без тази карта техният
+  // `add_to_cart` щеше да тръгне с handle вместо с id.
+  setProductIds(Object.fromEntries(
+    ((products as any).nodes ?? []).map((p: any) => [p.handle, String(numericId(p.id))]),
+  ));
   useCcPage({type: 'category', id: numericId(col.id), name: col.title, url: `/category/${col.handle}`});
   useEcommerceEvent(
     'view_item_list',
