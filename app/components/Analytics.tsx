@@ -136,23 +136,35 @@ export function Analytics() {
         const ttq: any = (w.ttq = w.ttq || []);
         if (!ttq.__loaded) {
           ttq.__loaded = true;
-          ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie'];
+          ttq.methods = ['page', 'track', 'identify', 'instances', 'debug', 'on', 'off', 'once', 'ready', 'alias', 'group', 'enableCookie', 'disableCookie', 'holdConsent', 'revokeConsent', 'grantConsent'];
           ttq.setAndDefer = function (obj: any, method: string) {
             obj[method] = function () {
               obj.push([method].concat(Array.prototype.slice.call(arguments, 0)));
             };
           };
           for (const m of ttq.methods) ttq.setAndDefer(ttq, m);
-          ttq.load = function (id: string) {
+          ttq.instance = function (id: string) {
+            const inst = ttq._i[id] || [];
+            for (const m of ttq.methods) ttq.setAndDefer(inst, m);
+            return inst;
+          };
+          ttq.load = function (id: string, opts?: Record<string, unknown>) {
+            // ⚠️ `_u` НЕ е излишно. SDK-то чете оттам собствения си адрес, за да
+            // си дозареди останалите парчета. Без него `events.js` се качва,
+            // `ttq.track` съществува - и НИЩО не тръгва по мрежата. Точно това
+            // се случи при първата проверка на живо: TikTok мълчеше, а всичко
+            // изглеждаше наред. Взето 1:1 от официалния фрагмент на TikTok.
+            const url = 'https://analytics.tiktok.com/i18n/pixel/events.js';
             ttq._i = ttq._i || {};
             ttq._i[id] = [];
+            ttq._i[id]._u = url;
             ttq._t = ttq._t || {};
             ttq._t[id] = +new Date();
             ttq._o = ttq._o || {};
-            ttq._o[id] = {};
+            ttq._o[id] = opts || {};
             const s = document.createElement('script');
             s.async = true;
-            s.src = 'https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=' + encodeURIComponent(id) + '&lib=ttq';
+            s.src = url + '?sdkid=' + encodeURIComponent(id) + '&lib=ttq';
             document.head.appendChild(s);
           };
           ttq.load(tiktokPixelId);
