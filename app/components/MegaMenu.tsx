@@ -204,7 +204,28 @@ function Foot({onNav, node}: {onNav?: () => void; node: NavNode | null}) {
           'bb-megamenu-foot-link' +
           (i === 0 ? ' bb-megamenu-foot-link--primary' : '') +
           (link.url!.startsWith('#') ? ' bb-megamenu-foot-link--ghost' : '');
-        return link.url!.startsWith('#') ? (
+        /* ⚠️ Тук се рисува връзката, която клиентът отчете като „не води на
+         * правилното място" - НЕ в резервния списък по-долу. Мърчантът има
+         * своя група „footer" в панела, значи минаваме по този клон.
+         *
+         * Адресът `#bb-finder-fab` е котва към плаващото копче. Котва не
+         * отваря нищо: страницата подскачаше до копчето и толкова. Разпознаваме
+         * го и вместо връзка рисуваме бутон, който пуска самия тест. Записът в
+         * панела остава непокътнат - мърчантът не трябва да знае за това. */
+        return link.url === '#bb-finder-fab' ? (
+          <button
+            key={link.id}
+            type="button"
+            className={cls}
+            onClick={() => {
+              onNav?.();
+              openProbioticFinder();
+            }}
+          >
+            {link.title}
+            <Arrow />
+          </button>
+        ) : link.url!.startsWith('#') ? (
           <a key={link.id} href={link.url!} className={cls} onClick={onNav}>
             {link.title}
             <Arrow />
