@@ -5130,6 +5130,142 @@ img.pm-banner {
   border-top: 1px solid rgba(10, 37, 64, 0.1);
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   Целеви страници, сглобени в конструктора
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Начало на целева страница: текст вляво, снимка вдясно, върху фон ───────
+   Ползва се от „Науката зад Bulgar Biotic" и от останалите целеви страници.
+   Двата акцента с числа са абзаци с класа `stat-pair`.
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-pagehero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  background: linear-gradient(135deg, var(--color-cream-2) 0%, var(--color-pink-1) 100%);
+  grid-template-columns: 1.15fr 1fr;
+  align-items: center;
+  column-gap: 48px;
+  row-gap: 28px;
+}
+.bb-row-pagehero > .bb-bd-col { grid-column: auto; position: relative; z-index: 1; }
+@media (max-width: 880px) {
+  .bb-row-pagehero { grid-template-columns: 1fr; border-radius: 22px; }
+}
+.bb-row-pagehero::before {
+  content: "";
+  position: absolute;
+  top: -200px; right: -200px;
+  width: 600px; height: 600px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(227, 22, 108, 0.18), transparent 70%);
+}
+.bb-row-pagehero .bb-bd-text { margin: 0; }
+.bb-row-pagehero .bb-prose h2 {
+  font-family: inherit;
+  font-size: clamp(30px, 4.2vw, 46px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -1.4px;
+  color: var(--color-ink);
+  margin: 12px 0 18px;
+}
+.bb-row-pagehero .bb-prose h2 em,
+.bb-row-pagehero .bb-prose h2 .accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-brand-pink);
+}
+.bb-row-pagehero .bb-prose p {
+  font-size: 15px;
+  line-height: 1.75;
+  color: rgba(10, 37, 64, 0.8);
+  margin: 0 0 16px;
+  max-width: 560px;
+}
+/* Числата под текста: „120+ · г. изследвания". */
+.bb-row-pagehero .bb-prose .stat-pair {
+  display: inline-flex;
+  flex-direction: column;
+  margin: 0 32px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: rgba(10, 37, 64, 0.6);
+}
+.bb-row-pagehero .bb-prose .stat-pair strong {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -1px;
+  color: var(--color-brand-pink);
+}
+.bb-row-pagehero .bb-bd-banners { margin: 0; }
+.bb-row-pagehero .bb-bd-banner-img {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  border-radius: 0;
+  filter: drop-shadow(0 24px 40px rgba(10, 37, 64, 0.18));
+}
+
+/* ── Каталог на щамовете: малки карти със снимка и име ──────────────────────
+   Една колона = един щам. Първата колона е отличената („флагман").
+   ────────────────────────────────────────────────────────────────────────── */
+.bb-row-strains {
+  --bb-row-gutter: max(0px, (100% - 1380px) / 2);
+  grid-template-columns: repeat(3, 1fr);
+  align-items: stretch;
+  column-gap: 16px;
+  row-gap: 16px;
+  padding-left: calc(36px + var(--bb-row-gutter));
+  padding-right: calc(36px + var(--bb-row-gutter));
+}
+@media (max-width: 880px) { .bb-row-strains { grid-template-columns: 1fr 1fr; padding-left: 20px; padding-right: 20px; } }
+.bb-row-strains > .bb-bd-col {
+  grid-column: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: #fff;
+  border: 1px solid rgba(10, 37, 64, 0.08);
+  border-radius: 16px;
+  transition: all 0.2s;
+}
+.bb-row-strains > .bb-bd-col:hover {
+  border-color: var(--color-pink-2);
+  box-shadow: 0 14px 30px -14px rgba(10, 37, 64, 0.18);
+  transform: translateY(-2px);
+}
+.bb-row-strains > .bb-bd-col:first-child {
+  background: linear-gradient(135deg, #fff 0%, var(--color-pink-1) 100%);
+  border-color: var(--color-pink-2);
+}
+.bb-row-strains .bb-bd-banners { margin: 0; flex-shrink: 0; }
+.bb-row-strains .bb-bd-banner-img {
+  width: 54px; height: 54px;
+  object-fit: contain;
+  border-radius: 0;
+}
+.bb-row-strains .bb-bd-text { margin: 0; }
+.bb-row-strains .bb-prose p {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: rgba(10, 37, 64, 0.55);
+}
+.bb-row-strains .bb-prose p strong {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--color-ink);
+}
+
 /* ── Наградите: една колона = една награда ──────────────────────────────────
    Тъмна лента, в която всяка награда е колона със значка (Снимка) и текст.
    Досега двете награди се въртяха една след друга; вече стоят една до друга,
