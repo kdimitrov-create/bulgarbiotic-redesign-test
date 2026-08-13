@@ -137,7 +137,16 @@ export default function ProductPage() {
        * tappable so the user never has to scroll back up to purchase.
        * `items-start` is critical: without it the columns stretch to match
        * heights and `position: sticky` becomes a no-op. */}
-      <div className="grid items-start gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16 mt-2">
+      {/* ⚠️ `grid-cols-1` не е излишно на телефон.
+        *
+        * Без него решетката няма зададена колона и я оразмерява по НАЙ-ШИРОКОТО
+        * си дете. Измерено на 390px: контейнерът е 350px, а колоната става
+        * 424px - тоест снимката и цялата дясна колона излизат 54px извън
+        * екрана и се режат отдясно. Точно това съобщи клиентът.
+        *
+        * `grid-cols-1` слага `minmax(0, 1fr)`, което е таванът - оттам нататък
+        * съдържанието се пренася, вместо да разпъва колоната. */}
+      <div className="grid grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-12 lg:grid-cols-[7fr_5fr] lg:gap-16 mt-2">
         {/* СНИМКАТА стои, дясната колона се движи покрай нея. Снимката се
             откача чак в края на решетката - тоест когато динамичната лента
             отдолу дойде до нея. Затова sticky е тук, а не отдясно. */}
