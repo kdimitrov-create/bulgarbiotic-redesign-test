@@ -786,13 +786,26 @@ body::after {
     position: sticky; top: 0; z-index: 3;
     background: var(--color-cream-1);
   }
+  /* Лентата е закачена за САМИЯ панел, не за потока.
+   *
+   * Със `sticky` тя се държеше само докато кутията ѝ (футърът) е на екрана - в
+   * началото на превъртането футърът е далеч надолу и лентата я нямаше. Сега е
+   * `absolute` спрямо панела, тоест стои долу при всяко положение на
+   * превъртането. Панелът е `fixed`, значи е позициониран прародител и лентата
+   * пътува с него, когато чекмеджето се отваря и затваря. */
   .bb-cd .bb-cd-action {
-    position: sticky; bottom: 0; z-index: 3;
-    margin: 12px -24px -16px;
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    z-index: 4;
+    margin: 0;
     padding: 10px 24px calc(12px + env(safe-area-inset-bottom, 0px));
     background: #fff;
     border-top: 1px solid rgba(10, 37, 64, 0.1);
+    box-shadow: 0 -8px 20px -12px rgba(10, 37, 64, 0.28);
   }
+  /* Мястото, което лентата вече не заема в потока, се връща като отстояние -
+     иначе последният ред стои под нея и не се стига. */
+  .bb-cd { padding-bottom: var(--bb-action-h, 116px); }
   /* Сумата се повтаря дребно в залепената лента, за да е винаги пред очите. */
   .bb-cd .bb-cd-action-total {
     display: flex; align-items: baseline; justify-content: space-between;

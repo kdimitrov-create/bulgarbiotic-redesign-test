@@ -109,6 +109,32 @@ export function CartDrawer({
 
 function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: CartSummary | null}) {
   const {close} = useAside();
+
+  /**
+   * Височината на залепената лента отива в променлива.
+   *
+   * На телефон лентата е закачена за самия панел, тоест е извън потока и не
+   * заема място. Без това последният ред оставаше под нея и не се стигаше с
+   * превъртане. Мери се, вместо да се пише число: редът със сумата се появява
+   * и изчезва, а бутонът мени височината си на две реда текст.
+   */
+  const actionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = actionRef.current;
+    if (!el) return;
+    const shell = el.closest('.bb-cd') as HTMLElement | null;
+    if (!shell) return;
+    const set = () =>
+      shell.style.setProperty('--bb-action-h', `${Math.round(el.getBoundingClientRect().height)}px`);
+    set();
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(set) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', set);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', set);
+    };
+  });
   const lines = cart?.lines?.nodes ?? [];
   const isEmpty = !cart || cart.totalQuantity === 0;
 
@@ -302,7 +328,7 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
                 обикновен ред във футъра и повторената сума не се рисува.
                 Нарочно е ЕДИН бутон, а не два: два бутона в двата режима са две
                 места, на които после се разминава поведението. */}
-            <div className="bb-cd-action">
+            <div className="bb-cd-action" ref={actionRef}>
               <div className="bb-cd-action-total" aria-hidden="true">
                 <span>Крайна сума</span>
                 <strong>{fmtEur(total.eur)}</strong>
