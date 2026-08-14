@@ -295,7 +295,20 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
                 {SHOW_BGN && <div className="bb-cd-grand-bgn">{fmtBgn(total.bgn)}</div>}
               </div>
             </div>
-            <CheckoutButton cart={cart} className="bb-cd-checkout" />
+            {/* Лентата за действие.
+                На телефон тя се залепва за долния ръб (`position: sticky`), а
+                всичко останало се превърта под нея - затова сумата се повтаря
+                вътре в нея дребно, за да е винаги пред очите. На широк екран е
+                обикновен ред във футъра и повторената сума не се рисува.
+                Нарочно е ЕДИН бутон, а не два: два бутона в двата режима са две
+                места, на които после се разминава поведението. */}
+            <div className="bb-cd-action">
+              <div className="bb-cd-action-total" aria-hidden="true">
+                <span>Крайна сума</span>
+                <strong>{fmtEur(total.eur)}</strong>
+              </div>
+              <CheckoutButton cart={cart} className="bb-cd-checkout" />
+            </div>
 
             <CartTrustStrip />
           </div>

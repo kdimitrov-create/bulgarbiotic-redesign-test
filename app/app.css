@@ -754,12 +754,61 @@ body::after {
   .bb-aside-scrim { display: block; width: calc(100% - var(--bb-aside-w, 440px)); }
 }
 
-/* Едно под друго: заглавие, доставка с офертите, продукти, bump cart, сметка.
- * Само списъкът превърта - останалите не се свиват. */
-.bb-cd-head,
-.bb-cd-shipping,
-.bb-cd-upsell,
-.bb-cd-foot { flex-shrink: 0; }
+/* ── Телефон и таблет: ЕДНО превъртане и една залепена лента ─────────────────
+ *
+ * Дотук на екрана се биеха три залепени блока: офертите отгоре (239 пиксела),
+ * списъкът по средата и сметката отдолу (270, а с промокод към 370). От 844
+ * пиксела за продуктите - заради които се отваря количката - оставаха между
+ * 165 и 264, тоест виждаше се половин продукт и се превърташе трудно.
+ *
+ * Сега се превърта цялото тяло: оферти, продукти, bump cart, промокод и сметка
+ * вървят едно след друго. Залепени остават само две неща - заглавието горе и
+ * лентата с крайната сума и „Към плащане" долу. Промокодът вече не мени
+ * подредбата, а само удължава страницата.
+ *
+ * Използва се `position: sticky`, а не втора лента отдолу: бутонът е един и
+ * същ във всички режими, вместо два, които после се разминават. */
+.bb-aside-main { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+.bb-cd-head { flex-shrink: 0; }
+/* На широк екран лентата е обикновен ред във футъра и сумата не се повтаря. */
+.bb-cd-action-total { display: none; }
+
+/* Селекторите са с `.bb-cd` отпред: този блок стои преди правилата на самите
+   части и при равна тежест печели по-долното правило. */
+@media (max-width: 1279px) {
+  .bb-cd { height: auto; min-height: 100%; }
+  /* Нищо вътре не превърта само - превърта тялото на панела. */
+  .bb-cd .bb-cd-mid,
+  .bb-cd .bb-cd-scroll { overflow: visible; }
+
+  .bb-cd .bb-cd-head {
+    position: sticky; top: 0; z-index: 3;
+    background: var(--color-cream-1);
+  }
+  .bb-cd .bb-cd-action {
+    position: sticky; bottom: 0; z-index: 3;
+    margin: 12px -24px -16px;
+    padding: 10px 24px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid rgba(10, 37, 64, 0.1);
+  }
+  /* Сумата се повтаря дребно в залепената лента, за да е винаги пред очите. */
+  .bb-cd .bb-cd-action-total {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 12px; margin-bottom: 8px;
+  }
+  .bb-cd .bb-cd-action-total span {
+    font-size: 12.5px; font-weight: 800; letter-spacing: 1.2px;
+    text-transform: uppercase; color: rgba(10, 37, 64, 0.55);
+  }
+  .bb-cd .bb-cd-action-total strong {
+    font-family: var(--font-serif); font-style: italic; font-weight: 500;
+    font-size: 22px; letter-spacing: -0.5px; color: var(--color-brand-pink);
+  }
+  /* Крайната сума вече стои в залепената лента - във футъра се повтаряше. */
+  .bb-cd .bb-cd-grand-val-col { display: none; }
+}
 
 /* Заглавната лента е една и носи бутона за затваряне. */
 .bb-cd-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -850,6 +899,10 @@ body::after {
 @media (min-width: 1280px) {
   :root { --bb-aside-w: 860px; }
 
+  /* На широко превърта само списъкът вътре, не цялото тяло. */
+  .bb-aside-main { overflow: hidden; }
+  .bb-cd { height: 100%; }
+
   .bb-cd {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 360px;
@@ -897,16 +950,22 @@ body::after {
     flex-direction: column;
   }
   .bb-cd .bb-cd-upsell-carousel-wrap { flex: 1 1 auto; min-height: 0; }
-  .bb-cd .bb-cd-upsell-carousel { height: 100%; align-items: stretch; }
+  /* Долна граница за лентата. Долната част расте, когато има промокод (чипът с
+     кода, редът на отстъпката, спестяваш, зачертаната сума) и краде височина
+     точно от този ред - от това „ДОБАВИ" се отрязваше. Под тази граница
+     секцията се превърта, вместо картите да се кълцат. */
+  .bb-cd .bb-cd-upsell-carousel { height: 100%; min-height: 232px; align-items: stretch; }
   .bb-cd .bb-cd-upsell-card { height: 100%; }
-  /* Снимката поглъща свободната височина; текстът и бутонът сядат отдолу. */
+  /* Снимката поглъща свободната височина И се свива първа; името, цената и
+     бутонът никога не се режат. */
   .bb-cd .bb-cd-upsell-img {
     flex: 1 1 auto;
-    min-height: 120px;
+    min-height: 64px;
     aspect-ratio: auto;
     width: auto;
     margin: 12px 12px 4px;
   }
+  .bb-cd .bb-cd-upsell-info { flex-shrink: 0; }
 
   /* Празната количка няма какво да дели на две. */
   .bb-cd .bb-cd-empty { grid-column: 1 / -1; grid-row: 2 / 4; }

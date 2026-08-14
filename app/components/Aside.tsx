@@ -94,9 +94,10 @@ export function Aside({
             </button>
           </header>
         )}
-        {/* Скролерът е един и е вътре в количката (`.bb-cd-scroll`). Тук стоеше
-            втори и двата се препокриваха. */}
-        <main className="flex-1 min-h-0 overflow-hidden p-0">{children}</main>
+        {/* Кой превърта се решава в CSS-а по ширина: на телефон превърта цялото
+            тяло (заглавието и лентата с бутона се залепват), а на широк екран
+            превърта само списъкът с продуктите вътре. */}
+        <main className="bb-aside-main flex-1 min-h-0 p-0">{children}</main>
       </aside>
     </div>
   );
