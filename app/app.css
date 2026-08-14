@@ -1336,10 +1336,11 @@ body::after {
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
-  /* Slight negative margin + padding so cards bleed to the edge of
-   * the cream panel without being clipped by overflow. */
-  margin: 0 -10px -2px;
-  padding: 4px 10px 6px;
+  /* Без изнасяне встрани. Отрицателните полета пускаха лентата десет пиксела
+   * извън обвивката си, тоест следващата карта се подаваше ОТВЪД стрелката и
+   * преливката нямаше как да я покрие - там свършва нейната кутия. */
+  margin: 0 0 -2px;
+  padding: 4px 0 6px;
   -webkit-overflow-scrolling: touch;
 }
 .bb-cd-upsell-carousel::-webkit-scrollbar { display: none; }
