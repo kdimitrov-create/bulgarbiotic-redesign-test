@@ -68,6 +68,17 @@ export function CartDrawer({
   cart: Promise<CartData | null>;
   summary?: Promise<CartSummary | null>;
 }) {
+  // Двете обещания се сливат ВЕДНЪЖ.
+  //
+  // Promise.all(...) направо в resolve правеше ново обещание на всяка рисунка.
+  // <Await> не го познава, хвърля го и React изчаква; то се изпълнява веднага,
+  // React пробва пак, рисунката прави следващото ново обещание - и така в кръг.
+  // Кръгът върти планировчика и оставя преходите без ред, тоест адресът се
+  // сменя, а страницата остава старата.
+  const resolved = useMemo(
+    () => Promise.all([cart, summary ?? Promise.resolve(null)]),
+    [cart, summary],
+  );
   return (
     <Suspense
       fallback={
@@ -77,7 +88,7 @@ export function CartDrawer({
         </div>
       }
     >
-      <Await resolve={Promise.all([cart, summary ?? Promise.resolve(null)])}>
+      <Await resolve={resolved}>
         {([resolvedCart, resolvedSummary]: [CartData | null, CartSummary | null]) => (
           <CartDrawerInner cart={resolvedCart} summary={resolvedSummary} />
         )}
