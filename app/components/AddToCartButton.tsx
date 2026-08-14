@@ -1,5 +1,5 @@
 import {useFetcher} from 'react-router';
-import {useEffect, type ReactNode} from 'react';
+import {useEffect, useRef, type ReactNode} from 'react';
 import {pushEcommerce, idForHandle} from '~/lib/analytics';
 import {CART_ACTION} from '~/lib/cart-action';
 import {useAside} from './Aside';
@@ -21,8 +21,23 @@ export function AddToCartButton({
   const isAdding = fetcher.state !== 'idle';
   const {open} = useAside();
 
+  // Отговорът се обработва ВЕДНЪЖ.
+  //
+  // Ефектът зависеше и от `quantity`, а `fetcher.data` остава след успешно
+  // добавяне - значи всяко пипване на брояча на продуктовата страница го
+  // пускаше наново: чекмеджето се отваряше без нищо да е добавено и GA
+  // получаваше второ `add_to_cart` за същия ред.
+  const handledRef = useRef<unknown>(null);
+
   useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) {
+    if (fetcher.state !== 'idle' || !fetcher.data) return;
+    if (handledRef.current === fetcher.data) return;
+    handledRef.current = fetcher.data;
+
+    // Неуспешното добавяне не отваря нищо и не праща събитие - дотук
+    // чекмеджето изскачаше и когато продуктът изобщо не е влязъл.
+    const failed = ((fetcher.data as any)?.errors ?? []).length > 0;
+    if (!failed) {
       // Чекмеджето се отваря при всяко добавяне, откъдето и да идва (клиент,
       // 2026-08-13). Отваря се тук, а не в бутона, защото тук се знае, че
       // добавянето наистина е минало.
@@ -57,7 +72,7 @@ export function AddToCartButton({
         });
       }
     }
-  }, [fetcher.state, fetcher.data, merchandiseId, quantity]);
+  }, [fetcher.state, fetcher.data, merchandiseId, quantity, open]);
 
   return (
     <fetcher.Form method="post" action={CART_ACTION}>

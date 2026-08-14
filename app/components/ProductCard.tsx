@@ -9,8 +9,7 @@ import {markPricing, markDiscount} from '~/lib/product-marks';
 import {DiscountCountdown} from './DiscountCountdown';
 
 
-import {SHOW_BGN} from '~/lib/currency';
-const EUR_TO_BGN = 1.95583;
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 
 const fmt = (n: number, currency: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {

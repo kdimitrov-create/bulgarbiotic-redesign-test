@@ -9,9 +9,8 @@ import {markPricingForLine} from '~/lib/product-marks';
 import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from '~/lib/cart-summary';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {numericId} from '~/lib/analytics';
-import {SHOW_BGN} from '~/lib/currency';
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 import {
-  EUR_TO_BGN,
   freeShippingTargetEur,
   fmtEur,
   fmtBgn,

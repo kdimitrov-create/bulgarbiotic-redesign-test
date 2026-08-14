@@ -39,7 +39,17 @@ export async function action({request, context}: Route.ActionArgs) {
           const handle = String(fd.get('handle') || '');
           if (handle) {
             const product = await ctx.storefront.getProduct(handle).catch(() => null);
-            merchandiseId = (product as any)?.variants?.nodes?.[0]?.id ?? '';
+            const variants = (product as any)?.variants?.nodes ?? [];
+            // Само когато вариантът е един. С няколко „първият" е гадаене и
+            // клиентът получава мълчаливо друг размер или вкус от този, който е
+            // натиснал - затова се спира и се праща на продуктовата страница.
+            // `CardBuyButton` прави същата проверка от страната на браузъра.
+            if (variants.length > 1) {
+              cart = await ctx.cart.get();
+              errors = [{message: 'Продуктът има повече от един вариант - избери го от страницата му'}];
+              break;
+            }
+            merchandiseId = variants[0]?.id ?? '';
           }
         }
         if (!merchandiseId) {
@@ -59,7 +69,14 @@ export async function action({request, context}: Route.ActionArgs) {
           result = await ctx.cart.addLines(lines).catch(() => null);
         }
         cart = result?.cart ?? (await ctx.cart.get());
-        errors = result?.userErrors ?? [{message: 'Продуктът не можа да бъде добавен'}];
+        // Грешка се съобщава само когато редът наистина не е влязъл.
+        // Дотук резервното съобщение се слагаше винаги, щом `userErrors` липсва
+        // в отговора - тоест успешно добавяне можеше да изпише „Продуктът не
+        // можа да бъде добавен" върху количка, която вече го съдържа.
+        errors = result?.userErrors ?? [];
+        if (!errors.length && !hasLine(cart, merchandiseId)) {
+          errors = [{message: 'Продуктът не можа да бъде добавен'}];
+        }
         break;
       }
       case 'UPDATE_CART': {
@@ -78,8 +95,15 @@ export async function action({request, context}: Route.ActionArgs) {
          но пренасочва към /cart - което не става, когато кодът се прилага от
          изскачащ прозорец (колелото на късмета). */
       case 'APPLY_DISCOUNT': {
-        const code = String(fd.get('code') || '').trim();
-        const result = await ctx.cart.updateDiscountCodes(code ? [code] : []);
+        // Четат се ВСИЧКИ полета `code`, не само първото: `updateDiscountCodes`
+        // заменя списъка, тоест с едно поле вторият код изместваше първия, а
+        // празното поле триеше всички наведнъж. Формите пращат целия желан
+        // списък, а тук само се предава нататък.
+        const codes = fd
+          .getAll('code')
+          .map((c) => String(c).trim())
+          .filter(Boolean);
+        const result = await ctx.cart.updateDiscountCodes([...new Set(codes)]);
         cart = result.cart;
         errors = result.userErrors;
         break;

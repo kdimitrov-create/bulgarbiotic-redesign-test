@@ -39,10 +39,20 @@ export function Aside({
   children,
   heading,
   type,
+  bare = false,
 }: {
   children?: ReactNode;
   heading: ReactNode;
   type: AsideType;
+  /**
+   * Панелът не рисува своята заглавна лента.
+   *
+   * Количката си има собствена („Твоята кошница · N"), а отгоре стоеше и тази
+   * на панела („КОШНИЦА") - две ленти една под друга, които изяждаха 64 пиксела
+   * тъкмо там, където най-липсват: на телефон списъкът с продуктите получаваше
+   * 208 пиксела от 844. Съдържанието поема и бутона за затваряне.
+   */
+  bare?: boolean;
 }) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
@@ -63,27 +73,30 @@ export function Aside({
       role="dialog"
     >
       <button
-        className="bb-aside-scrim absolute inset-0 bg-transparent border-none cursor-default hidden md:block md:w-[calc(100%-440px)]"
+        className="bb-aside-scrim absolute inset-0 bg-transparent border-none cursor-default"
         onClick={close}
         aria-label="Затвори"
       />
-      {/* Чекмеджето: цял екран на телефон, 440px на десктоп и 760px от 1200px
-          нагоре. На широкото офертите и сметката отиват в своя колона вдясно
-          (виж `.bb-cd` в app.css), за да остане цялата височина за продуктите -
-          дотогава списъкът получаваше 240 пиксела от 836 и се превърташе. */}
-      <aside className={`bb-aside-panel fixed top-0 right-0 w-full md:w-[440px] h-screen bg-light shadow-[-4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${expanded ? 'translate-x-0' : 'translate-x-full'}`}>
-        <header className="flex items-center justify-between px-5 h-16 border-b border-gray-200 shrink-0">
-          <h3 className="text-[0.85rem] font-bold tracking-widest">{heading}</h3>
-          <button
-            type="button"
-            onClick={close}
-            className="rounded-md p-2 -mr-2 text-gray-400 hover:text-dark transition-colors duration-150 min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Затвори"
-          >
-            <XMarkIcon className="size-6" />
-          </button>
-        </header>
-        <main className="flex-1 overflow-y-auto p-0">{children}</main>
+      {/* Ширината живее в CSS-а (`.bb-aside-panel`, app.css), а не в класове тук:
+          същото число трябваше на панела и на затъмнението, а в един момент
+          стоеше на четири места и се разминаваше. */}
+      <aside className={`bb-aside-panel fixed top-0 right-0 h-screen bg-light shadow-[-4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${expanded ? 'translate-x-0' : 'translate-x-full'}`}>
+        {bare ? null : (
+          <header className="flex items-center justify-between px-5 h-16 border-b border-gray-200 shrink-0">
+            <h3 className="text-[0.85rem] font-bold tracking-widest">{heading}</h3>
+            <button
+              type="button"
+              onClick={close}
+              className="rounded-md p-2 -mr-2 text-gray-400 hover:text-dark transition-colors duration-150 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Затвори"
+            >
+              <XMarkIcon className="size-6" />
+            </button>
+          </header>
+        )}
+        {/* Скролерът е един и е вътре в количката (`.bb-cd-scroll`). Тук стоеше
+            втори и двата се препокриваха. */}
+        <main className="flex-1 min-h-0 overflow-hidden p-0">{children}</main>
       </aside>
     </div>
   );

@@ -1,8 +1,7 @@
 import {monthlyPackages} from '~/lib/quantity-packages';
 import {AddToCartButton} from '~/components/AddToCartButton';
 
-import {SHOW_BGN} from '~/lib/currency';
-const EUR_TO_BGN = 1.95583;
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 
 const fmt = (n: number, currency: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) +

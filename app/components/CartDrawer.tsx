@@ -12,9 +12,8 @@ import {PromoCode} from './PromoCode';
 import {numericId} from '~/lib/analytics';
 import {CartOffersStrip} from './CartOffers';
 
-import {SHOW_BGN} from '~/lib/currency';
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
-export const EUR_TO_BGN = 1.95583;
 /**
  * Сумата, от която доставката е безплатна.
  *
@@ -159,6 +158,8 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
 
   return (
     <div className="bb-cd">
+      {/* Единствената заглавна лента. Панелът вече не рисува своя (`bare` в
+          `Aside`), затова бутонът за затваряне идва тук. */}
       <div className="bb-cd-head">
         <h3>
           Твоята кошница
@@ -166,6 +167,12 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
             <span className="bb-cd-count">· {cart.totalQuantity}</span>
           )}
         </h3>
+        <button type="button" className="bb-cd-close" onClick={close} aria-label="Затвори">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <line x1="6" y1="6" x2="18" y2="18" />
+            <line x1="18" y1="6" x2="6" y2="18" />
+          </svg>
+        </button>
       </div>
 
       {!isEmpty && (
@@ -210,24 +217,24 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
         </div>
       ) : (
         <>
-          {/* Shared scroll area — wraps both the cart lines AND the
-              upsell carousel so they share the same flex:1 / overflow:auto
-              region. Without this wrapper, items were getting squeezed to
-              a 32px strip because the upsell card (~385px tall) and the
-              footer (~435px) sat as siblings claiming their own height,
-              leaving no room for items. Now everything between the
-              progress bar and the footer scrolls as one. */}
-          <div className="bb-cd-scroll">
-            <ul className="bb-cd-items">
-              {lines.map((line) => (
-                <CartLineRow key={line.id} line={line} onProductClick={close} />
-              ))}
-            </ul>
+          {/* Списъкът и bump cart-ът са в обща обвивка.
+              На телефон и таблет тя е скролерът, тоест двете се превъртат заедно
+              и bump cart-ът не отнема височина на продуктите (като съсед със
+              собствена височина той смачка списъка до 28 пиксела).
+              От 1280px обвивката става `display: contents` и решетката вижда
+              двете направо: списъкът вляво, bump cart-ът в дясната колона. */}
+          <div className="bb-cd-mid">
+            {/* Броят редове отива в `data-count`, за да растат картите, когато
+                продуктите са малко. */}
+            <div className="bb-cd-scroll">
+              <ul className="bb-cd-items" data-count={lines.length}>
+                {lines.map((line) => (
+                  <CartLineRow key={line.id} line={line} onProductClick={close} />
+                ))}
+              </ul>
+            </div>
 
-            {/* Bump cart — only show upsell when there's still room to
-                grow toward the free-shipping threshold. Skip it once the
-                customer already qualifies, to avoid pestering people who've
-                cleared the bar. */}
+            {/* Показва се само докато безплатната доставка не е достигната. */}
             {!isFreeShip && (
               <CartUpsell
                 remainingEur={remainingEur}
@@ -613,8 +620,13 @@ function UpsellCarousel({
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [pos, setPos] = useState<'start' | 'middle' | 'end' | 'static'>('static');
 
-  // Recompute scroll-edge state on mount, resize, and on scroll —
-  // determines which arrows + edge fades to show.
+  // Кой край на лентата гледаме - оттам се решава кои стрелки и коя преливка
+  // да се рисуват.
+  //
+  // Мери се с ResizeObserver, а не само на `resize` от прозореца: лентата сменя
+  // ширината си и когато чекмеджето се отваря, и когато на 1280px мине в дясната
+  // колона - и в двата случая прозорецът мълчи, а стрелките оставаха такива,
+  // каквито са били при първата рисунка.
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -630,9 +642,12 @@ function UpsellCarousel({
     };
     update();
     el.addEventListener('scroll', update, {passive: true});
+    const ro = typeof ResizeObserver === 'function' ? new ResizeObserver(update) : null;
+    ro?.observe(el);
     window.addEventListener('resize', update);
     return () => {
       el.removeEventListener('scroll', update);
+      ro?.disconnect();
       window.removeEventListener('resize', update);
     };
   }, [picks.length]);
@@ -640,10 +655,12 @@ function UpsellCarousel({
   function scrollByCard(dir: -1 | 1) {
     const el = scrollerRef.current;
     if (!el) return;
-    // Step = first card width + the gap between cards.
+    // Стъпката се мери от самите карти, а не от число тук. Ширината и разстоянието
+    // живеят в CSS-а; докато стояха преписани и на двете места, всяка промяна в
+    // стила разминаваше превъртането с точно толкова, колкото е разликата.
     const firstCard = el.querySelector('.bb-cd-upsell-card') as HTMLElement | null;
-    const cardW = firstCard?.offsetWidth ?? 140;
-    const gap = 10;
+    const cardW = firstCard?.getBoundingClientRect().width ?? 140;
+    const gap = parseFloat(getComputedStyle(el).columnGap || '0') || 10;
     el.scrollBy({left: (cardW + gap) * dir, behavior: 'smooth'});
   }
 

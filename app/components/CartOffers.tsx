@@ -1,7 +1,6 @@
 import {giftProgress, cartOffers} from '~/lib/cart-offers';
 
-import {SHOW_BGN} from '~/lib/currency';
-const EUR_TO_BGN = 1.95583;
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) + ' €';
@@ -114,42 +113,6 @@ export function CartOffersStrip({
           </div>
         ))}
 
-      <style>{`
-        .bb-offers { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
-        .bb-offer {
-          background: #fff7fb;
-          border: 1px solid rgba(227, 22, 108, 0.18);
-          border-radius: 12px;
-          padding: 10px 12px;
-        }
-        .bb-offer.is-earned {
-          background: #f2fbf5;
-          border-color: rgba(22, 163, 74, 0.28);
-        }
-        .bb-offer-text {
-          font-size: 12.5px; line-height: 1.45; color: var(--color-ink);
-        }
-        .bb-offer-text strong { font-weight: 800; }
-        .bb-offer-text .accent { color: var(--color-brand-pink); }
-        .bb-offer-icon { margin-right: 6px; }
-        .bb-offer-bgn { color: rgba(10, 37, 64, 0.5); font-size: 11.5px; }
-        .bb-offer-msg { color: rgba(10, 37, 64, 0.62); }
-        /* Съобщението идва като HTML от панела - изравняваме отстоянията му
-           с останалите редове в лентата. */
-        .bb-offer-msg-html p { margin: 0; }
-        .bb-offer-msg-html strong { font-weight: 800; }
-
-        .bb-offer-track {
-          margin-top: 8px; height: 5px; border-radius: 999px;
-          background: rgba(10, 37, 64, 0.1); overflow: hidden;
-        }
-        .bb-offer-fill {
-          height: 100%; border-radius: 999px;
-          background: var(--color-brand-pink);
-          transition: width 0.35s ease;
-        }
-        .bb-offer.is-earned .bb-offer-fill { background: #16a34a; }
-      `}</style>
     </div>
   );
 }

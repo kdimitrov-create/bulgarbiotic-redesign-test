@@ -738,45 +738,136 @@ body::after {
 /* ─── CART DRAWER (v10 redesign) ─── */
 .bb-cd { display: flex; flex-direction: column; height: 100%; background: var(--color-cream-1); color: var(--color-ink); }
 
-/* Широкото чекмедже: продуктите вляво, всичко останало вдясно.
+/* ── Чекмеджето на количката: ширина и подредба ───────────────────────────────
  *
- * В една колона списъкът получаваше 240 пиксела от 836 и се превърташе, докато
- * лентата с доставката и подаръците заемаше 298, а сметката още 240. Тоест
- * продуктите - заради които се отваря количката - бяха най-малкото нещо вътре.
+ * Ширината се пише ТУК, а не в класове по компонентите: едно и също число
+ * трябва на панела и на затъмнението до него, а стоеше на четири места и се
+ * разминаваше. Оттук нататък има само една променлива.
  *
- * От 1200px чекмеджето става 760 и се подрежда на решетка: заглавието и
- * списъкът заемат лявата колона по цялата височина, а офертите сядат горе
- * вдясно и сметката - долу вдясно. Списъкът минава от 240 на близо 780
- * пиксела, без да се пипа нито един от компонентите - само разположението.
+ * На телефон панелът е цял екран, от 768px е странично чекмедже, а от 1280px
+ * се разгръща на две колони. */
+.bb-aside-panel { width: 100%; }
+.bb-aside-scrim { display: none; }
+
+@media (min-width: 768px) {
+  .bb-aside-panel { width: var(--bb-aside-w, 440px); }
+  .bb-aside-scrim { display: block; width: calc(100% - var(--bb-aside-w, 440px)); }
+}
+
+/* Едно под друго: заглавие, доставка с офертите, продукти, bump cart, сметка.
+ * Само списъкът превърта - останалите не се свиват. */
+.bb-cd-head,
+.bb-cd-shipping,
+.bb-cd-upsell,
+.bb-cd-foot { flex-shrink: 0; }
+
+/* Заглавната лента е една и носи бутона за затваряне. */
+.bb-cd-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bb-cd-close {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  margin-right: -8px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; background: transparent; cursor: pointer;
+  color: rgba(10, 37, 64, 0.45);
+  border-radius: 999px;
+  transition: color 0.18s, background 0.18s;
+}
+.bb-cd-close:hover { color: var(--color-ink); background: rgba(10, 37, 64, 0.05); }
+.bb-cd-close svg { width: 20px; height: 20px; }
+
+/* Лентата с офертите на търговеца (подаръци и правила за количката).
+   Стоеше във вграден `<style>` вътре в компонента, тоест се изписваше наново
+   при всяка негова рисунка - а той стои и в чекмеджето, и на страницата
+   /cart. */
+.bb-offers { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 4px; }
+.bb-offer {
+  background: #fff7fb;
+  border: 1px solid rgba(227, 22, 108, 0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.bb-offer.is-earned { background: #f2fbf5; border-color: rgba(22, 163, 74, 0.28); }
+.bb-offer-text { font-size: 12.5px; line-height: 1.45; color: var(--color-ink); }
+.bb-offer-text strong { font-weight: 800; }
+.bb-offer-text .accent { color: var(--color-brand-pink); }
+.bb-offer-icon { margin-right: 6px; }
+.bb-offer-bgn { color: rgba(10, 37, 64, 0.5); font-size: 11.5px; }
+.bb-offer-msg { color: rgba(10, 37, 64, 0.62); }
+/* Съобщението идва като HTML от панела - отстоянията му се изравняват с
+   останалите редове в лентата. */
+.bb-offer-msg-html p { margin: 0; }
+.bb-offer-msg-html strong { font-weight: 800; }
+.bb-offer-track {
+  margin-top: 8px; height: 5px; border-radius: 999px;
+  background: rgba(10, 37, 64, 0.1); overflow: hidden;
+}
+.bb-offer-fill {
+  height: 100%; border-radius: 999px;
+  background: var(--color-brand-pink);
+  transition: width 0.35s ease;
+}
+.bb-offer.is-earned .bb-offer-fill { background: #16a34a; }
+
+/* ── Широкото чекмедже: продуктите вляво, офертите и bump cart-ът вдясно ──────
  *
- * Редът в HTML-а остава същият, значи на телефон и таблет нищо не се променя. */
-@media (min-width: 1200px) {
-  /* Ширината стои тук, до подредбата, която я иска - в класовете на Tailwind
-     произволната граница не се генерира надеждно и чекмеджето оставаше 440,
-     а решетката свиваше продуктите до 120 пиксела. */
-  .bb-aside-panel { width: 760px; }
-  .bb-aside-scrim { width: calc(100% - 760px); }
+ * В една колона списъкът получаваше 208 пиксела от 844 на телефон и 240 от 836
+ * на десктоп - най-малката зона в екрана, при все че заради нея се отваря
+ * количката. Долната част (промокод, сума, Към плащане) минава на цяла ширина,
+ * а bump cart-ът сяда в свободното вдясно, вместо да пада под последния продукт.
+ *
+ * Редовете са четири: заглавие, доставка, свободното (bump cart) и сметката.
+ * Списъкът заема лявата колона от втория до четвъртия ред, тоест цялата
+ * височина между заглавието и сметката. */
+@media (min-width: 1280px) {
+  :root { --bb-aside-w: 860px; }
+
   .bb-cd {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
-  .bb-cd-head { grid-column: 1; grid-row: 1; }
-  /* Списъкът тръгва под заглавието и стига до долу. */
-  .bb-cd-scroll { grid-column: 1; grid-row: 2 / 4; }
-  .bb-cd-shipping {
-    grid-column: 2; grid-row: 1 / 3;
-    align-self: start;
+  /* Селекторите са с `.bb-cd` отпред нарочно: този блок стои преди правилата на
+     самите части, а при равна тежест печели по-долното правило - без утежняване
+     фонът и полетата на bump cart-а се връщаха на тези от кутията. */
+  .bb-cd .bb-cd-head   { grid-column: 1 / -1; grid-row: 1; }
+  .bb-cd .bb-cd-foot   { grid-column: 1 / -1; grid-row: 4; }
+  /* Обвивката се разтваря и решетката вижда списъка и bump cart-а поотделно. */
+  .bb-cd .bb-cd-mid { display: contents; }
+  .bb-cd .bb-cd-scroll {
+    grid-column: 1; grid-row: 2 / 4;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* Дясната колона. Всяка от двете кутии превърта сама, иначе търговец с повече
+     оферти изтича върху сметката - колоната няма общ скролер. */
+  .bb-cd .bb-cd-shipping,
+  .bb-cd .bb-cd-upsell {
+    grid-column: 2;
     border-left: 1px solid rgba(10, 37, 64, 0.1);
-    border-bottom: 1px solid rgba(10, 37, 64, 0.1);
+    min-height: 0;
+    overflow-y: auto;
   }
-  .bb-cd-foot {
-    grid-column: 2; grid-row: 3;
-    align-self: end;
+  .bb-cd .bb-cd-shipping { grid-row: 2; border-bottom: 1px solid rgba(10, 37, 64, 0.1); }
+  /* В колоната bump cart-ът е секция, а не карта: без свои полета и ъгли, и с
+     фона на чекмеджето. Иначе розовата кутия се разпъваше по цялата останала
+     височина и под картите зееше голямо празно поле. */
+  .bb-cd .bb-cd-upsell {
+    grid-row: 3;
+    margin: 0;
+    border-radius: 0;
+    border: 0;
     border-left: 1px solid rgba(10, 37, 64, 0.1);
+    padding: 14px 16px 16px;
+    background: var(--color-cream-1);
+    --bb-upsell-bg: var(--color-cream-1);
+    --bb-upsell-bg-start: var(--color-cream-1);
+    align-content: start;
   }
+
   /* Празната количка няма какво да дели на две. */
-  .bb-cd-empty { grid-column: 1 / -1; grid-row: 2 / 4; }
+  .bb-cd .bb-cd-empty { grid-column: 1 / -1; grid-row: 2 / 4; }
 }
 .bb-cd-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 14px; padding: 40px; color: rgba(10, 37, 64, 0.55); font-size: 13px; font-weight: 600; }
 .bb-cd-spinner {
@@ -865,9 +956,17 @@ body::after {
  * Without this, the tall upsell carousel forced item rows down to a
  * ~32px strip because they were siblings, each claiming their own
  * content-height. */
-.bb-cd-scroll {
-  flex: 1;
+/* Общата зона между офертите и сметката. На телефон и таблет тя е скролерът,
+   за да се превъртат списъкът и bump cart-ът заедно. */
+.bb-cd-mid {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.bb-cd-scroll {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
 }
@@ -880,10 +979,24 @@ body::after {
   display: flex; flex-direction: column;
   gap: 12px;
 }
+/* Картите растат, когато продуктите са малко.
+ *
+ * Решетката беше с твърди 94px за снимката, тоест при един-два продукта редът
+ * стоеше дребен насред празно поле, а при осем се тъпчеше. Броят идва от
+ * `data-count` върху списъка (CartDrawer), а тук само сменя две променливи. */
+.bb-cd-items { --bb-thumb: 94px; --bb-name: 13.5px; }
+.bb-cd-items[data-count="1"],
+.bb-cd-items[data-count="2"] { --bb-thumb: 120px; --bb-name: 15px; }
+.bb-cd-items[data-count="5"],
+.bb-cd-items[data-count="6"],
+.bb-cd-items[data-count="7"],
+.bb-cd-items[data-count="8"],
+.bb-cd-items[data-count="9"] { --bb-thumb: 76px; --bb-name: 13px; }
+
 .bb-cd-item {
   display: grid;
   /* Client (2026-07): added-product thumbnail enlarged ~30% (72 → 94px). */
-  grid-template-columns: 94px 1fr auto;
+  grid-template-columns: var(--bb-thumb, 94px) 1fr auto;
   gap: 14px;
   padding: 14px;
   background: white;
@@ -912,7 +1025,7 @@ body::after {
 
 .bb-cd-item-info { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .bb-cd-item-name {
-  font-size: 13.5px; font-weight: 700;
+  font-size: var(--bb-name, 13.5px); font-weight: 700;
   line-height: 1.3;
   color: var(--color-ink);
   text-decoration: none;
@@ -1028,20 +1141,6 @@ body::after {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
-.bb-cd-item-savings {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-top: 3px;
-  padding: 2px 7px;
-  background: rgba(34, 145, 88, 0.1);
-  color: rgb(34, 110, 70);
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.2px;
-}
-.bb-cd-item-savings svg { flex-shrink: 0; }
 
 /* ─── "Не забравяй да добавиш" bump-cart upsell ───
  * Carousel of real CloudCart products inserted between cart lines and
@@ -1055,6 +1154,14 @@ body::after {
   background: linear-gradient(135deg, var(--color-pink-1) 0%, var(--color-cream-2) 100%);
   border-radius: 12px;
   border: 1px solid rgba(227, 22, 108, 0.14);
+  /* Картите свършват вътре в кутията. Дотук лентата излизаше извън нея заради
+     отрицателните полета и последната карта се режеше от ръба на чекмеджето -
+     точно това изглеждаше като счупено. */
+  overflow: hidden;
+  /* Двата края на фона. Преливките на въртележката ги четат оттук, за да се
+     смесват с повърхността, каквато и да е тя. */
+  --bb-upsell-bg-start: var(--color-pink-1);
+  --bb-upsell-bg: var(--color-cream-2);
 }
 .bb-cd-upsell-head {
   display: flex;
@@ -1081,6 +1188,9 @@ body::after {
  * Position: relative so arrows can sit absolutely on top of the cards. */
 .bb-cd-upsell-carousel-wrap {
   position: relative;
+  /* Колко навътре стои стрелката спрямо ръба на кутията. Преливката ползва
+     същото число, за да свършва точно под нея. */
+  --bb-upsell-gutter: 26px;
 }
 /* Right-edge gradient fade — signals "there's more to scroll" when the
  * 4th card is cropped/off-screen. Toggled off when scroll reaches end. */
@@ -1089,12 +1199,13 @@ body::after {
   content: '';
   position: absolute;
   top: 0; right: 0;
-  /* Wide fade in the panel's actual right-edge colour (cream-2, from the
-   * 135deg pink→cream panel gradient) so the peeking card melts away cleanly
-   * under the arrow instead of showing a hard-clipped "ДОБАВИ" button. */
-  width: 54px;
+  /* Преливката се смесва с повърхността, върху която стои лентата
+   * (`--bb-upsell-bg`). Беше зашита за градиента на кутията и щом bump cart-ът
+   * смени фона си - а на широк екран той сяда в дясната колона - ставаше
+   * видима цветна ивица вместо преливане. */
+  width: calc(var(--bb-upsell-gutter, 30px) + 24px);
   height: 100%;
-  background: linear-gradient(to left, var(--color-cream-2) 40%, transparent);
+  background: linear-gradient(to left, var(--bb-upsell-bg, var(--color-cream-2)) 40%, transparent);
   pointer-events: none;
   z-index: 2;
 }
@@ -1104,9 +1215,9 @@ body::after {
   content: '';
   position: absolute;
   top: 0; left: 0;
-  width: 32px;
+  width: calc(var(--bb-upsell-gutter, 30px) + 12px);
   height: 100%;
-  background: linear-gradient(to right, var(--color-pink-1), transparent);
+  background: linear-gradient(to right, var(--bb-upsell-bg-start, var(--color-pink-1)), transparent);
   pointer-events: none;
   z-index: 2;
 }
@@ -1135,8 +1246,12 @@ body::after {
   color: white;
   transform: translateY(-50%) scale(1.05);
 }
-.bb-cd-upsell-arrow--left  { left: 2px; }
-.bb-cd-upsell-arrow--right { right: 2px; }
+/* На ръба на кутията, върху преливката - не насред картата. */
+.bb-cd-upsell-arrow--left  { left: 0; }
+.bb-cd-upsell-arrow--right { right: 0; }
+/* Центрирани спрямо снимката, а не спрямо цялата карта: под снимката стоят име,
+   цена и „ДОБАВИ", и по средата на картата стрелката лягаше точно върху тях. */
+.bb-cd-upsell-arrow { top: 40%; }
 /* On very narrow drawers (mobile), hide arrows — touch swipe is the
  * native gesture. Keep the gradient fade as the affordance. */
 @media (max-width: 480px) {
@@ -1175,10 +1290,10 @@ body::after {
 }
 .bb-cd-upsell-carousel::-webkit-scrollbar { display: none; }
 .bb-cd-upsell-card {
-  /* Slimmer card (was 168px → 140px) so 2 cards comfortably fit a
-   * 380-420px drawer width with a peek of the 3rd on the right —
-   * encourages scrolling without each card eating half the drawer. */
-  flex: 0 0 140px;
+  /* Картите растат с лентата, вместо да стоят на твърди 140px: в дясната колона
+   * от 360px така се събират две четими карти с подаващa се трета, а на телефон
+   * остават дребни. Долната граница пази две да се виждат винаги. */
+  flex: 0 0 clamp(140px, 46%, 168px);
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
@@ -1257,10 +1372,6 @@ body::after {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
   text-decoration-color: rgba(227, 22, 108, 0.35);
-}
-.bb-cd-upsell-price-bgn {
-  font-size: 10.5px;
-  color: rgba(10, 37, 64, 0.55);
 }
 .bb-cd-upsell-price-bgn-row {
   font-size: 10px;
@@ -1362,24 +1473,6 @@ body::after {
   height: 14px;
   background: rgba(10, 37, 64, 0.15);
   flex-shrink: 0;
-}
-.bb-cd-trust-courier {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  background: var(--color-cream-2);
-  border: 1px solid rgba(10, 37, 64, 0.08);
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(10, 37, 64, 0.7);
-  letter-spacing: 0.2px;
-  line-height: 1.6;
-}
-@media (max-width: 380px) {
-  /* On very narrow drawers, hide the 4th courier so the row doesn't
-   * wrap to a second line — keeps the strip a tight one-liner. */
-  .bb-cd-trust-courier--hide-sm { display: none; }
 }
 .bb-cd-trust-lock {
   display: inline-flex;

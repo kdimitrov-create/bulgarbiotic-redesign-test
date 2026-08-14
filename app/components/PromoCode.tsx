@@ -44,9 +44,16 @@ export function PromoCode({
           {active.map((d) => (
             <li key={d.code}>
               <span className="bb-cart-promo-tag">{d.code}</span>
+              {/* Праща се ЦЕЛИЯТ останал списък, а не празно поле.
+                  `updateDiscountCodes` заменя масива, тоест празното поле триеше
+                  всички кодове наведнъж, при все че бутонът стои на един ред. */}
               <fetcher.Form method="post" action={CART_ACTION}>
                 <input type="hidden" name="action" value="APPLY_DISCOUNT" />
-                <input type="hidden" name="code" value="" />
+                {active
+                  .filter((other) => other.code !== d.code)
+                  .map((other) => (
+                    <input key={other.code} type="hidden" name="code" value={other.code} />
+                  ))}
                 <button
                   type="submit"
                   className="bb-cart-promo-remove"
@@ -63,6 +70,11 @@ export function PromoCode({
 
       <fetcher.Form method="post" action={CART_ACTION} className="bb-cart-promo-form">
         <input type="hidden" name="action" value="APPLY_DISCOUNT" />
+        {/* Вече приложените кодове пътуват заедно с новия - иначе вторият код
+            изместваше първия, защото списъкът се заменя, а не се допълва. */}
+        {active.map((d) => (
+          <input key={d.code} type="hidden" name="code" value={d.code} />
+        ))}
         <label className="bb-cart-promo-label" htmlFor={inputId}>
           Имаш промокод?
         </label>

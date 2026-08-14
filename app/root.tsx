@@ -140,11 +140,22 @@ export default function App() {
   // докато заявката лети, а след това екранът падаше обратно на loader-а - и
   // ако платформата върне за миг стара количка (или при първо добавяне
   // ревалидацията изпревари новата бисквитка), бройката подскачаше назад.
+  //
+  // Взима се отговорът с най-много подредени редове по време на действие, а не
+  // просто последният в списъка: подредбата на fetcher-ите не е хронологична и
+  // при две едновременни добавяния по-старата количка можеше да победи.
+  // Мерилото е `updatedAt`, а където го няма - редът в списъка.
   const cartFetchers = useFetchers();
-  const latestCart = cartFetchers
-    .filter((f) => (f.data as any)?.cart)
-    .map((f) => (f.data as any).cart)
-    .pop();
+  const withCart = cartFetchers.filter((f) => (f.data as any)?.cart);
+  const latestEntry = withCart.reduce<any>((best, f) => {
+    const c = (f.data as any).cart;
+    if (!best) return c;
+    const a = Date.parse((c as any)?.updatedAt ?? '');
+    const b = Date.parse((best as any)?.updatedAt ?? '');
+    if (Number.isFinite(a) && Number.isFinite(b)) return a >= b ? c : best;
+    return c; // без дата: последният спечелва, както досега
+  }, null);
+  const latestCart = latestEntry ?? undefined;
   // Обещанието се помни. Ново обещание на всяка рисунка кара <Await> да увисва
   // отново и отново и спира целия екран - същата повреда, която header-ът
   // причини през преходите.
@@ -153,13 +164,18 @@ export default function App() {
     [latestCart, data?.cart],
   );
   // Обобщението следва същия път: прясното от действието бие това от loader-а.
-  const latestSummary = cartFetchers
-    .filter((f) => (f.data as any)?.cart)
+  //
+  // Но САМО когато наистина е дошло обобщение. `fetchCartSummary` връща `null`
+  // при изтекло време или лош отговор, а `null !== undefined` е вярно - тоест
+  // празният отговор изместваше доброто обобщение от loader-а и от чекмеджето
+  // тихо падаха редовете на правилата и отстъпките.
+  const latestSummary = withCart
     .map((f) => (f.data as any).cartSummary)
+    .filter((s) => s != null)
     .pop();
   const cartSummary = useMemo(
     () =>
-      latestSummary !== undefined
+      latestSummary != null
         ? Promise.resolve(latestSummary)
         : (data?.cartSummary ?? Promise.resolve(null)),
     [latestSummary, data?.cartSummary],
@@ -167,7 +183,7 @@ export default function App() {
 
   return (
     <AsideProvider>
-      <Aside type="cart" heading="КОШНИЦА">
+      <Aside type="cart" heading="КОШНИЦА" bare>
         <CartDrawer cart={cart} summary={cartSummary} />
       </Aside>
       <PageLayout

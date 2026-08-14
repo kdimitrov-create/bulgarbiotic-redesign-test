@@ -71,7 +71,17 @@ export function PendingPromo() {
       return;
     }
     if (fetcher.state !== 'idle') return;
-    fetcher.submit({action: 'APPLY_DISCOUNT', code}, {method: 'post', action: CART_ACTION});
+    // Изчакващият код се ДОБАВЯ към вече приложените, не ги заменя.
+    // `updateDiscountCodes` подменя целия списък, тоест сам код от паметта
+    // изтриваше този, който колелото току-що е сложило за спечелен продукт -
+    // двете тръгват от едно и също приключило добавяне и последното пишеше.
+    const existing = ((settledCart?.discountCodes ?? []) as Array<{code: string}>)
+      .map((d) => d.code)
+      .filter(Boolean);
+    const body = new FormData();
+    body.append('action', 'APPLY_DISCOUNT');
+    for (const c of new Set([...existing, code])) body.append('code', c);
+    fetcher.submit(body, {method: 'post', action: CART_ACTION});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settledCart]);
 

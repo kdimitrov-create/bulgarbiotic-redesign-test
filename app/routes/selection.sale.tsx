@@ -14,8 +14,8 @@ import {synthDiscount, discountPctFor} from '~/lib/active-promo';
 import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, setFreeShippingOver, displayDiscountPercent} from '~/lib/active-discounts';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {fetchBestSellers, orderByRealSales} from '~/lib/best-sellers.server';
+import {EUR_TO_BGN} from '~/lib/currency';
 
-const EUR_TO_BGN = 1.95583;
 const fmt = (n: number, c: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) +
   (c === 'EUR' ? ' €' : ' лв');

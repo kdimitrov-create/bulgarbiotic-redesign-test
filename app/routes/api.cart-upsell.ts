@@ -8,8 +8,8 @@ import {
   productIdFromHandle,
 } from '~/lib/co-purchase';
 import {bestDiscountFor} from '~/lib/active-discounts';
+import {EUR_TO_BGN} from '~/lib/currency';
 
-const EUR_TO_BGN = 1.95583;
 
 /**
  * Cart upsell suggestions — "Не забравяй да добавиш".

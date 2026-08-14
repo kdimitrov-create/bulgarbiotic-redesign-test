@@ -32,8 +32,8 @@ import {getProductComparison} from '~/lib/pdp-comparison';
 import {ProductFaq} from '~/components/pdp/ProductFaq';
 import {ProductDescription} from '~/components/pdp/ProductDescription';
 import {Marquee} from '~/components/home/Marquee';
+import {EUR_TO_BGN} from '~/lib/currency';
 
-const EUR_TO_BGN = 1.95583;
 
 export const meta: Route.MetaFunction = ({data: d}) => {
   const product = d?.product;

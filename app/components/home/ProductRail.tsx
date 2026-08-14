@@ -7,9 +7,9 @@ import {markPricing, markDiscount} from '~/lib/product-marks';
 import {DiscountCountdown} from '~/components/DiscountCountdown';
 import {ProductMarks} from '~/components/ProductMarks';
 
-import {SHOW_BGN} from '~/lib/currency';
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
-import {useAside} from '~/components/Aside';
+import {useOpenCartOnAdd} from '~/lib/use-open-cart-on-add';
 /**
  * The horizontal product slider used on the homepage — and by the page
  * builder's "Продуктова витрина" widget, so a showcase the merchant assembles
@@ -27,13 +27,9 @@ import {useAside} from '~/components/Aside';
 function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state !== 'idle';
-  const {open} = useAside();
 
-  // Чекмеджето се отваря при всяко добавяне, откъдето и да идва.
-  useEffect(() => {
-    if (fetcher.state === 'idle' && fetcher.data) open('cart');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetcher.state, fetcher.data]);
+  // Чекмеджето се отваря при всяко успешно добавяне, откъдето и да идва.
+  useOpenCartOnAdd(fetcher);
   // Чекмеджето вече не изскача: клиентът остава на страницата и получава
   // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
   return (
@@ -68,14 +64,13 @@ function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
 // Bulgaria fixed-rate dual currency display (EUR transition period — legal req).
 // Bulgaria adopted EUR on Jan 1 2025 — storefront returns EUR amounts.
 // We display EUR as the primary price and BGN as the legally-required secondary.
-const BGN_PER_EUR = 1.95583;
 /** Format an EUR amount to its BGN equivalent for the dual-currency secondary line. */
 function eurToBgnLabel(money: {amount: string; currencyCode?: string} | null | undefined): string {
   if (!money) return '';
   const n = parseFloat(money.amount);
   if (!isFinite(n)) return '';
   // If API returns BGN (legacy), the value is already BGN. Otherwise convert from EUR.
-  const bgn = (money.currencyCode ?? 'EUR') === 'BGN' ? n : n * BGN_PER_EUR;
+  const bgn = (money.currencyCode ?? 'EUR') === 'BGN' ? n : n * EUR_TO_BGN;
   return `${bgn.toFixed(2)} лв`;
 }
 

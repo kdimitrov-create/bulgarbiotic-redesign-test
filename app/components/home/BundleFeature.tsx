@@ -2,14 +2,13 @@ import {Link} from 'react-router';
 import {Image} from '@cloudcart/nitro-react';
 import type {Product} from '@cloudcart/nitro';
 
-import {SHOW_BGN} from '~/lib/currency';
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 interface Props {
   /** Real Family Pack product from CloudCart (null → component hides). */
   product: Product | null;
 }
 
 /** BG legal: 1 € = 1.95583 лв (fixed conversion). */
-const EUR_TO_BGN = 1.95583;
 
 function fmt(amount: number, currency: 'BGN' | 'EUR'): string {
   return new Intl.NumberFormat('bg-BG', {

@@ -9,8 +9,9 @@ const FETCHER_KEY = 'lucky-wheel';
  * Колело на късмета — Nitrogen версия.
  *
  * Пали се, когато клиентът добави продукт в количката (от продуктова страница
- * или от листинг — засича се през събитието `bb:cart-changed`, което всеки
- * бутон изпраща след добавяне).
+ * или от листинг). Засича се през `useFetchers()`: гледа се всяко ЧУЖДО
+ * подаване към действието на количката. Тук пишеше, че спусъкът е събитие
+ * `bb:cart-changed` - такова събитие няма никъде в кода.
  * Показва се веднъж на клиент; ако бъде затворено без завъртане, има още един
  * шанс при следващо добавяне; след втори отказ спира.
  *
@@ -176,7 +177,15 @@ export function LuckyWheel() {
     const code = pendingCode.current;
     if (!code) return;
     pendingCode.current = null;
-    fetcher.submit({action: 'APPLY_DISCOUNT', code}, {method: 'post', action: CART_ACTION});
+    // Кодът за спечеления продукт се добавя към вече приложените, а не ги
+    // заменя: списъкът с кодове се подменя целият при всяко подаване.
+    const existing = (((fetcher.data as any)?.cart?.discountCodes ?? []) as Array<{code: string}>)
+      .map((d) => d.code)
+      .filter(Boolean);
+    const body = new FormData();
+    body.append('action', 'APPLY_DISCOUNT');
+    for (const c of new Set([...existing, code])) body.append('code', c);
+    fetcher.submit(body, {method: 'post', action: CART_ACTION});
     showToast('Промо кодът е добавен в количката');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.state, fetcher.data]);

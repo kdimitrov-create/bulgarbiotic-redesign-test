@@ -7,14 +7,13 @@ import {MonthlyPackages} from './pdp/MonthlyPackages';
 import {markPricing, markDiscount} from '~/lib/product-marks';
 import {DiscountCountdown} from './DiscountCountdown';
 
-import {SHOW_BGN} from '~/lib/currency';
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 interface ProductFormProps {
   product: any;
   selectedVariant: any;
 }
 
 /** BG legal: 1 € = 1.95583 лв (fixed). */
-const EUR_TO_BGN = 1.95583;
 
 const fmtBg = (n: number, currency: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {

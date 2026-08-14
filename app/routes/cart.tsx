@@ -2,6 +2,7 @@ import {useLoaderData, useFetchers} from 'react-router';
 import type {Route} from './+types/cart';
 import {getContext} from '~/lib/context';
 import {fetchCartSummary} from '~/lib/cart-totals.server';
+import {dropUnearnedGifts} from '~/lib/cart-gifts.server';
 import type {CartData} from '@cloudcart/nitro';
 import {CartPage as CartPageView} from '~/components/CartPage';
 import {CART_ACTION} from '~/lib/cart-action';
@@ -10,7 +11,10 @@ export const meta: Route.MetaFunction = () => [{title: 'Кошница | Bactolo
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
-  const cart = await ctx.cart.get();
+  // Подаръкът се маха и тук, не само след действие с количката. Клиент, който
+  // е свалил количеството от чекмеджето и после е отворил /cart направо, иначе
+  // виждаше подарък, който вече не му се полага - до следващата промяна.
+  const cart = await dropUnearnedGifts(await ctx.cart.get(), ctx.cart);
   // Обобщението идва отделно: fragment-ът на nitro не иска `totals` и
   // `messages`, а точно там са правилата за количката и съобщенията, с които
   // търговецът говори на купувача. Виж `cart-totals.server.ts`.

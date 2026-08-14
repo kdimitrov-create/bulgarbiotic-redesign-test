@@ -1,8 +1,9 @@
 import {useEffect, useRef, useState} from 'react';
 import {AddToCartButton} from './AddToCartButton';
 import {markPricing} from '~/lib/product-marks';
-
-import {SHOW_BGN} from '~/lib/currency';
+
+
+import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 interface Props {
   product: {
     title: string;
@@ -15,7 +16,6 @@ interface Props {
   variant: {id: string; price: {amount: string; currencyCode?: string}; availableForSale?: boolean};
 }
 
-const EUR_TO_BGN = 1.95583;
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) + ' €';
 const fmtBgn = (n: number) =>
