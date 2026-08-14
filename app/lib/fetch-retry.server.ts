@@ -26,8 +26,15 @@
  * наведнъж - виж бележката за root loader-а.
  */
 
-const RETRY_AFTER_MS = 260;
-const JITTER_MS = 240;
+/**
+ * Изчакванията растат: 0,3 → 0,8 → 1,6 сек., плюс разбъркване.
+ *
+ * Едно повторение не стигаше - измерено на живо, магазинът връщаше 429 и на
+ * втория опит, защото ограничението е за сноп, а не за отделна заявка. Три
+ * опита с растящо изчакване дават на снопа време да се разреди.
+ */
+const BACKOFF_MS = [300, 800, 1600];
+const JITTER_MS = 250;
 
 declare global {
   // eslint-disable-next-line no-var
@@ -42,19 +49,19 @@ export function installFetchRetry(): void {
   const original = globalThis.fetch.bind(globalThis);
 
   globalThis.fetch = async function bbFetchWithRetry(input: any, init?: any) {
-    const res = await original(input, init);
-    if (res.status !== 429) return res;
+    let res = await original(input, init);
 
-    // Тялото на първия отговор не се чете - просто се изхвърля.
-    const wait = RETRY_AFTER_MS + Math.floor(Math.random() * JITTER_MS);
-    await new Promise((done) => setTimeout(done, wait));
-
-    try {
-      return await original(input, init);
-    } catch {
-      // Провали ли се и повторният опит, връща се първият отговор, за да
-      // остане поведението такова, каквото извикващият очаква.
-      return res;
+    for (const base of BACKOFF_MS) {
+      if (res.status !== 429) return res;
+      await new Promise((done) => setTimeout(done, base + Math.floor(Math.random() * JITTER_MS)));
+      try {
+        res = await original(input, init);
+      } catch {
+        // Мрежова грешка при повторния опит: връща се последният истински
+        // отговор, за да остане поведението такова, каквото извикващият очаква.
+        return res;
+      }
     }
+    return res;
   } as typeof fetch;
 }
