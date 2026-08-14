@@ -308,41 +308,32 @@ function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product:
       {/* Title — large, confident, and balanced. Mobile sits at ~26px
        * so even long names read as a strong headline (not a label),
        * desktop scales up to 32px. */}
-      {/* Заглавието и отзивите делят един ред (клиент, 13.08).
+      {/* Заглавието държи ЦЕЛИЯ ред, а звездите застават под него.
         *
-        * Дотук отзивите заемаха свой ред под заглавието и бутаха всичко
-        * надолу - целта на клиента е „Купи" да се вижда без превъртане.
-        * Затова звездите отиват вдясно, на височината на последния ред от
-        * заглавието. На тесен екран се пренасят отдолу, както си беше.
+        * От 13.08 двете деляха един ред, за да е „Купи" по-нагоре. Но звездите
+        * са `shrink-0` и заемат 259 пиксела, тоест на заглавието оставаше
+        * половината колона и по-дългото име се разливаше на четири-пет реда -
+        * повече височина, отколкото спестява подредбата. С цяла ширина същото
+        * име се събира на два реда, значи блокът излиза по-нисък, не по-висок.
         *
-        * ⚠️ `min-w-0` на заглавието не е излишно: без него дълго име не се
-        * свива под съдържанието си и избутва звездите извън кутията.
-        *
-        * 🛑 На телефон заглавието взима ЦЕЛИЯ ред, а звездите слизат отдолу.
-        * Дотук и двете деляха реда: звездите са `shrink-0` и заемат 259px, а
-        * заглавието е `flex-1 min-w-0`, тоест се свива до колкото остане.
-        * Измерено при 390px екран - на заглавието оставаха **75px**, затова
-        * излизаше по една дума на ред, а дългите думи преливаха вдясно и
-        * изглеждаха отрязани. `basis-full` кара реда да се пренесе, вместо
-        * заглавието да се смачка; от `md` нагоре е както си беше. */}
-      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
-        <h1 className="min-w-0 basis-full md:basis-0 md:flex-1 text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
-          {product.title}
-        </h1>
+        * Отзивите вече са свой ред отдолу: една линия, която не се свива и не
+        * се бие със заглавието за място. */}
+      <h1 className="text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)] [overflow-wrap:anywhere]">
+        {product.title}
+      </h1>
 
-        {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
-          <div className="flex shrink-0 items-center gap-2.5">
-            <StarRating
-              rating={product.reviewSummary.averageRating}
-              count={product.reviewSummary.totalCount}
-              size="md"
-            />
-            <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
-              Виж отзивите →
-            </a>
-          </div>
-        )}
-      </div>
+      {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <StarRating
+            rating={product.reviewSummary.averageRating}
+            count={product.reviewSummary.totalCount}
+            size="md"
+          />
+          <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
+            Виж отзивите →
+          </a>
+        </div>
+      )}
 
       {/* BGolden Awards 2025 — small inline badge for instant authority */}
       <PdpAwardBadge />
