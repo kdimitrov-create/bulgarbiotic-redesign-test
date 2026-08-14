@@ -63,7 +63,7 @@ export function PageShell({
     <div className="bb-page">
       <Breadcrumbs items={trail} />
 
-      {showHero && (
+      {showHero ? (
         <header className="bb-page-hero" style={heroStyle}>
           <div className="bb-page-hero-inner">
             {tag && <span className="bb-page-hero-tag">{tag}</span>}
@@ -71,6 +71,13 @@ export function PageShell({
             {lead && <p className="bb-page-hero-lead">{lead}</p>}
           </div>
         </header>
+      ) : (
+        /* „Barebones" страниците рисуват свой собствен увод без заглавие от
+           първо ниво - проверено на живо (14.08): /page/naukata-zad-bulgar-biotic
+           и /page/kosa-koja-i-nokti излизаха с НУЛА h1. Заглавието се дава тук,
+           скрито за окото и видимо за търсачката и за екранния четец, за да не
+           се пипа рисунката им. */
+        <h1 className="sr-only">{title}</h1>
       )}
 
       <div className={`bb-page-body bb-page-body--${bodyVariant}${sidebar ? ' bb-page-body--with-aside' : ''}`}>

@@ -31,10 +31,21 @@ export const meta: Route.MetaFunction = ({data: d}) => {
   // For pages we author ourselves the CMS title is a leftover stub ("Events"),
   // so the Bulgarian one we ship wins.
   const title = HANDLE_TITLES[page.handle] ?? page.title;
-  return getSeoMeta({
-    title: `${title} | Bactology`,
-    description: (page as any).seoDescription || undefined,
-  });
+  /* Описанието идва от полето в панела, а то е празно за повечето страници -
+     проверено на живо (14.08): /page/about-us, /page/naukata-zad-bulgar-biotic
+     и /page/kosa-koja-i-nokti излизаха БЕЗ meta description, тоест търсачката
+     си съчинява откъс. Затова има резервен вариант: първото изречение от самата
+     страница, а ако и то липсва - едно общо за марката. */
+  const fromBody = String((page as any).content ?? '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 155);
+  const description =
+    (page as any).seoDescription ||
+    (fromBody.length > 60 ? fromBody : '') ||
+    `${title} - Bactology, български пробиотици с Lactobacillus bulgaricus.`;
+  return getSeoMeta({title: `${title} | Bactology`, description});
 };
 
 /** Title fallback used when the Storefront API can't fetch a page that has

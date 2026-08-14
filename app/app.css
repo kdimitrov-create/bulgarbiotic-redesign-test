@@ -4773,18 +4773,28 @@ img.pm-banner {
   .bb-bd-carousel-slide { transition: none; }
 }
 .bb-bd-carousel-dots {
-  display: flex; justify-content: center; align-items: center; gap: 8px;
+  display: flex; justify-content: center; align-items: center; gap: 0;
   margin-top: 18px;
 }
+/* Точката се рисува вътре, а бутонът е 30 пиксела: 8 пиксела не се улучват с
+   пръст. Същото като при точките на банера и на отличията - видът е същият,
+   расте само областта, която приема докосването. */
 .bb-bd-carousel-dot {
-  width: 8px; height: 8px; padding: 0; border: 0; border-radius: 999px;
-  background: rgba(10, 37, 64, 0.22); cursor: pointer;
+  width: 30px; height: 28px; padding: 0; border: 0;
+  display: grid; place-items: center;
+  background: none; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.bb-bd-carousel-dot::before {
+  content: '';
+  width: 8px; height: 8px; border-radius: 999px;
+  background: rgba(10, 37, 64, 0.22);
   transition: width 0.25s ease, background 0.25s ease;
 }
-.bb-bd-carousel-dot.on { width: 22px; background: var(--color-brand-pink); }
+.bb-bd-carousel-dot.on::before { width: 22px; background: var(--color-brand-pink); }
 /* Тъмните редове носят светли точки - иначе изчезват във фона. */
-.bb-row-awards .bb-bd-carousel-dot { background: rgba(255, 255, 255, 0.3); }
-.bb-row-awards .bb-bd-carousel-dot.on { background: #d4af6a; }
+.bb-row-awards .bb-bd-carousel-dot::before { background: rgba(255, 255, 255, 0.3); }
+.bb-row-awards .bb-bd-carousel-dot.on::before { background: #d4af6a; }
 .bb-bd-carousel-dot:focus-visible { outline: 2px solid var(--color-brand-pink); outline-offset: 3px; }
 
 
