@@ -5,8 +5,27 @@ interface Props {
   filters?: Filter[];
 }
 
-/** URL params that don't represent filters (pagination/sort) — skip them. */
-const NON_FILTER_KEYS = new Set(['sort', 'cursor', 'direction', 'page', 'q']);
+/**
+ * Кои параметри са ФИЛТРИ.
+ *
+ * Списъкът е позволителен, не забранителен: дотук се пропускаха само
+ * сортирането и страницирането, тоест всеки друг параметър в адреса ставаше
+ * етикет. Посетител от реклама с `utm_source` или `fbclid` виждаше „филтър"
+ * с името на кампанията и бутонче да го махне. Ключовете са същите, които чете
+ * `buildFiltersFromParams`.
+ */
+const FILTER_KEYS = new Set([
+  'available', 'minPrice', 'maxPrice', 'vendor', 'tag', 'onSale', 'isNew', 'isFeatured', 'category',
+]);
+
+function isFilterParam(key: string): boolean {
+  return (
+    FILTER_KEYS.has(key) ||
+    key.startsWith('option_') ||
+    key.startsWith('prop_') ||
+    key.startsWith('brand_')
+  );
+}
 
 type ActiveChip = {
   key: string;
@@ -53,7 +72,7 @@ export function ActiveFilterChips({filters = []}: Props) {
 
   const chips: ActiveChip[] = [];
   for (const [key, value] of searchParams) {
-    if (NON_FILTER_KEYS.has(key) || !value) continue;
+    if (!value || !isFilterParam(key)) continue;
     chips.push({key, value, label: labelFor(filters, key, value)});
   }
 

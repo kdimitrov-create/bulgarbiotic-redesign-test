@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {Link, useSearchParams, useNavigate} from 'react-router';
+import {Link, useSearchParams, useNavigate, useLocation} from 'react-router';
 import type {Filter} from '@cloudcart/nitro';
 import {ProductFilters} from './ProductFilters';
 import {ProbioticFinderModal} from './ProbioticFinderModal';
@@ -114,6 +114,7 @@ export function ListingAside({filters = [], totalCount, collections}: Props) {
   const [quizOpen, setQuizOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const {pathname} = useLocation();
 
   function toggleQuick(key: string, value: string) {
     const params = new URLSearchParams(searchParams);
@@ -182,7 +183,12 @@ export function ListingAside({filters = [], totalCount, collections}: Props) {
               <Link
                 key={item.to}
                 to={item.to}
-                className="bb-aside-nav-item"
+                /* „За жени" и подобните не са филтри, а препратки към друга
+                   категория - затова нямаха никакъв белег, че точно те са
+                   избрани, и панелът изглеждаше празен след избор. Тук се
+                   отбелязва „ти си тук". */
+                className={`bb-aside-nav-item${pathname === item.to ? ' is-current' : ''}`}
+                aria-current={pathname === item.to ? 'page' : undefined}
                 prefetch="intent"
               >
                 <span className="bb-aside-nav-icon" aria-hidden="true">{item.icon}</span>
@@ -201,7 +207,8 @@ export function ListingAside({filters = [], totalCount, collections}: Props) {
                 <Link
                   key={c.id}
                   to={`/category/${c.handle}`}
-                  className="bb-aside-nav-item"
+                  className={`bb-aside-nav-item${pathname === `/category/${c.handle}` ? ' is-current' : ''}`}
+                  aria-current={pathname === `/category/${c.handle}` ? 'page' : undefined}
                   prefetch="intent"
                 >
                   <span className="bb-aside-nav-label">{c.title}</span>

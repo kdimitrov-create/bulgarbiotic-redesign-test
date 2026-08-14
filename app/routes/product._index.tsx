@@ -168,8 +168,6 @@ export function ListingBody({products, collections}: {products: any; collections
 
   return (
     <>
-      <ActiveFilterChips filters={filters} />
-
       {/* Toolbar above grid */}
       <div className="bb-listing-toolbar">
         <div className="bb-listing-toolbar-info">
@@ -211,6 +209,11 @@ export function ListingBody({products, collections}: {products: any; collections
         </div>
       </div>
 
+      {/* Включените филтри стоят точно под лентата със сортирането и „Филтри",
+          за да се махне някой с едно докосване - без панелът да се отваря пак.
+          Дотук този ред стоеше НАД лентата и оставаше незабелязан. */}
+      <ActiveFilterChips filters={filters} />
+
       {/* Sidebar (value-add: quiz + discovery + filters + trust) + grid */}
       {/* Колоната с филтрите се появява от 1024px нагоре - под тази ширина тя е
           панел (виж `.bb-filters-aside`), затова решетката там е една колона,
@@ -234,6 +237,12 @@ export function ListingBody({products, collections}: {products: any; collections
             </button>
           </div>
           <div className="bb-filters-sheet-body">
+            {/* Същият преглед и вътре в панела: отваряйки го, купувачът първо
+                вижда какво вече е избрал. На широк екран не се рисува - там
+                редът с етикетите стои под лентата над списъка. */}
+            <div className="bb-filters-sheet-chips">
+              <ActiveFilterChips filters={filters} />
+            </div>
             <ListingAside filters={filters} totalCount={totalCount} collections={collections} />
           </div>
           <div className="bb-filters-sheet-foot">

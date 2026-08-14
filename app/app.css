@@ -879,6 +879,9 @@ body::after {
 .bb-filters-scrim { display: none; }
 .bb-filters-sheet-head,
 .bb-filters-sheet-foot { display: none; }
+/* Прегледът вътре в панела е само за телефона - на широк екран същите етикети
+   стоят под лентата над списъка и два реда щяха да се дублират. */
+.bb-filters-sheet-chips { display: none; }
 
 @media (max-width: 1023px) {
   .bb-filters-scrim {
@@ -916,6 +919,7 @@ body::after {
   .bb-filters-sheet-head button svg { width: 20px; height: 20px; }
 
   .bb-filters-sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 20px 12px; }
+  .bb-filters-sheet-chips { display: block; }
 
   .bb-filters-sheet-foot {
     display: block; flex-shrink: 0;
@@ -2928,6 +2932,18 @@ html, body {
   color: var(--color-ink);
   text-decoration: none;
   transition: background 0.18s, color 0.18s;
+}
+/* „Ти си тук" - препратките към категории не са филтри, но избраната трябва да
+   се вижда, иначе панелът изглежда все едно нищо не е избрано. */
+.bb-aside-nav-item.is-current {
+  background: var(--color-pink-1);
+  color: var(--color-brand-pink);
+  font-weight: 800;
+  box-shadow: inset 3px 0 0 var(--color-brand-pink);
+}
+.bb-aside-nav-item.is-current .bb-aside-nav-icon {
+  background: var(--color-brand-pink);
+  color: #fff;
 }
 .bb-aside-nav-item:hover {
   background: var(--color-cream-2);
