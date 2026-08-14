@@ -62,10 +62,19 @@ export async function loader({context, request}: Route.LoaderArgs) {
       return fallback;
     });
 
-  const [shop, headerMenu, footerMenu, wishlistIds] = await Promise.all([
+  /* Менютата НЕ се искат от Storefront API-то.
+   *
+   * Този магазин няма менюта там - проверено на живо (14.08):
+   *   menu(handle: "main-menu") -> null
+   *   menu(handle: "footer")    -> null
+   * Затова навигацията идва от панела (`fetchMainMenu` / `fetchFooterMenu`
+   * по-долу) и точно затова тук стоеше `adminMenu ?? headerMenu`.
+   *
+   * Тоест две от трите заявки към магазина се правеха на ВСЯКА страница, за да
+   * върнат `null`. При няколко страници наведнъж точно този излишен сноп
+   * докарва 429 и посетителят вижда 500. Махнати са. */
+  const [shop, wishlistIds] = await Promise.all([
     soft('shop', ctx.storefront.getShop() as Promise<any>, null),
-    soft('main-menu', ctx.storefront.getMenu('main-menu') as Promise<any>, null),
-    soft('footer-menu', ctx.storefront.getMenu('footer') as Promise<any>, null),
     ctx.customerAccount.isLoggedIn()
       ? ctx.customerAccount.getWishlistIds().catch(() => [])
       : Promise.resolve([]),
@@ -110,7 +119,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
     return null;
   });
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, degraded, cart: cartPromise, cartSummary: cartPromise.then((c: any) => fetchCartSummary(env, c?.id)).catch(() => null), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
+  return {shop, headerMenu: adminMenu ?? null, footerMenu: null, adminFooter, degraded, cart: cartPromise, cartSummary: cartPromise.then((c: any) => fetchCartSummary(env, c?.id)).catch(() => null), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {

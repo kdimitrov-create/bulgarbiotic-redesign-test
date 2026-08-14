@@ -47,23 +47,20 @@ export const meta: Route.MetaFunction = ({data: d}) => {
 const PAGE_SIZE = 12;
 
 export async function loader(args: Route.LoaderArgs) {
-  /* ⏱ ВРЕМЕННО: истинската причина за 500-ците.
-   *
-   * В производство React Router заменя съобщението на грешката с
-   * „Unexpected Server Error", тоест отвън не се вижда какво точно се е
-   * счупило, а логовете на работника не са ни достъпни. Затова грешката се
-   * прихваща тук и се препраща като отговор с четимо съобщение - веднъж,
-   * колкото да я видим на живо, и се маха. */
+  /* Причината за 500-ците, видяна на живо (14.08): магазинът отговаря
+   * „429 Too Many Requests", когато няколко страници се рисуват наведнъж.
+   * Записва се в конзолата с истинското си име - в производство React Router
+   * подменя съобщението с „Unexpected Server Error" и иначе не се разбира
+   * какво се е счупило. */
   try {
     return await categoryLoader(args);
   } catch (error) {
-    const message = (error as Error)?.message ?? String(error);
-    const name = (error as Error)?.name ?? 'Error';
-    console.error('category loader: %s - %s', name, message);
-    throw new Response(JSON.stringify({message: `[${name}] ${message}`.slice(0, 300)}), {
-      status: 500,
-      headers: {'Content-Type': 'application/json'},
-    });
+    console.error(
+      'category loader: %s - %s',
+      (error as Error)?.name ?? 'Error',
+      (error as Error)?.message ?? String(error),
+    );
+    throw error;
   }
 }
 
