@@ -4,7 +4,7 @@ import type {Shop, Menu, CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
 import {SearchOverlay} from './SearchOverlay';
 import {MegaMenu} from './MegaMenu';
-import {productsNode, type NavNode} from '~/lib/navigation';
+import {productsNode, hasRole, NAV_ROLE, type NavNode} from '~/lib/navigation';
 import {syncCartToPlatform} from '~/lib/cart-sync';
 
 interface HeaderProps {
@@ -452,7 +452,12 @@ export function Header({shop, menu, cart}: HeaderProps) {
                     {branches.map((child) =>
                       child.children?.some((c) => c.url) ? (
                         <div key={child.id} className="bb-mobile-subgroup">
-                          <span className="bb-mobile-subhead">{child.title}</span>
+                          {/* Групата с ролята „footer" е редът с бутони под
+                              панела на десктоп - името ѝ („Долен ред") е
+                              вътрешно за панела и не се показва на клиента. */}
+                          {hasRole(child, NAV_ROLE.footer) ? null : (
+                            <span className="bb-mobile-subhead">{child.title}</span>
+                          )}
                           {child.children
                             .filter((c) => c.url)
                             .map((c) => (
