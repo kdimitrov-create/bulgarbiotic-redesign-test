@@ -4,7 +4,7 @@ import {getEnhancedFeatured} from '~/lib/product-images';
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
 import {fallbackToPlaceholder} from './CartDrawer';
-import {CartOffersStrip} from './CartOffers';
+import {CartOffersStrip, CartGiftLines} from './CartOffers';
 import {markPricingForLine} from '~/lib/product-marks';
 import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from '~/lib/cart-summary';
 import {displayDiscountPercent} from '~/lib/active-discounts';
@@ -109,6 +109,8 @@ export function CartPage({cart, summary}: {cart: CartData | null; summary?: Cart
             {lines.map((line) => (
               <CartPageRow key={line.id} line={line} />
             ))}
+            {/* Спечеленият подарък, докато платформата още не го е сложила. */}
+            <CartGiftLines subtotalEur={subtotalEur} lines={lines} variant="page" />
           </ul>
 
           <Link to="/category/all-products" className="bb-cart-continue" prefetch="intent">

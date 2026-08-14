@@ -788,11 +788,11 @@ body::after {
   padding: 10px 12px;
 }
 .bb-offer.is-earned { background: #f2fbf5; border-color: rgba(22, 163, 74, 0.28); }
-.bb-offer-text { font-size: 12.5px; line-height: 1.45; color: var(--color-ink); }
+.bb-offer-text { font-size: 14px; line-height: 1.45; color: var(--color-ink); }
 .bb-offer-text strong { font-weight: 800; }
 .bb-offer-text .accent { color: var(--color-brand-pink); }
 .bb-offer-icon { margin-right: 6px; }
-.bb-offer-bgn { color: rgba(10, 37, 64, 0.5); font-size: 11.5px; }
+.bb-offer-bgn { color: rgba(10, 37, 64, 0.5); font-size: 12.5px; }
 .bb-offer-msg { color: rgba(10, 37, 64, 0.62); }
 /* Съобщението идва като HTML от панела - отстоянията му се изравняват с
    останалите редове в лентата. */
@@ -808,6 +808,34 @@ body::after {
   transition: width 0.35s ease;
 }
 .bb-offer.is-earned .bb-offer-fill { background: #16a34a; }
+
+/* Редът на спечеления подарък - в чекмеджето и на страницата /cart.
+   Изглежда като обикновен ред, но без брояч и без кошче: не се купува и не се
+   маха, а идва сам. Зелената рамка го отличава от платените редове. */
+.bb-gift-row {
+  border-color: rgba(22, 163, 74, 0.35) !important;
+  background: #f7fdf9 !important;
+}
+.bb-gift-row img { width: 100%; height: 100%; object-fit: cover; }
+.bb-gift-note {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  font-size: 12.5px; font-weight: 600;
+  color: rgba(10, 37, 64, 0.6);
+}
+.bb-gift-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 999px;
+  background: rgba(22, 163, 74, 0.12);
+  color: rgb(21, 110, 70);
+  font-size: 11.5px; font-weight: 800; letter-spacing: 0.2px;
+}
+.bb-gift-price {
+  font-family: var(--font-serif);
+  font-style: italic; font-weight: 500; font-size: 17px;
+  letter-spacing: -0.3px;
+  color: rgb(21, 110, 70);
+  white-space: nowrap;
+}
 
 /* ── Широкото чекмедже: продуктите вляво, офертите и bump cart-ът вдясно ──────
  *
@@ -863,7 +891,21 @@ body::after {
     background: var(--color-cream-1);
     --bb-upsell-bg: var(--color-cream-1);
     --bb-upsell-bg-start: var(--color-cream-1);
-    align-content: start;
+    /* Картите заемат цялата височина на секцията: надсловът остава горе, а
+       лентата поема остатъка и картите се разпъват в нея. */
+    display: flex;
+    flex-direction: column;
+  }
+  .bb-cd .bb-cd-upsell-carousel-wrap { flex: 1 1 auto; min-height: 0; }
+  .bb-cd .bb-cd-upsell-carousel { height: 100%; align-items: stretch; }
+  .bb-cd .bb-cd-upsell-card { height: 100%; }
+  /* Снимката поглъща свободната височина; текстът и бутонът сядат отдолу. */
+  .bb-cd .bb-cd-upsell-img {
+    flex: 1 1 auto;
+    min-height: 120px;
+    aspect-ratio: auto;
+    width: auto;
+    margin: 12px 12px 4px;
   }
 
   /* Празната количка няма какво да дели на две. */
@@ -1040,7 +1082,7 @@ body::after {
   text-decoration: none;
 }
 .bb-cd-item-meta {
-  font-size: 11px; opacity: 0.55; line-height: 1.4;
+  font-size: 12.5px; opacity: 0.55; line-height: 1.4;
   font-weight: 600;
 }
 
@@ -1176,7 +1218,7 @@ body::after {
   gap: 8px;
 }
 .bb-cd-upsell-count {
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.3px;
   color: rgba(10, 37, 64, 0.5);
@@ -1203,9 +1245,16 @@ body::after {
    * (`--bb-upsell-bg`). Беше зашита за градиента на кутията и щом bump cart-ът
    * смени фона си - а на широк екран той сяда в дясната колона - ставаше
    * видима цветна ивица вместо преливане. */
-  width: calc(var(--bb-upsell-gutter, 30px) + 24px);
+  /* Плътна под самата стрелка, чак после прелива: иначе следващата карта се
+     подаваше ОТВЪД стрелката и се четеше като счупен ръб. */
+  width: calc(var(--bb-upsell-gutter, 26px) + 44px);
   height: 100%;
-  background: linear-gradient(to left, var(--bb-upsell-bg, var(--color-cream-2)) 40%, transparent);
+  background: linear-gradient(
+    to left,
+    var(--bb-upsell-bg, var(--color-cream-2)) 0%,
+    var(--bb-upsell-bg, var(--color-cream-2)) 48%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 2;
 }
@@ -1215,9 +1264,14 @@ body::after {
   content: '';
   position: absolute;
   top: 0; left: 0;
-  width: calc(var(--bb-upsell-gutter, 30px) + 12px);
+  width: calc(var(--bb-upsell-gutter, 26px) + 44px);
   height: 100%;
-  background: linear-gradient(to right, var(--bb-upsell-bg-start, var(--color-pink-1)), transparent);
+  background: linear-gradient(
+    to right,
+    var(--bb-upsell-bg-start, var(--color-pink-1)) 0%,
+    var(--bb-upsell-bg-start, var(--color-pink-1)) 48%,
+    transparent 100%
+  );
   pointer-events: none;
   z-index: 2;
 }
@@ -1261,14 +1315,14 @@ body::after {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--color-brand-pink);
 }
 .bb-cd-upsell-head-title {
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 700;
   letter-spacing: -0.2px;
   color: var(--color-ink);
@@ -1341,13 +1395,13 @@ body::after {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
   color: var(--color-ink);
   text-decoration: none;
   letter-spacing: -0.1px;
-  min-height: 29px; /* reserve space for 2 lines so cards align */
+  min-height: 33px; /* reserve space for 2 lines so cards align */
 }
 .bb-cd-upsell-title:hover {
   color: var(--color-brand-pink);
@@ -1361,12 +1415,12 @@ body::after {
   flex-wrap: wrap;
 }
 .bb-cd-upsell-price-eur {
-  font-size: 13px;
+  font-size: 14.5px;
   font-weight: 800;
   color: var(--color-brand-pink);
 }
 .bb-cd-upsell-price-msrp {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(10, 37, 64, 0.42);
   text-decoration: line-through;
@@ -1415,7 +1469,7 @@ body::after {
   border: 0;
   border-radius: 7px;
   font-family: inherit;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.2px;
   text-transform: uppercase;
@@ -1517,7 +1571,7 @@ body::after {
   flex-shrink: 0;
 }
 .bb-cd-grand-lbl {
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -1525,7 +1579,7 @@ body::after {
   line-height: 1.2;
 }
 .bb-cd-grand-note {
-  font-size: 11px;
+  font-size: 12.5px;
   color: rgba(10, 37, 64, 0.5);
   font-weight: 500;
   line-height: 1.3;
@@ -1569,7 +1623,7 @@ body::after {
   background: rgba(34, 145, 88, 0.1);
   color: rgb(34, 110, 70);
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 0.1px;
   align-self: flex-start;
@@ -1583,7 +1637,7 @@ body::after {
      navy ink colour (the one from the client's screenshot). */
   background: var(--color-brand-pink); color: #fff;
   border-radius: 999px;
-  font-size: 13.5px; font-weight: 800; letter-spacing: 0.3px;
+  font-size: 15px; font-weight: 800; letter-spacing: 0.3px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: background 0.2s, color 0.2s, transform 0.12s;
   border: none; cursor: pointer; font-family: inherit;
@@ -4583,7 +4637,7 @@ img.pm-banner {
 .bb-cd-adjust { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 2px; }
 .bb-cd-adjust-row {
   display: flex; justify-content: space-between; gap: 12px;
-  font-size: 13px; color: rgba(10, 37, 64, 0.72);
+  font-size: 14px; color: rgba(10, 37, 64, 0.72);
 }
 .bb-cd-adjust-row span:last-child { font-weight: 700; color: var(--color-ink); white-space: nowrap; }
 
@@ -6692,7 +6746,7 @@ img.pm-banner {
    ========================================================================== */
 /* --- промокод --- */
 .bb-cart-promo { border-top: 1px solid rgba(10, 37, 64, 0.09); margin-top: 14px; padding-top: 14px; }
-.bb-cart-promo-label { display: block; font-size: 12px; font-weight: 700; color: rgba(10, 37, 64, 0.75); margin-bottom: 7px; }
+.bb-cart-promo-label { display: block; font-size: 13.5px; font-weight: 700; color: rgba(10, 37, 64, 0.75); margin-bottom: 7px; }
 .bb-cart-promo-row { display: flex; gap: 8px; }
 .bb-cart-promo-input {
   flex: 1; min-width: 0; padding: 10px 12px; font-size: 13px; font-family: inherit;
@@ -6722,13 +6776,13 @@ img.pm-banner {
   color: rgba(10, 37, 64, 0.5); text-decoration: underline; cursor: pointer;
 }
 .bb-cart-promo-remove:hover:not([disabled]) { color: var(--color-brand-pink); }
-.bb-cart-promo-error { font-size: 11.5px; color: #c20d59; margin: 8px 0 0; line-height: 1.4; }
+.bb-cart-promo-error { font-size: 13px; color: #c20d59; margin: 8px 0 0; line-height: 1.4; }
 /* Същото поле в чекмеджето: по-тесни отстояния, за да не изяде мястото на
    крайната сума и бутона, които трябва да се виждат без скрол. */
 .bb-cart-promo--drawer { border-top: none; margin-top: 0; padding-top: 0; padding-bottom: 12px; }
-.bb-cart-promo--drawer .bb-cart-promo-label { font-size: 11.5px; margin-bottom: 6px; }
-.bb-cart-promo--drawer .bb-cart-promo-input { padding: 9px 12px; font-size: 12.5px; }
-.bb-cart-promo--drawer .bb-cart-promo-apply { padding: 9px 16px; font-size: 12px; }
+.bb-cart-promo--drawer .bb-cart-promo-label { font-size: 13.5px; margin-bottom: 6px; }
+.bb-cart-promo--drawer .bb-cart-promo-input { padding: 9px 12px; font-size: 14px; }
+.bb-cart-promo--drawer .bb-cart-promo-apply { padding: 9px 16px; font-size: 13.5px; }
 
 /* --- потвърждение „добавено в количката" ---
    Повтаря лентата на класическата тема: зелена, горе вдясно, отметка вдясно.

@@ -10,7 +10,7 @@ import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from 
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
 import {numericId} from '~/lib/analytics';
-import {CartOffersStrip} from './CartOffers';
+import {CartOffersStrip, CartGiftLines} from './CartOffers';
 
 import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
@@ -231,6 +231,8 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
                 {lines.map((line) => (
                   <CartLineRow key={line.id} line={line} onProductClick={close} />
                 ))}
+                {/* Спечеленият подарък, докато платформата още не го е сложила. */}
+                <CartGiftLines subtotalEur={subtotal.eur} lines={lines} />
               </ul>
             </div>
 

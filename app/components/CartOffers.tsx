@@ -23,6 +23,71 @@ function plainText(html: string | null | undefined): string {
 }
 
 /**
+ * Спечеленият подарък като ред в количката.
+ *
+ * Редът с нулевата цена го слага ПЛАТФОРМАТА и то чак когато количката ѝ бъде
+ * подадена на касата (`/checkout/adopt`) - нулата идва от `cross_sell_id`, а
+ * него го пише само тя. Сложим ли го ние през Storefront API-то, влиза с
+ * пълните си 40 €, тоест подарък, за който се плаща.
+ *
+ * Затова, докато не се стигне касата, подаръкът се показва оттук: същият ред,
+ * същата снимка, изрична нула и бележка кога влиза. Иначе купувачът минаваше
+ * прага, четеше „Печелиш хавлия" и не виждаше нищо в количката - а слезеше ли
+ * веднъж под прага, истинският ред отпадаше и повече не се връщаше, защото
+ * никой от наша страна не може да го сложи.
+ *
+ * Не се рисува, когато платформата вече е сложила своя ред.
+ */
+export function CartGiftLines({
+  subtotalEur,
+  lines,
+  variant = 'drawer',
+}: {
+  subtotalEur: number;
+  lines: Array<any>;
+  /** Двата списъка ползват различни класове - чекмеджето `bb-cd-item`, а
+   *  страницата `bb-cart-item`. Редът е един и същ, само облеклото се сменя. */
+  variant?: 'drawer' | 'page';
+}) {
+  const inCart = new Set(
+    lines.map((l) => l?.merchandise?.id).filter(Boolean) as string[],
+  );
+  const earned = giftProgress(subtotalEur).filter(
+    (g) => g.earned && g.variantId && !inCart.has(g.variantId),
+  );
+  if (!earned.length) return null;
+
+  const c =
+    variant === 'page'
+      ? {row: 'bb-cart-item', img: 'bb-cart-item-img', info: 'bb-cart-item-info', name: 'bb-cart-item-name', price: 'bb-cart-item-price'}
+      : {row: 'bb-cd-item', img: 'bb-cd-item-imglink', info: 'bb-cd-item-info', name: 'bb-cd-item-name', price: 'bb-cd-item-price'};
+
+  return (
+    <>
+      {earned.map((gift) => (
+        <li key={`gift-${gift.id}`} className={`${c.row} bb-gift-row`}>
+          <span className={c.img}>
+            {gift.imageUrl ? (
+              <img src={gift.imageUrl} alt={gift.productTitle ?? 'Подарък'} loading="lazy" />
+            ) : null}
+          </span>
+          <div className={c.info}>
+            <span className={c.name}>{gift.productTitle}</span>
+            <div className="bb-gift-note">
+              <span className="bb-gift-badge">Подарък</span>
+              добавя се на касата
+            </div>
+          </div>
+          <div className={c.price}>
+            <div className="bb-gift-price">0,00 €</div>
+          </div>
+        </li>
+      ))}
+    </>
+  );
+}
+
+/**
  * Промоции в количката — the merchant's cross-sell gifts and cart rules,
  * read live from the admin panel.
  *
