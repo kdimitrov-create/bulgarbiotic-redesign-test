@@ -218,6 +218,7 @@ export function Header({shop, menu, cart}: HeaderProps) {
   }, [navCompact, items]);
 
   return (
+    <>
     <header ref={headerRef} className={`bb-header${navCompact ? ' bb-header--compact' : ''}`}>
       <div className="bb-container bb-header-inner">
         {/* Mobile-only hamburger pinned to the LEFT edge of the header — this
@@ -385,8 +386,22 @@ export function Header({shop, menu, cart}: HeaderProps) {
       />
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+    </header>
 
-      {/* Mobile slide-out drawer */}
+      {/* Мобилното чекмедже стои ИЗВЪН <header> нарочно.
+        *
+        * Лентата има `backdrop-filter`, а филтърът прави от нея отправна рамка
+        * за всичко `position: fixed` вътре. Тоест чекмеджето се залепваше за
+        * лентата, вместо за екрана. Докато лентата е залепена горе, това не
+        * личи - но в мига, в който чекмеджето се отвори, заключването на
+        * превъртането слага `overflow: hidden` на body, това чупи `sticky`,
+        * лентата отскача на мястото си в документа и отнася чекмеджето със
+        * себе си. Измерено на живо при превъртане 1754: чекмеджето излизаше на
+        * -1753, тоест далеч над видимото. Оттам „менюто се отваря най-горе на
+        * страницата и не се вижда".
+        *
+        * Извън лентата `fixed` се отнася към екрана и менюто излиза където и да
+        * се намира посетителят. */}
       <div
         className={`bb-mobile-overlay${mobileOpen ? ' open' : ''}`}
         onClick={() => setMobileOpen(false)}
@@ -792,6 +807,6 @@ export function Header({shop, menu, cart}: HeaderProps) {
         }
         .bb-mobile-call svg { width: 13px; height: 13px; }
       `}</style>
-    </header>
+    </>
   );
 }
