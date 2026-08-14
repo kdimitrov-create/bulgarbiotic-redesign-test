@@ -289,8 +289,8 @@ export function ProductRail({
           position: relative;
           border: 1px solid rgba(10, 37, 64, 0.1);
           color: var(--color-ink);
-          /* Тук стоеше второ `display: block`, което отменяше колоната отгоре -
-             и заради него `margin-top: auto` на долния блок не вършеше нищо, а
+          /* Тук стоеше второ display: block, което отменяше колоната отгоре -
+             и заради него margin-top: auto на долния блок не вършеше нищо, а
              „Добави" пак стоеше на различна височина във всяка карта. */
         }
         .bb-pcard:hover {
