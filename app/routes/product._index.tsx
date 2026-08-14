@@ -1,4 +1,5 @@
 import {useLoaderData, useSearchParams, useNavigate} from 'react-router';
+import {useEffect, useState} from 'react';
 import type {Route} from './+types/product._index';
 import {getContext} from '~/lib/context';
 import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
@@ -122,6 +123,31 @@ export function ListingBody({products, collections}: {products: any; collections
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const currentSort = searchParams.get('sort') ?? '';
+  /* Филтрите на телефон са в изскачащ панел, не под продуктите.
+   *
+   * Досега страничната колона беше `order-2`, тоест на телефон падаше ПОД
+   * всички карти: за да стигне до нея, купувачът трябваше да превърти целия
+   * списък - точно нещата, които търси, стояха най-накрая. Сега над списъка
+   * има бутон „Филтри", а панелът се отваря на цял екран. */
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  /** Колко филтъра са включени - показва се в бутона. */
+  const activeFilterCount = [...searchParams.keys()].filter(
+    (k) => !['sort', 'cursor', 'direction', 'page', 'q'].includes(k),
+  ).length;
+
+  // Панелът заключва фона, докато е отворен, и се затваря с Esc.
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFiltersOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [filtersOpen]);
 
   function changeSort(value: string) {
     const params = new URLSearchParams(searchParams);
@@ -142,6 +168,21 @@ export function ListingBody({products, collections}: {products: any; collections
           <strong>{totalCount}</strong>{' '}
           {totalCount === 1 ? 'продукт' : 'продукта'}
         </div>
+        {/* Само на телефон и таблет - на широк екран колоната е винаги видима. */}
+        <button
+          type="button"
+          className="bb-filters-open"
+          onClick={() => setFiltersOpen(true)}
+          aria-expanded={filtersOpen}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true">
+            <line x1="4" y1="7" x2="20" y2="7" />
+            <line x1="7" y1="12" x2="17" y2="12" />
+            <line x1="10" y1="17" x2="14" y2="17" />
+          </svg>
+          Филтри
+          {activeFilterCount > 0 && <span className="bb-filters-open-count">{activeFilterCount}</span>}
+        </button>
         <div className="bb-listing-sort">
           <label htmlFor="bb-sort">Сортирай:</label>
           <select
@@ -163,12 +204,38 @@ export function ListingBody({products, collections}: {products: any; collections
       </div>
 
       {/* Sidebar (value-add: quiz + discovery + filters + trust) + grid */}
-      <div className="grid gap-8 md:grid-cols-[260px_1fr] md:gap-10">
-        <aside className="order-2 md:order-1">
-          <ListingAside filters={filters} totalCount={totalCount} collections={collections} />
+      {/* Колоната с филтрите се появява от 1024px нагоре - под тази ширина тя е
+          панел (виж `.bb-filters-aside`), затова решетката там е една колона,
+          вместо да пази празно място за нещо, което го няма в потока. */}
+      <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:gap-10">
+        {/* Един и същ списък с филтри в двата режима: на широк екран е колона
+            вляво, на телефон - панел на цял екран. Няма втори препис, който
+            после да се разминава. */}
+        <div
+          className={`bb-filters-scrim${filtersOpen ? ' is-open' : ''}`}
+          onClick={() => setFiltersOpen(false)}
+          aria-hidden="true"
+        />
+        <aside className={`bb-filters-aside order-2 lg:order-1${filtersOpen ? ' is-open' : ''}`}>
+          <div className="bb-filters-sheet-head">
+            <strong>Филтри</strong>
+            <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Затвори филтрите">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <div className="bb-filters-sheet-body">
+            <ListingAside filters={filters} totalCount={totalCount} collections={collections} />
+          </div>
+          <div className="bb-filters-sheet-foot">
+            <button type="button" className="bb-filters-apply" onClick={() => setFiltersOpen(false)}>
+              Виж {totalCount} {totalCount === 1 ? 'продукт' : 'продукта'}
+            </button>
+          </div>
         </aside>
 
-        <div className="order-1 md:order-2">
+        <div className="order-1 lg:order-2">
           {totalCount === 0 ? (
             <div className="bb-listing-empty">
               <svg className="bb-listing-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

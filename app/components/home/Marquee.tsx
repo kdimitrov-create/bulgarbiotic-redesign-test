@@ -57,7 +57,7 @@ export function Marquee({items: given}: {items?: MarqueeItem[]} = {}) {
         .bb-marquee-badge {
           background: var(--color-pink-1); color: var(--color-brand-pink);
           padding: 3px 10px; border-radius: 999px;
-          font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+          font-size: 12.5px; letter-spacing: 1.2px; text-transform: uppercase;
         }
       `}</style>
     </div>

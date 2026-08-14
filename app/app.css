@@ -282,7 +282,7 @@ body::after {
 /* ─── SECTION HELPERS ─── */
 .section-tag {
   display: inline-flex; align-items: center; gap: 10px;
-  font-size: 11px; letter-spacing: 2.2px; text-transform: uppercase; font-weight: 800;
+  font-size: 12.5px; letter-spacing: 2.2px; text-transform: uppercase; font-weight: 800;
   color: var(--color-brand-pink);
   margin-bottom: 18px;
 }
@@ -848,6 +848,94 @@ body::after {
 }
 .bb-cd-close:hover { color: var(--color-ink); background: rgba(10, 37, 64, 0.05); }
 .bb-cd-close svg { width: 20px; height: 20px; }
+
+/* ── Филтрите като панел на телефон ──────────────────────────────────────────
+ *
+ * Страничната колона беше `order-2`, тоест на телефон падаше ПОД всички карти:
+ * за да стигне до филтрите, купувачът трябваше да превърти целия списък. Сега
+ * над списъка стои бутон „Филтри", а колоната се отваря на цял екран.
+ *
+ * Списъкът с филтри е ЕДИН - на широк екран е колона, на телефон същият този
+ * елемент става панел. Няма втори препис, който после да се разминава. */
+.bb-filters-open {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid rgba(10, 37, 64, 0.16);
+  border-radius: 999px;
+  background: #fff;
+  font-family: inherit; font-size: 13.5px; font-weight: 700;
+  color: var(--color-ink);
+  cursor: pointer;
+  min-height: 40px;
+}
+.bb-filters-open svg { width: 16px; height: 16px; }
+.bb-filters-open-count {
+  display: inline-grid; place-items: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-brand-pink); color: #fff;
+  font-size: 11.5px; font-weight: 800;
+}
+.bb-filters-scrim { display: none; }
+.bb-filters-sheet-head,
+.bb-filters-sheet-foot { display: none; }
+
+@media (max-width: 1023px) {
+  .bb-filters-scrim {
+    display: block;
+    position: fixed; inset: 0; z-index: 199;
+    background: rgba(10, 37, 64, 0.35);
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+  }
+  .bb-filters-scrim.is-open { opacity: 1; visibility: visible; }
+
+  .bb-filters-aside {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(92vw, 420px);
+    z-index: 200;
+    background: var(--color-cream-1);
+    box-shadow: -6px 0 30px -12px rgba(10, 37, 64, 0.35);
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex; flex-direction: column;
+  }
+  .bb-filters-aside.is-open { transform: none; }
+
+  .bb-filters-sheet-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; flex-shrink: 0;
+    border-bottom: 1px solid rgba(10, 37, 64, 0.1);
+    background: var(--color-cream-1);
+  }
+  .bb-filters-sheet-head strong { font-size: 17px; font-weight: 800; }
+  .bb-filters-sheet-head button {
+    width: 40px; height: 40px; display: grid; place-items: center;
+    border: 0; background: none; cursor: pointer; color: rgba(10, 37, 64, 0.55);
+  }
+  .bb-filters-sheet-head button svg { width: 20px; height: 20px; }
+
+  .bb-filters-sheet-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 20px 12px; }
+
+  .bb-filters-sheet-foot {
+    display: block; flex-shrink: 0;
+    padding: 12px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid rgba(10, 37, 64, 0.1);
+    background: #fff;
+  }
+  .bb-filters-apply {
+    width: 100%; padding: 14px;
+    border: 0; border-radius: 999px;
+    background: var(--color-brand-pink); color: #fff;
+    font-family: inherit; font-size: 15px; font-weight: 800;
+    cursor: pointer;
+  }
+}
+
+/* От 1024px нагоре колоната си е колона и бутонът не трябва. */
+@media (min-width: 1024px) {
+  .bb-filters-open { display: none; }
+}
 
 /* Лентата с офертите на търговеца (подаръци и правила за количката).
    Стоеше във вграден `<style>` вътре в компонента, тоест се изписваше наново
@@ -4693,7 +4781,7 @@ body.bb-pdp-sticky-active { padding-bottom: 84px; }
   padding: 5px 10px;
   border-radius: 999px;
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 11.5px;
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.06em;
