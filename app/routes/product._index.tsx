@@ -130,9 +130,17 @@ export function ListingBody({products, collections}: {products: any; collections
    * списък - точно нещата, които търси, стояха най-накрая. Сега над списъка
    * има бутон „Филтри", а панелът се отваря на цял екран. */
   const [filtersOpen, setFiltersOpen] = useState(false);
-  /** Колко филтъра са включени - показва се в бутона. */
-  const activeFilterCount = [...searchParams.keys()].filter(
-    (k) => !['sort', 'cursor', 'direction', 'page', 'q'].includes(k),
+  /* Колко филтъра са включени - числото в бутона.
+   *
+   * Броят се САМО познатите филтърни ключове (същите, които чете
+   * `buildFiltersFromParams`). Ако вместо това се броеше всичко освен
+   * сортирането, всеки чужд параметър в адреса щеше да се брои за филтър -
+   * `utm_source`, `fbclid`, `gclid` от реклама - и посетител, дошъл от обява,
+   * щеше да вижда „Филтри 2", без да е пипал нищо. */
+  const FILTER_KEYS = ['available', 'minPrice', 'maxPrice', 'vendor', 'tag', 'onSale', 'isNew', 'isFeatured', 'category'];
+  const activeFilterCount = [...searchParams.entries()].filter(
+    ([k, v]) =>
+      !!v && (FILTER_KEYS.includes(k) || k.startsWith('option_') || k.startsWith('prop_') || k.startsWith('brand_')),
   ).length;
 
   // Панелът заключва фона, докато е отворен, и се затваря с Esc.
