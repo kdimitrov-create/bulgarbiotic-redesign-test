@@ -2,6 +2,7 @@ import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, use
 import {useMemo} from 'react';
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
+import {installFetchRetry} from '~/lib/fetch-retry.server';
 import {fetchCartSummary} from '~/lib/cart-totals.server';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {setAutoDiscounts, setFreeShippingOver} from '~/lib/active-discounts';
@@ -32,6 +33,8 @@ export const shouldRevalidate: Route.ShouldRevalidateFunction = ({formMethod, cu
 };
 
 export async function loader({context, request}: Route.LoaderArgs) {
+  // Магазинът връща 429 при сноп заявки; едно повторение го преживява.
+  installFetchRetry();
   const ctx = await getContext(context, request);
 
   /* НИТО ЕДНО от нещата тук не бива да сваля сайта.
