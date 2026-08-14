@@ -323,7 +323,7 @@ function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product:
       </h1>
 
       {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="mt-3.5 mb-4 md:mt-4 md:mb-5 flex flex-wrap items-center gap-x-3 gap-y-1">
           <StarRating
             rating={product.reviewSummary.averageRating}
             count={product.reviewSummary.totalCount}
