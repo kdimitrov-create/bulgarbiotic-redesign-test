@@ -44,6 +44,13 @@ jobs:
         env:
           NOVA_DEPLOY_URL: ${{ vars.NOVA_DEPLOY_URL }}
           NOVA_DEPLOY_TOKEN: ${{ secrets.NOVA_DEPLOY_TOKEN }}
+          # Съобщението на комита минава през променлива, а не се залепва в
+          # самия скрипт: залепено, всяка кавичка, $, апостроф или ъглова скоба
+          # в него става част от командата и деплойът пада с "malformed URL",
+          # при все че кодът е наред. Точно това стана с комит, в който имаше
+          # права кавичка - и същият капан вече беше хапал с $ и с backtick.
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
           set -euo pipefail
 
@@ -117,8 +124,8 @@ jobs:
             -F "worker=@build/server/index.js;type=application/javascript+module" \
             -F "environment=production" \
             -F "commit_sha=${{ github.sha }}" \
-            -F "commit_message=${{ github.event.head_commit.message }}" \
-            -F "branch=${{ github.ref_name }}" \
+            -F "commit_message=$COMMIT_MESSAGE" \
+            -F "branch=$BRANCH_NAME" \
             -F "assets_jwt=<assets_jwt.txt")
           cat resp.json; echo
           if [ "$HTTP" -ge 400 ]; then
