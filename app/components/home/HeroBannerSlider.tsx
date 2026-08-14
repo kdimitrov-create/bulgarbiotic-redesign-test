@@ -117,16 +117,27 @@ export function BannerSlider({
         .bb-hslider-prev { left: 16px; }
         .bb-hslider-next { right: 16px; }
         .bb-hslider-dots {
-          position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
-          display: flex; gap: 8px; z-index: 2;
+          position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+          display: flex; gap: 0; z-index: 2;
         }
+        /* Точката се рисува вътре, а бутонът е 26 пиксела.
+           Досега целият бутон беше 9 пиксела - под всякаква разумна мярка за
+           пръст, а с междина от 8 пиксела съседните цели се застъпваха. Видът
+           остава същият; расте само областта, която приема докосването. */
         .bb-hslider-dot {
-          width: 9px; height: 9px; border-radius: 999px; border: none; padding: 0;
-          background: rgba(255, 255, 255, 0.7); cursor: pointer;
+          width: 26px; height: 26px;
+          display: grid; place-items: center;
+          border: none; padding: 0; background: none; cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .bb-hslider-dot::before {
+          content: '';
+          width: 9px; height: 9px; border-radius: 999px;
+          background: rgba(255, 255, 255, 0.7);
           box-shadow: 0 1px 4px rgba(10, 37, 64, 0.25);
           transition: background 0.2s, transform 0.2s;
         }
-        .bb-hslider-dot.on { background: var(--color-brand-pink); transform: scale(1.3); }
+        .bb-hslider-dot.on::before { background: var(--color-brand-pink); transform: scale(1.3); }
       `}</style>
     </section>
   );

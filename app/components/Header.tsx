@@ -4,7 +4,7 @@ import type {Shop, Menu, CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
 import {SearchOverlay} from './SearchOverlay';
 import {MegaMenu} from './MegaMenu';
-import {productsNode} from '~/lib/navigation';
+import {productsNode, type NavNode} from '~/lib/navigation';
 import {syncCartToPlatform} from '~/lib/cart-sync';
 
 interface HeaderProps {
@@ -59,6 +59,8 @@ export function Header({shop, menu, cart}: HeaderProps) {
   const cartBtnRef = useRef<HTMLButtonElement>(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
+  /** Коя група в мобилното чекмедже е разтворена. Само една наведнъж. */
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   /* Лентата мери сама себе си.
    *
    * ⚠️ Менюто идва от панела, тоест броят и дължината на имената се менят
@@ -404,17 +406,72 @@ export function Header({shop, menu, cart}: HeaderProps) {
             </svg>
           </button>
         </div>
+        {/* Подменютата ги имаше само на десктоп.
+            „Продукти" отваря панел с групи (по цел, по форма, по възраст) и
+            седемнайсет връзки към категории - на телефон те бяха недостижими,
+            защото чекмеджето рисуваше само първото ниво. Тук същото дърво става
+            акордеон: групата се разтваря на място, вместо да води в задънена
+            улица. */}
         <nav className="bb-mobile-nav">
-          {items.map((item) => (
-            <Link
-              key={item.title}
-              to={item.url}
-              prefetch="intent"
-              onClick={() => setMobileOpen(false)}
-            >
-              {item.title}
-            </Link>
-          ))}
+          {items.map((item) => {
+            const kids = ((item as any).children ?? []) as NavNode[];
+            const branches = kids.filter((k) => k.url || k.children?.some((c) => c.url));
+            if (!branches.length) {
+              return (
+                <Link
+                  key={item.title}
+                  to={item.url}
+                  prefetch="intent"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.title}
+                </Link>
+              );
+            }
+            const isOpen = openGroup === item.title;
+            return (
+              <div key={item.title} className="bb-mobile-group">
+                <button
+                  type="button"
+                  className={`bb-mobile-group-btn${isOpen ? ' open' : ''}`}
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenGroup(isOpen ? null : item.title)}
+                >
+                  {item.title}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {isOpen && (
+                  <div className="bb-mobile-sub">
+                    {item.url && (
+                      <Link to={item.url} className="bb-mobile-sub-all" onClick={() => setMobileOpen(false)}>
+                        Виж всички
+                      </Link>
+                    )}
+                    {branches.map((child) =>
+                      child.children?.some((c) => c.url) ? (
+                        <div key={child.id} className="bb-mobile-subgroup">
+                          <span className="bb-mobile-subhead">{child.title}</span>
+                          {child.children
+                            .filter((c) => c.url)
+                            .map((c) => (
+                              <Link key={c.id} to={c.url!} onClick={() => setMobileOpen(false)}>
+                                {c.title}
+                              </Link>
+                            ))}
+                        </div>
+                      ) : child.url ? (
+                        <Link key={child.id} to={child.url} onClick={() => setMobileOpen(false)}>
+                          {child.title}
+                        </Link>
+                      ) : null,
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <Link to="/account" onClick={() => setMobileOpen(false)}>
             Профил
           </Link>
@@ -685,6 +742,42 @@ export function Header({shop, menu, cart}: HeaderProps) {
           transition: color 0.2s, padding 0.2s;
         }
         .bb-mobile-nav a:hover { color: var(--color-brand-pink); padding-left: 6px; }
+
+        /* Група с подменю: същият ред, но се разтваря на място. */
+        .bb-mobile-group-btn {
+          width: 100%;
+          display: flex; align-items: center; justify-content: space-between; gap: 12px;
+          padding: 14px 0;
+          background: none; border: 0;
+          border-bottom: 1px solid rgba(10, 37, 64, 0.1);
+          font-family: inherit; font-size: 17px; font-weight: 700;
+          color: var(--color-ink);
+          text-align: left; cursor: pointer;
+        }
+        .bb-mobile-group-btn svg {
+          width: 18px; height: 18px; flex-shrink: 0;
+          color: rgba(10, 37, 64, 0.45);
+          transition: transform 0.25s ease;
+        }
+        .bb-mobile-group-btn.open { color: var(--color-brand-pink); }
+        .bb-mobile-group-btn.open svg { transform: rotate(180deg); color: var(--color-brand-pink); }
+        .bb-mobile-sub { padding: 4px 0 10px 12px; }
+        .bb-mobile-sub-all {
+          font-size: 14px !important;
+          color: var(--color-brand-pink) !important;
+          border-bottom: 1px solid rgba(10, 37, 64, 0.08) !important;
+        }
+        .bb-mobile-subgroup { padding-top: 6px; }
+        .bb-mobile-subhead {
+          display: block; padding: 12px 0 4px;
+          font-size: 11.5px; font-weight: 800; letter-spacing: 0.8px;
+          text-transform: uppercase; color: rgba(10, 37, 64, 0.5);
+        }
+        .bb-mobile-sub a {
+          font-size: 15px; font-weight: 600;
+          padding: 11px 0;
+          border-bottom: 1px solid rgba(10, 37, 64, 0.07);
+        }
         .bb-mobile-foot { padding: 18px 24px; border-top: 1px solid rgba(10, 37, 64, 0.1); }
         .bb-mobile-call {
           display: inline-flex; align-items: center; gap: 8px;

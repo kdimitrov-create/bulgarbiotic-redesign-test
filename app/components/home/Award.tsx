@@ -431,17 +431,24 @@ export function Award() {
           transition: background 0.2s, border-color 0.2s;
         }
         .bb-award-arrow:hover { background: rgba(212, 175, 106, 0.22); border-color: #f4d585; }
-        .bb-award-dots { display: inline-flex; align-items: center; gap: 8px; }
+        .bb-award-dots { display: inline-flex; align-items: center; gap: 0; }
+        /* Чертичката се рисува вътре, а бутонът е 30 пиксела: 8 пиксела висок
+           бутон не се улучва с пръст. Видът е същият, областта за докосване -
+           не. */
         .bb-award-dotbtn {
+          width: 30px; height: 28px;
+          display: grid; place-items: center;
+          padding: 0; border: 0; background: none; cursor: pointer;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .bb-award-dotbtn::before {
+          content: '';
           width: 8px; height: 8px;
-          padding: 0;
-          border: 0;
           border-radius: 999px;
           background: rgba(250, 246, 236, 0.28);
-          cursor: pointer;
           transition: background 0.2s, width 0.2s;
         }
-        .bb-award-dotbtn.on { background: #d4af6a; width: 22px; }
+        .bb-award-dotbtn.on::before { background: #d4af6a; width: 22px; }
         @media (max-width: 880px) {
           .bb-award-nav { margin-top: 26px; }
         }
