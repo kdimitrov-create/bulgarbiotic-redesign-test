@@ -68,17 +68,20 @@ export function CartDrawer({
   cart: Promise<CartData | null>;
   summary?: Promise<CartSummary | null>;
 }) {
-  // Двете обещания се сливат ВЕДНЪЖ.
+  // ТУК НЕ СЕ ПРАВЯТ ОБЕЩАНИЯ.
   //
-  // Promise.all(...) направо в resolve правеше ново обещание на всяка рисунка.
-  // <Await> не го познава, хвърля го и React изчаква; то се изпълнява веднага,
-  // React пробва пак, рисунката прави следващото ново обещание - и така в кръг.
-  // Кръгът върти планировчика и оставя преходите без ред, тоест адресът се
-  // сменя, а страницата остава старата.
-  const resolved = useMemo(
-    () => Promise.all([cart, summary ?? Promise.resolve(null)]),
-    [cart, summary],
-  );
+  // Преди тук стоеше Promise.all([cart, summary]) направо в resolve - ново
+  // обещание на всяка рисунка. <Await> не го познава, хвърля го и React
+  // изчаква; то се изпълнява веднага, React пробва пак, а рисунката прави
+  // следващото ново обещание. Кръг по двеста пъти в секунда, който върти
+  // планировчика и оставя преходите без ред: оттам идваха и „адресът се сменя,
+  // а страницата остава", и „количката не се обновява без презареждане".
+  //
+  // useMemo НЕ спасява точно тук. Чекмеджето се качва в мига, в който се
+  // отвори, а компонент, чиято първа рисунка увисва, никога не се записва -
+  // значи няма запазено състояние и сметката се прави наново при всеки опит.
+  // Затова двете обещания се чакат едно в друго и идват готови отвън, от
+  // root, който вече е записан и ги прави веднъж.
   return (
     <Suspense
       fallback={
@@ -88,10 +91,18 @@ export function CartDrawer({
         </div>
       }
     >
-      <Await resolve={resolved}>
-        {([resolvedCart, resolvedSummary]: [CartData | null, CartSummary | null]) => (
-          <CartDrawerInner cart={resolvedCart} summary={resolvedSummary} />
-        )}
+      <Await resolve={cart}>
+        {(resolvedCart: CartData | null) =>
+          summary ? (
+            <Await resolve={summary}>
+              {(resolvedSummary: CartSummary | null) => (
+                <CartDrawerInner cart={resolvedCart} summary={resolvedSummary} />
+              )}
+            </Await>
+          ) : (
+            <CartDrawerInner cart={resolvedCart} summary={null} />
+          )
+        }
       </Await>
     </Suspense>
   );
