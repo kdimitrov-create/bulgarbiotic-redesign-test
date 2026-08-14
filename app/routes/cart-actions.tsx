@@ -58,6 +58,20 @@ export async function action({request, context}: Route.ActionArgs) {
           break;
         }
         const lines = [{merchandiseId, quantity: Number(fd.get('quantity') || 1)}];
+        /* Каква е количката ПРЕДИ опита.
+         *
+         * Долният повторен опит изхвърля количката от сесията и започва нова.
+         * Ако продуктът не влезе и в новата, старата трябва да се върне - иначе
+         * едно недобавяне изтрива всичко, което клиентът е събрал. Точно това
+         * стана с колелото: наградата „Анти стрес" сочи вариант 228, който не
+         * съществува в магазина, и вместо подарък клиентът остана с празна
+         * количка. */
+        const before = await ctx.cart.get().catch(() => null);
+        const beforeId = (before as any)?.id as string | undefined;
+        const beforeLines = (((before as any)?.lines?.nodes ?? []) as any[])
+          .map((l) => ({merchandiseId: l?.merchandise?.id as string, quantity: Number(l?.quantity) || 0}))
+          .filter((l) => l.merchandiseId && l.quantity > 0);
+
         let result = await ctx.cart.addLines(lines).catch(() => null);
         // Once an order is placed, the cart id in the session belongs to that
         // order and CloudCart will not take new lines into it. Nothing errors:
@@ -66,7 +80,26 @@ export async function action({request, context}: Route.ActionArgs) {
         // the line did not land, drop the finished cart and add to a fresh one.
         if (!hasLine(result?.cart, merchandiseId)) {
           ctx.session.unset('cartId');
-          result = await ctx.cart.addLines(lines).catch(() => null);
+          const retry = await ctx.cart.addLines(lines).catch(() => null);
+
+          if (hasLine(retry?.cart, merchandiseId)) {
+            // Количката наистина е била приключена. Старите редове се пренасят
+            // в новата - при поръчана количка те са малко или никакви, но ако
+            // ги е имало, клиентът не бива да ги губи заради нашия обходен път.
+            result = beforeLines.length
+              ? (await ctx.cart.addLines(beforeLines).catch(() => retry)) ?? retry
+              : retry;
+          } else {
+            // Продуктът не влиза и в чисто нова количка, значи проблемът е в
+            // него, не в количката. Старата се връща в сесията непокътната.
+            if (beforeId) ctx.session.set('cartId', beforeId);
+            cart = (before as CartData) ?? (await ctx.cart.get());
+            errors = (retry?.userErrors?.length ? retry.userErrors : result?.userErrors) ?? [];
+            if (!errors.length) {
+              errors = [{message: 'Продуктът не може да бъде добавен в момента'}];
+            }
+            break;
+          }
         }
         cart = result?.cart ?? (await ctx.cart.get());
         // Грешка се съобщава само когато редът наистина не е влязъл.

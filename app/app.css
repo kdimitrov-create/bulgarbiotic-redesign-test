@@ -1160,11 +1160,10 @@ body::after {
   line-height: 1.3;
   color: var(--color-ink);
   text-decoration: none;
-  /* clamp to 2 lines */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  /* Името на продукт НЕ се реже. Стоеше на два реда с многоточие и по-дългите
+     заглавия оставаха недоизписани - точно това, което клиентът вижда в
+     количката, за да разбере какво купува. Пада на трети ред, ако трябва. */
+  overflow-wrap: anywhere;
 }
 .bb-cd-item-name:hover {
   color: var(--color-brand-pink);
@@ -1481,16 +1480,16 @@ body::after {
   min-width: 0;
 }
 .bb-cd-upsell-title {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  /* И тук името се изписва докрай - картите така или иначе са с еднаква
+     височина, защото се разпъват; долната граница пази подравняването при
+     кратките имена. */
   font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
   color: var(--color-ink);
   text-decoration: none;
   letter-spacing: -0.1px;
+  overflow-wrap: anywhere;
   min-height: 33px; /* reserve space for 2 lines so cards align */
 }
 .bb-cd-upsell-title:hover {
