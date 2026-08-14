@@ -33,10 +33,36 @@ export const shouldRevalidate: Route.ShouldRevalidateFunction = ({formMethod, cu
 
 export async function loader({context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
+
+  /* НИТО ЕДНО от нещата тук не бива да сваля сайта.
+   *
+   * Този loader върви на ВСЯКА страница и досега пускаше десетина външни
+   * заявки в два `Promise.all` без нито един catch: откажеше ли една, целият
+   * `Promise.all` отхвърля, loader-ът хвърля и посетителят вижда 500 - без
+   * значение коя страница е отворил.
+   *
+   * Измерено на живо (14.08, двайсет различни адреса наведнъж): 36 от 60
+   * заявки върнаха 500, а грешката сочеше root. Провалите бяха НАЙ-БЪРЗИ -
+   * средно 0,16 сек. срещу 0,32 при успешните - тоест не е бавен доставчик, а
+   * заявка, която се отказва веднага. Поединично същите адреси минаваха 12 от
+   * 12; локално 19 от 20. Тоест чупи се, когато работникът е студен и трябва да
+   * направи целия сноп наведнъж.
+   *
+   * Затова всяка отделна заявка си има резервен отговор. Падне ли някоя,
+   * липсва само нейното парче - менюто, етикетите - а страницата се показва.
+   * Кое е паднало се отбелязва в `degraded`, за да не гадаем следващия път. */
+  const degraded: string[] = [];
+  const soft = <T,>(label: string, p: Promise<T>, fallback: T): Promise<T> =>
+    p.catch((error) => {
+      degraded.push(label);
+      console.error('root loader: %s се провали - %s', label, (error as Error)?.message ?? error);
+      return fallback;
+    });
+
   const [shop, headerMenu, footerMenu, wishlistIds] = await Promise.all([
-    ctx.storefront.getShop(),
-    ctx.storefront.getMenu('main-menu'),
-    ctx.storefront.getMenu('footer'),
+    soft('shop', ctx.storefront.getShop() as Promise<any>, null),
+    soft('main-menu', ctx.storefront.getMenu('main-menu') as Promise<any>, null),
+    soft('footer-menu', ctx.storefront.getMenu('footer') as Promise<any>, null),
     ctx.customerAccount.isLoggedIn()
       ? ctx.customerAccount.getWishlistIds().catch(() => [])
       : Promise.resolve([]),
@@ -49,21 +75,21 @@ export async function loader({context, request}: Route.LoaderArgs) {
   // Labels and banners ride along for the same reason: the listing queries do
   // not return them, so without this the badges only ever appear on the PDP.
   const [live, marks, packages, offers, adminMenu, adminFooter, themeModules, customCss, ] = await Promise.all([
-    fetchAutoDiscounts(env),
-    fetchProductMarks(env),
-    fetchQuantityPackages(env),
-    fetchCartOffers(env),
+    soft('discounts', fetchAutoDiscounts(env), null as any),
+    soft('marks', fetchProductMarks(env), null as any),
+    soft('packages', fetchQuantityPackages(env), null as any),
+    soft('offers', fetchCartOffers(env), null as any),
     // The header menu comes from Дизайн → Навигация. The Storefront API returns
     // no menus for this store, so this is the only way the two can match.
-    fetchMainMenu(env),
+    soft('admin-menu', fetchMainMenu(env), null as any),
     // The footer columns come from the same place, group "footer": one group
     // per column, so the merchant owns the footer links too.
-    fetchFooterMenu(env),
+    soft('admin-footer', fetchFooterMenu(env), null as any),
     // The merchant's own theme modules: promo bar, homepage texts and banners,
     // product showcases. Same reason as the marks — surfaces read them directly.
-    fetchThemeModules(env),
+    soft('theme-modules', fetchThemeModules(env), null as any),
     // The merchant's own CSS for the classes they put on builder rows.
-    fetchCustomCss(env),
+    soft('custom-css', fetchCustomCss(env), null as any),
     // Стойността на промо кодовете: Storefront API-то приема кода, но не
     // мени сметката, затова количката я смята сама по данните от админа.
   ]);
@@ -74,7 +100,14 @@ export async function loader({context, request}: Route.LoaderArgs) {
   setCartOffers(offers);
   setThemeModules(themeModules);
 
-  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, cart: ctx.cart.get(), cartSummary: ctx.cart.get().then((c: any) => fetchCartSummary(env, c?.id)), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
+  // Количката пътува като обещание. Отхвърли ли се, <Await> показва грешка
+  // вместо чекмедже, затова и тук има резервен отговор.
+  const cartPromise = ctx.cart.get().catch((error: any) => {
+    console.error('root loader: количката се провали - %s', error?.message ?? error);
+    return null;
+  });
+
+  return {shop, headerMenu: adminMenu ?? headerMenu, footerMenu, adminFooter, degraded, cart: cartPromise, cartSummary: cartPromise.then((c: any) => fetchCartSummary(env, c?.id)).catch(() => null), wishlistIds, origin: new URL(request.url).origin, tracking: resolveTracking(env), storeDomain: envValue(env, 'PUBLIC_STORE_DOMAIN') || null, classicOrigin: env.PUBLIC_CLASSIC_ORIGIN || null, live, marks, packages, offers, themeModules: forClient(themeModules), customCss};
 }
 
 export function Layout({children}: {children: React.ReactNode}) {
@@ -94,7 +127,15 @@ export function Layout({children}: {children: React.ReactNode}) {
           * предварително, докато страницата още се чете. Първата видима снимка
           * е точно оттам, тоест печалбата е върху най-бавното нещо на екрана. */}
         <link rel="preconnect" href="https://cdncloudcart.com" crossOrigin="anonymous" />
-        {data?.storeDomain ? <link rel="preconnect" href={`https://${data.storeDomain}`} /> : null}
+        {/* `storeDomain` идва ту с протокол, ту без - долепянето на https://
+            даваше „https://https://c2wjn.cloudcart.net" и връзката просто не се
+            правеше. */}
+        {data?.storeDomain ? (
+          <link
+            rel="preconnect"
+            href={/^https?:\/\//i.test(data.storeDomain) ? data.storeDomain : `https://${data.storeDomain}`}
+          />
+        ) : null}
         {canonical ? <link rel="canonical" href={canonical} /> : null}
         <Meta />
         <Links />
