@@ -1,4 +1,5 @@
 import {Links, Meta, Outlet, Scripts, ScrollRestoration, useRouteLoaderData, useLocation, useFetchers, useRouteError, isRouteErrorResponse, type MetaFunction} from 'react-router';
+import {useMemo} from 'react';
 import type {Route} from './+types/root';
 import {getContext} from '~/lib/context';
 import {fetchCartSummary} from '~/lib/cart-totals.server';
@@ -21,7 +22,6 @@ import {AsideProvider, Aside} from '~/components/Aside';
 import {CartDrawer} from '~/components/CartDrawer';
 import {PageLayout} from '~/components/PageLayout';
 import '~/app.css';
-import {CART_ACTION} from '~/lib/cart-action';
 
 export const meta: MetaFunction = () => getSeoMeta({title: 'Bulgar Biotic - Български пробиотици Bactology'});
 
@@ -135,20 +135,35 @@ export default function App() {
   // loader cart, which can lag a beat behind (single-fetch cookie timing on the
   // Worker) — that lag is exactly what flashed the drawer EMPTY right after a
   // "Купи" click. Falls back to the loader cart on first load / reload.
+  // Филтърът НЕ стъпва на formAction: react-router го изчиства щом fetcher-ът
+  // приключи, а data остава. Затова отговорът на действието се виждаше само
+  // докато заявката лети, а след това екранът падаше обратно на loader-а - и
+  // ако платформата върне за миг стара количка (или при първо добавяне
+  // ревалидацията изпревари новата бисквитка), бройката подскачаше назад.
   const cartFetchers = useFetchers();
   const latestCart = cartFetchers
-    .filter((f) => f.formAction === CART_ACTION && (f.data as any)?.cart)
+    .filter((f) => (f.data as any)?.cart)
     .map((f) => (f.data as any).cart)
     .pop();
-  const cart = latestCart ? Promise.resolve(latestCart) : (data?.cart ?? Promise.resolve(null));
+  // Обещанието се помни. Ново обещание на всяка рисунка кара <Await> да увисва
+  // отново и отново и спира целия екран - същата повреда, която header-ът
+  // причини през преходите.
+  const cart = useMemo(
+    () => (latestCart ? Promise.resolve(latestCart) : (data?.cart ?? Promise.resolve(null))),
+    [latestCart, data?.cart],
+  );
   // Обобщението следва същия път: прясното от действието бие това от loader-а.
   const latestSummary = cartFetchers
-    .filter((f) => f.formAction === CART_ACTION && (f.data as any)?.cart)
+    .filter((f) => (f.data as any)?.cart)
     .map((f) => (f.data as any).cartSummary)
     .pop();
-  const cartSummary = latestSummary !== undefined
-    ? Promise.resolve(latestSummary)
-    : (data?.cartSummary ?? Promise.resolve(null));
+  const cartSummary = useMemo(
+    () =>
+      latestSummary !== undefined
+        ? Promise.resolve(latestSummary)
+        : (data?.cartSummary ?? Promise.resolve(null)),
+    [latestSummary, data?.cartSummary],
+  );
 
   return (
     <AsideProvider>

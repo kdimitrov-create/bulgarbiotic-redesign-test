@@ -69,7 +69,12 @@ export function Header({shop, menu, cart}: HeaderProps) {
    * скритата навигация мери нула и режимът щеше да се самозаключи. */
   const [navCompact, setNavCompact] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+  /** Естествената ширина на реда с връзките. */
   const navNeedRef = useRef(0);
+  /** Всичко в лентата, което НЕ е редът: лого, икони и двете междини. */
+  const navChromeRef = useRef(0);
+  /** Кои връзки са премерени - сменят се от панела, без да пипаме код. */
+  const navMeasuredForRef = useRef('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const megaCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -158,30 +163,56 @@ export function Header({shop, menu, cart}: HeaderProps) {
     };
   }, []);
 
+  // Двете посоки на решението вече не се отменят една друга.
+  //
+  // Първата версия питаше различно нещо в двата режима: разгъната сравняваше
+  // scrollWidth с clientWidth на самата колона, а свита пресмяташе свободното
+  // място по формула „ширина минус лого минус икони". Формулата излизаше с
+  // двайсетина пиксела по-щедра от истинската колона, тоест всяко от двете
+  // числа отменяше другото и лентата се люлееше по 170 пъти в секунда.
+  //
+  // Това не е козметика. Всяко превключване е обновяване с обикновен
+  // приоритет, а непрекъснатият им поток остави преходите без ред завинаги -
+  // а на преход вървят навигацията между страниците, дорисуването след
+  // hydration и изчакването на количката. Оттам идваше „адресът се сменя, а
+  // съдържанието остава" и „количката не се обновява без презареждане".
+  //
+  // Затова, докато редът е видим, се записват две числа: колко му трябва и
+  // колко заема всичко останало в лентата. Второто е постоянно (лого + икони +
+  // междините), тоест мястото за реда е „ширина на лентата минус него" и се
+  // смята и когато редът е скрит и мери нула. Решението става чиста функция на
+  // ширината на лентата - едно и също число и в двата режима, затова двете
+  // посоки не могат да се редуват.
   useEffect(() => {
-    const measure = () => {
-      const nav = navRef.current;
-      if (!navCompact) {
-        // Видима е: питаме самата колона, а не пресмятаме мястото наум.
-        // Сметка „ширина минус лого минус икони" излиза по-щедра от реалната
-        // колона в решетката и режимът не се включваше, докато редът вече
-        // се режеше.
-        if (!nav) return;
-        navNeedRef.current = nav.scrollWidth;
-        setNavCompact(nav.scrollWidth > nav.clientWidth + 1);
+    const signature = items.map((i) => i.title).join('|');
+    if (navMeasuredForRef.current !== signature) {
+      // Менюто се смени от панела - старите мерки вече не важат.
+      navMeasuredForRef.current = signature;
+      navNeedRef.current = 0;
+      navChromeRef.current = 0;
+      if (navCompact) {
+        setNavCompact(false); // разгъваме, за да има какво да се премери
         return;
       }
-      // Скрита е и мери нула, затова се пита свободното място в лентата.
+    }
+    const decide = () => {
       const inner = document.querySelector<HTMLElement>('.bb-header-inner');
-      const logo = document.querySelector<HTMLElement>('.bb-logo-link');
-      const actions = document.querySelector<HTMLElement>('.bb-header-actions');
-      if (!inner || !navNeedRef.current) return;
-      const room = inner.clientWidth - (logo?.offsetWidth ?? 0) - (actions?.offsetWidth ?? 0) - 96;
-      if (navNeedRef.current <= room) setNavCompact(false);
+      if (!inner) return;
+      const nav = navRef.current;
+      if (!navCompact && nav?.clientWidth) {
+        navNeedRef.current = nav.scrollWidth;
+        navChromeRef.current = inner.clientWidth - nav.clientWidth;
+      }
+      if (!navNeedRef.current || !navChromeRef.current) return;
+      const next = navNeedRef.current > inner.clientWidth - navChromeRef.current;
+      setNavCompact((prev) => (prev === next ? prev : next));
     };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    decide();
+    window.addEventListener('resize', decide);
+    // Шрифтът се качва след първата рисунка и буквите сменят ширината си,
+    // затова се премерва още веднъж, щом лицата са готови.
+    document.fonts?.ready.then(decide).catch(() => {});
+    return () => window.removeEventListener('resize', decide);
   }, [navCompact, items]);
 
   return (
