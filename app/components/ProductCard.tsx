@@ -57,7 +57,11 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
   return (
     <Link
       to={`/product/${product.handle}`}
-      className="group block text-inherit no-underline transition-all duration-200 ease-out hover:no-underline hover:-translate-y-1"
+      /* Картата е с височината на реда, а не със своята собствена.
+         Клетките на решетката се разпъват до най-високата, значи достатъчно е
+         картата да се разтегне в клетката си и да подреди съдържанието си в
+         колона - тогава долният блок може да се залепи за дъното. */
+      className="group flex h-full flex-col text-inherit no-underline transition-all duration-200 ease-out hover:no-underline hover:-translate-y-1"
       prefetch="intent"
     >
       <div className="relative overflow-hidden rounded-2xl bg-gray-50">
@@ -91,8 +95,12 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
         />
       </div>
 
-      <div className="mt-3 px-0.5">
-        <h4 className="text-sm font-bold leading-tight text-[var(--color-ink)] line-clamp-2 min-h-[2.6em]">
+      <div className="mt-3 px-0.5 flex flex-1 flex-col">
+        {/* Името се изписва докрай - три реда си остават три реда.
+            Запазените два реда пазят подравняването при късите имена, а
+            разликата до най-дългото се поема от празнината под името (виж
+            `mt-auto` върху блока с цената), не от рязане. */}
+        <h4 className="text-sm font-bold leading-tight text-[var(--color-ink)] min-h-[2.6em] break-words">
           {product.title}
         </h4>
 
@@ -106,7 +114,10 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
           </div>
         )}
 
-        <div className="mt-2 flex items-baseline gap-2 flex-wrap">
+        {/* Оттук надолу всичко се залепя за дъното на картата: цената, часовникът
+            и „Купи" застават на един ред във всички карти от реда, независимо
+            колко реда е заело името отгоре. */}
+        <div className="mt-auto pt-2 flex items-baseline gap-2 flex-wrap">
           <span
             className="text-[17px] font-semibold text-[var(--color-ink)] leading-none"
             style={{fontFamily: 'var(--font-serif)', fontStyle: 'normal', fontWeight: 600, letterSpacing: '-0.4px'}}

@@ -289,7 +289,9 @@ export function ProductRail({
           position: relative;
           border: 1px solid rgba(10, 37, 64, 0.1);
           color: var(--color-ink);
-          display: block;
+          /* Тук стоеше второ `display: block`, което отменяше колоната отгоре -
+             и заради него `margin-top: auto` на долния блок не вършеше нищо, а
+             „Добави" пак стоеше на различна височина във всяка карта. */
         }
         .bb-pcard:hover {
           transform: translateY(-6px);
@@ -327,11 +329,11 @@ export function ProductRail({
         .bb-pcard-name {
           font-size: 18px; font-weight: 800; letter-spacing: -0.5px;
           line-height: 1.2; margin-bottom: 6px; color: var(--color-ink);
-          /* Точно два реда: и късото, и дългото заглавие заемат едно и също
-             място, така че цените под тях тръгват от една линия. */
+          /* Два запазени реда за подравняване, но заглавието НЕ се реже: по-дългото
+             продължава на трети ред, а разликата се поема от празнината под него,
+             защото цената и бутонът са долепени за дъното (bb-pcard-bottom). */
           min-height: 44px;
-          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-          overflow: hidden;
+          overflow-wrap: anywhere;
         }
 
         /* Цената и оценката се долепват до бутона, а празното остава над тях. */

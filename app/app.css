@@ -2570,7 +2570,11 @@ html, body {
 @media (max-width: 720px) { .bb-promo-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .bb-promo-card {
-  display: block;
+  /* Височината идва от реда, а съдържанието се подрежда в колона, за да може
+     цената и „Купи" да се залепят за дъното (виж `.bb-promo-card-body`). */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: white;
   border: 1px solid rgba(10, 37, 64, 0.06);
   border-radius: 16px;
@@ -2611,24 +2615,31 @@ html, body {
   box-shadow: 0 6px 14px -4px rgba(227, 22, 108, 0.5);
 }
 
-.bb-promo-card-body { padding: 16px 16px 18px; }
+.bb-promo-card-body {
+  padding: 16px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
 .bb-promo-card-title {
   font-size: 14px;
   font-weight: 700;
   line-height: 1.3;
   color: var(--color-ink);
   margin: 0 0 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  /* Името не се реже. Двата запазени реда пазят подравняването при късите
+     имена, а разликата до най-дългото се поема от празнината под името. */
   min-height: 2.6em;
+  overflow-wrap: anywhere;
 }
 .bb-promo-card-pricerow {
   display: flex;
   align-items: baseline;
   gap: 8px;
   flex-wrap: wrap;
+  /* Оттук надолу всичко се долепя за дъното, за да са бутоните на една линия. */
+  margin-top: auto;
+  padding-top: 2px;
 }
 .bb-promo-card-now {
   font-family: var(--font-serif);
