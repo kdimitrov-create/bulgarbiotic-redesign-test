@@ -63,12 +63,15 @@ export function Aside({
       role="dialog"
     >
       <button
-        className="absolute inset-0 bg-transparent border-none cursor-default hidden md:block md:w-[calc(100%-440px)]"
+        className="bb-aside-scrim absolute inset-0 bg-transparent border-none cursor-default hidden md:block md:w-[calc(100%-440px)]"
         onClick={close}
         aria-label="Затвори"
       />
-      {/* Drawer: full-width on mobile (< 720px), 440px sidebar on desktop */}
-      <aside className={`fixed top-0 right-0 w-full md:w-[440px] h-screen bg-light shadow-[-4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${expanded ? 'translate-x-0' : 'translate-x-full'}`}>
+      {/* Чекмеджето: цял екран на телефон, 440px на десктоп и 760px от 1200px
+          нагоре. На широкото офертите и сметката отиват в своя колона вдясно
+          (виж `.bb-cd` в app.css), за да остане цялата височина за продуктите -
+          дотогава списъкът получаваше 240 пиксела от 836 и се превърташе. */}
+      <aside className={`bb-aside-panel fixed top-0 right-0 w-full md:w-[440px] h-screen bg-light shadow-[-4px_0_24px_rgba(0,0,0,0.12)] transition-transform duration-300 flex flex-col ${expanded ? 'translate-x-0' : 'translate-x-full'}`}>
         <header className="flex items-center justify-between px-5 h-16 border-b border-gray-200 shrink-0">
           <h3 className="text-[0.85rem] font-bold tracking-widest">{heading}</h3>
           <button
