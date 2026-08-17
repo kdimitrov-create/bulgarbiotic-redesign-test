@@ -19,6 +19,7 @@ import {
 import {ListingBody} from './product._index';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
+import {markPricing} from '~/lib/product-marks';
 import {CATEGORY_EXTRA_PRODUCTS} from '~/lib/category-extra-products';
 import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
 import {
@@ -68,7 +69,19 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const url = new URL(request.url);
   const paginationVariables = getPaginationVariables(request, {pageBy: PAGE_SIZE});
-  const filters = buildFiltersFromParams(url.searchParams);
+  // „Само промоции" се пресмята при нас, не от API-то.
+  //
+  // `{onSale: true}` на Storefront API-то познава само отстъпка, закачена за
+  // самия продукт. Промоциите на този магазин са автоматични правила на ниво
+  // поръчка, тоест филтърът връщаше ПРАЗЕН списък - чипът „Само промоции"
+  // изпразваше страницата („Виж 0 продукта"), при все че магазинът върви с
+  // активна кампания. Страницата „Промоции" отдавна не му вярва и гледа
+  // цените; тук е същото: намален е продукт, чиято зачертана цена е по-висока
+  // от текущата.
+  const onSaleOnly = url.searchParams.get('onSale') === 'true';
+  const filters = buildFiltersFromParams(url.searchParams).filter(
+    (f: any) => !('onSale' in f),
+  );
   const {sortKey, reverse} = buildSortFromParams(url.searchParams);
   // Default order = units actually sold. Needs the whole category in one call,
   // because the ranking is ours and the API cannot paginate by it.
@@ -157,7 +170,13 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
       )
     : ((result.products as any).nodes ?? []);
 
-  const everyNode = enhanceProducts([...categoryNodes, ...extraNodes]);
+  const everyNode = enhanceProducts([...categoryNodes, ...extraNodes]).filter((p: any) => {
+    if (!onSaleOnly) return true;
+    const {price, compareAtPrice} = markPricing(p);
+    return Boolean(
+      price && compareAtPrice && parseFloat(compareAtPrice.amount) > parseFloat(price.amount),
+    );
+  });
   let nodes = everyNode;
   let pageInfo = (result.products as any).pageInfo;
 
@@ -175,6 +194,13 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
     const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
     nodes = slice.nodes;
     pageInfo = {...(pageInfo ?? {}), hasNextPage: slice.hasNextPage, hasPreviousPage: slice.hasPreviousPage};
+  } else if (onSaleOnly) {
+    // Пресятото е в ръцете ни, значи и страниците се режат тук - иначе
+    // страничникът обещава следваща страница по броя ПРЕДИ пресяването.
+    const ordered = packageHandles ? singlesFirst(everyNode, packageHandles) : everyNode;
+    const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
+    nodes = slice.nodes;
+    pageInfo = {...(pageInfo ?? {}), hasNextPage: slice.hasNextPage, hasPreviousPage: slice.hasPreviousPage};
   } else if (packageHandles) {
     nodes = singlesFirst(everyNode, packageHandles);
   }
@@ -183,7 +209,9 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
     ...result.products,
     nodes,
     pageInfo,
-    totalCount: ((result.products as any).totalCount ?? 0) + extraNodes.length,
+    totalCount: onSaleOnly
+      ? everyNode.length
+      : ((result.products as any).totalCount ?? 0) + extraNodes.length,
   };
 
   return {
@@ -193,7 +221,7 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
     filterError,
     // Active facet filters present in the URL → page should be noindex,follow
     // (see meta above). Cursor pagination alone does NOT set this.
-    isFiltered: filters.length > 0,
+    isFiltered: filters.length > 0 || onSaleOnly,
   };
 }
 
