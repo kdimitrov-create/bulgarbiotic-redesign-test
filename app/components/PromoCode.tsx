@@ -1,6 +1,7 @@
 import {useFetcher} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
 import {CART_ACTION} from '~/lib/cart-action';
+import {cartErrorText} from '~/lib/cart-errors';
 
 /**
  * Поле за промокод. Едно и също в страницата на количката и в чекмеджето.
@@ -103,7 +104,7 @@ export function PromoCode({
       ))}
       {errors.map((e, i) => (
         <p key={i} className="bb-cart-promo-error">
-          {e.message}
+          {cartErrorText(e.message)}
         </p>
       ))}
     </div>

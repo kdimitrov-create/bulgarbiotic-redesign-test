@@ -254,16 +254,38 @@ export default function App() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  let msg = 'Unknown error', status = 500;
-  if (isRouteErrorResponse(error)) { msg = error.data?.message ?? error.statusText; status = error.status; }
-  else if (error instanceof Error) { msg = error.message; }
+  let status = 500;
+  if (isRouteErrorResponse(error)) status = error.status;
+  // Магазинът е само на български, а тук се показваше суровото съобщение от
+  // платформата: несъществуващ адрес се четеше като „404 · Internal Server
+  // Error", тоест грешен продуктов линк изглеждаше като счупен сайт. Текстът
+  // вече е наш, на български, и различава „няма такава страница" от авария.
+  const missing = status === 404;
+  const title = missing ? 'Такава страница няма' : 'Нещо се обърка';
+  const body = missing
+    ? 'Адресът е сгрешен или страницата вече не съществува.'
+    : 'Опитай да презаредиш след малко. Ако се повтори, пиши ни.';
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 w-full max-w-7xl mx-auto px-6 py-8 md:px-8 md:py-10">
         <div className="text-center py-16">
           <h1 className="text-8xl font-extrabold text-gray-200 leading-none">{status}</h1>
-          <p className="text-gray-500 mt-2">{msg}</p>
-          <a href="/" className="text-brand font-semibold mt-4 inline-block">Go Home</a>
+          <p className="mt-3 text-xl font-extrabold text-[var(--color-ink)]">{title}</p>
+          <p className="text-gray-500 mt-1.5">{body}</p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <a
+              href="/"
+              className="inline-flex items-center rounded-full bg-[var(--color-brand-pink)] px-6 py-3 text-sm font-bold text-white hover:no-underline"
+            >
+              Към началната страница
+            </a>
+            <a
+              href="/category/all-products"
+              className="inline-flex items-center rounded-full border border-[rgba(10,37,64,0.15)] px-6 py-3 text-sm font-bold text-[var(--color-ink)] hover:no-underline"
+            >
+              Виж продуктите
+            </a>
+          </div>
         </div>
       </main>
     </div>

@@ -6,6 +6,7 @@ import {dropUnearnedGifts} from '~/lib/cart-gifts.server';
 import type {CartData} from '@cloudcart/nitro';
 import {CartPage as CartPageView} from '~/components/CartPage';
 import {CART_ACTION} from '~/lib/cart-action';
+import {cartErrorText} from '~/lib/cart-errors';
 
 export const meta: Route.MetaFunction = () => [{title: 'Кошница | Bactology'}];
 
@@ -45,7 +46,7 @@ function CartErrors({errors}: {errors: Array<{message: string}>}) {
   return (
     <div className="bb-cart-errors">
       {errors.map((error, i) => (
-        <p key={i}>{error.message}</p>
+        <p key={i}>{cartErrorText(error.message)}</p>
       ))}
     </div>
   );
