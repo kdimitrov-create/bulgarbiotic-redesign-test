@@ -1421,9 +1421,17 @@ body::after {
  * Position: relative so arrows can sit absolutely on top of the cards. */
 .bb-cd-upsell-carousel-wrap {
   position: relative;
-  /* Колко навътре стои стрелката спрямо ръба на кутията. Преливката ползва
-     същото число, за да свършва точно под нея. */
-  --bb-upsell-gutter: 26px;
+  /* Улеите отстрани, в които седят стрелките. Лентата с картите започва СЛЕД тях,
+     тоест карта никога не минава под стрелка. Докато стрелките стояха върху
+     лентата, преливката трябваше да ги покрива плътно и режеше името и цената на
+     картата под нея по средата на думата. */
+  --bb-upsell-gutter: 34px;
+  padding-inline: var(--bb-upsell-gutter);
+}
+/* На телефон стрелките ги няма (пръстът плъзга) - улеите само биха откраднали
+   ширина от картите. */
+@media (max-width: 480px) {
+  .bb-cd-upsell-carousel-wrap { --bb-upsell-gutter: 0px; }
 }
 /* Right-edge gradient fade — signals "there's more to scroll" when the
  * 4th card is cropped/off-screen. Toggled off when scroll reaches end. */
@@ -1431,14 +1439,14 @@ body::after {
 .bb-cd-upsell-carousel-wrap--middle::after {
   content: '';
   position: absolute;
-  top: 0; right: 0;
+  /* Сяда на ръба на самата лента, не на кутията: улеят със стрелката е вече
+     празен и няма какво да се крие под него. */
+  top: 0; right: var(--bb-upsell-gutter, 0px);
   /* Преливката се смесва с повърхността, върху която стои лентата
    * (`--bb-upsell-bg`). Беше зашита за градиента на кутията и щом bump cart-ът
    * смени фона си - а на широк екран той сяда в дясната колона - ставаше
    * видима цветна ивица вместо преливане. */
-  /* Плътна под самата стрелка, чак после прелива: иначе следващата карта се
-     подаваше ОТВЪД стрелката и се четеше като счупен ръб. */
-  width: calc(var(--bb-upsell-gutter, 26px) + 44px);
+  width: 34px;
   height: 100%;
   background: linear-gradient(
     to left,
@@ -1454,8 +1462,8 @@ body::after {
 .bb-cd-upsell-carousel-wrap--end::before {
   content: '';
   position: absolute;
-  top: 0; left: 0;
-  width: calc(var(--bb-upsell-gutter, 26px) + 44px);
+  top: 0; left: var(--bb-upsell-gutter, 0px);
+  width: 34px;
   height: 100%;
   background: linear-gradient(
     to right,
@@ -1491,9 +1499,9 @@ body::after {
   color: white;
   transform: translateY(-50%) scale(1.05);
 }
-/* На ръба на кутията, върху преливката - не насред картата. */
-.bb-cd-upsell-arrow--left  { left: 0; }
-.bb-cd-upsell-arrow--right { right: 0; }
+/* В празния улей отстрани на лентата - не върху карта. */
+.bb-cd-upsell-arrow--left  { left: 2px; }
+.bb-cd-upsell-arrow--right { right: 2px; }
 /* Центрирани спрямо снимката, а не спрямо цялата карта: под снимката стоят име,
    цена и „ДОБАВИ", и по средата на картата стрелката лягаше точно върху тях. */
 .bb-cd-upsell-arrow { top: 40%; }
@@ -1549,6 +1557,10 @@ body::after {
   overflow: hidden;
   transition: border-color 0.18s, box-shadow 0.18s, transform 0.18s;
 }
+/* Последната карта се закача за ДЕСНИЯ ръб: при `mandatory` краят на лентата
+   иначе не е валидна точка за спиране - превъртането не стига дотам, а стрелката
+   „напред" остава да свети и вече не мърда нищо. */
+.bb-cd-upsell-card:last-child { scroll-snap-align: end; }
 .bb-cd-upsell-card:hover {
   border-color: rgba(227, 22, 108, 0.3);
   box-shadow: 0 8px 18px -8px rgba(10, 37, 64, 0.18);
