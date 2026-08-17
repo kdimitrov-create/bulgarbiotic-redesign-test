@@ -1433,47 +1433,13 @@ body::after {
 @media (max-width: 480px) {
   .bb-cd-upsell-carousel-wrap { --bb-upsell-gutter: 0px; }
 }
-/* Right-edge gradient fade — signals "there's more to scroll" when the
- * 4th card is cropped/off-screen. Toggled off when scroll reaches end. */
-.bb-cd-upsell-carousel-wrap--start::after,
-.bb-cd-upsell-carousel-wrap--middle::after {
-  content: '';
-  position: absolute;
-  /* Сяда на ръба на самата лента, не на кутията: улеят със стрелката е вече
-     празен и няма какво да се крие под него. */
-  top: 0; right: var(--bb-upsell-gutter, 0px);
-  /* Преливката се смесва с повърхността, върху която стои лентата
-   * (`--bb-upsell-bg`). Беше зашита за градиента на кутията и щом bump cart-ът
-   * смени фона си - а на широк екран той сяда в дясната колона - ставаше
-   * видима цветна ивица вместо преливане. */
-  width: 34px;
-  height: 100%;
-  background: linear-gradient(
-    to left,
-    var(--bb-upsell-bg, var(--color-cream-2)) 0%,
-    var(--bb-upsell-bg, var(--color-cream-2)) 48%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-/* Same on the left when scrolled past the start. */
-.bb-cd-upsell-carousel-wrap--middle::before,
-.bb-cd-upsell-carousel-wrap--end::before {
-  content: '';
-  position: absolute;
-  top: 0; left: var(--bb-upsell-gutter, 0px);
-  width: 34px;
-  height: 100%;
-  background: linear-gradient(
-    to right,
-    var(--bb-upsell-bg-start, var(--color-pink-1)) 0%,
-    var(--bb-upsell-bg-start, var(--color-pink-1)) 48%,
-    transparent 100%
-  );
-  pointer-events: none;
-  z-index: 2;
-}
+/* Преливките по краищата ги няма нарочно.
+ *
+ * Смисълът им беше да крият картата, която се подава изпод стрелката. Стрелките
+ * вече седят в празните улеи отстрани, тоест лентата се реже чисто на своя ръб
+ * и няма какво да се маскира. А преливката оставаше НАД първата видима карта и
+ * ѝ изяждаше първите тридесетина пиксела: „actology Tablets", „1,56 €" - име и
+ * цена, срязани по средата, точно това, което не искаме никъде. */
 /* Scroll arrows — sit on top of the edge fade, only render when there
  * is actually content to scroll to in that direction. */
 .bb-cd-upsell-arrow {
