@@ -267,7 +267,11 @@ export function ListingBody({products, collections}: {products: any; collections
             <Pagination connection={products}>
               {({nodes, NextLink, isLoading}) => (
                 <div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                  {/* `auto-rows-fr` изравнява ВСИЧКИ карти на страницата, не само
+                      тези в един ред. Иначе редът с петредово име стои по-висок
+                      от съседния и бутоните „Купи" се разминават през страницата;
+                      свободното място сяда под късото име, където не личи. */}
+                  <div className="grid auto-rows-fr grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
                     {nodes.map((product: any) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
