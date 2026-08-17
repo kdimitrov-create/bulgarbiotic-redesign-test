@@ -1221,6 +1221,12 @@ body::after {
 .bb-cd-items { --bb-thumb: 94px; --bb-name: 13.5px; }
 .bb-cd-items[data-count="1"],
 .bb-cd-items[data-count="2"] { --bb-thumb: 120px; --bb-name: 15px; }
+/* Голямата снимка е за широкото чекмедже. На телефон редът е 320px: 120px
+   снимка + цена оставят на името под 90px и то се разсипва на пет реда. */
+@media (max-width: 560px) {
+  .bb-cd-items[data-count="1"],
+  .bb-cd-items[data-count="2"] { --bb-thumb: 94px; --bb-name: 14.5px; }
+}
 .bb-cd-items[data-count="5"],
 .bb-cd-items[data-count="6"],
 .bb-cd-items[data-count="7"],
@@ -1266,7 +1272,12 @@ body::after {
   /* Името на продукт НЕ се реже. Стоеше на два реда с многоточие и по-дългите
      заглавия оставаха недоизписани - точно това, което клиентът вижда в
      количката, за да разбере какво купува. Пада на трети ред, ако трябва. */
-  overflow-wrap: anywhere;
+  /* `break-word`, не `anywhere`: при `anywhere` най-малката възможна ширина на
+     блока става ЕДНА БУКВА, тоест колоната `1fr` има право да се свие под
+     дължината на думата - на телефон името получаваше 86px и се чупеше по
+     средата („пробиот / ик"). С `break-word` колоната пази поне най-дългата
+     дума, а прекалено дълга дума пак се пренася. */
+  overflow-wrap: break-word;
 }
 .bb-cd-item-name:hover {
   color: var(--color-brand-pink);
