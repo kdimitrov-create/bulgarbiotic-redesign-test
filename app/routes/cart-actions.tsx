@@ -4,6 +4,9 @@ import {getContext} from '~/lib/context';
 import {dropUnearnedGifts} from '~/lib/cart-gifts.server';
 import {fetchCartSummary} from '~/lib/cart-totals.server';
 import type {CartData} from '@cloudcart/nitro';
+import {attributeCart} from '~/lib/cart-attribution.server';
+import {DYSON_CAMPAIGN} from '~/lib/dyson-campaign';
+import {applyPendingPromo} from '~/lib/pending-promo.server';
 
 /**
  * Действията с количката: добавяне, количество, премахване, промо код.
@@ -19,6 +22,40 @@ import type {CartData} from '@cloudcart/nitro';
 function hasLine(cart: CartData | null | undefined, merchandiseId: string): boolean {
   const nodes = (cart as any)?.lines?.nodes ?? [];
   return nodes.some((line: any) => line?.merchandise?.id === merchandiseId);
+}
+
+/**
+ * Втората бройка от кампанията „1+1" - сложена сама, върху същия ред.
+ *
+ * Клиентът го поиска точно така (28.08): не отделен ред за 0,00 €, а „просто
+ * допълнителна бройка" - количеството става 2, а цената остава колкото за
+ * един. Второто го върши правилото за количката в панела („Поръчай 2, плати
+ * 1"), затова тук се прави само първото.
+ *
+ * Живее в действието, а не в някой бутон, защото бутоните са пет: продуктовата
+ * страница, картата в листинга, полето в количката, bump cart-ът и колелото.
+ * Един от тях да остане непокрит, и клиентът плаща двойно.
+ *
+ * Допълва се до следващата ПЪЛНА двойка (1→2, 3→4), не „плюс две" - иначе
+ * количката пак остава на нечетно и правилото пак не хваща.
+ *
+ * Не се пипа при `UPDATE_CART`: свали ли клиентът бройката сам, това е негово
+ * решение и не му се връща обратно.
+ */
+async function pairCampaignLine(ctx: any, cart: CartData): Promise<CartData> {
+  if (!DYSON_CAMPAIGN.active || DYSON_CAMPAIGN.mechanic !== 'cart-rule') return cart;
+  const pair = DYSON_CAMPAIGN.pairSize;
+  const line = ((cart as any)?.lines?.nodes ?? []).find(
+    (l: any) => String(l?.merchandise?.product?.handle ?? '') === DYSON_CAMPAIGN.handle,
+  );
+  const qty = Number(line?.quantity ?? 0);
+  if (!line?.id || qty <= 0 || qty % pair === 0) return cart;
+  const target = qty + (pair - (qty % pair));
+  const bumped = await ctx.cart
+    .updateLines([{id: String(line.id), quantity: target}])
+    .catch(() => null);
+  // Не се спъва в неуспех: количката със сам брой е по-добра от никаква.
+  return bumped?.cart ?? cart;
 }
 
 export async function action({request, context}: Route.ActionArgs) {
@@ -57,28 +94,56 @@ export async function action({request, context}: Route.ActionArgs) {
           errors = [{message: 'Продуктовият вариант не е намерен'}];
           break;
         }
-        const lines = [{merchandiseId, quantity: Number(fd.get('quantity') || 1)}];
-        /* Каква е количката ПРЕДИ опита.
-         *
-         * Долният повторен опит изхвърля количката от сесията и започва нова.
-         * Ако продуктът не влезе и в новата, старата трябва да се върне - иначе
-         * едно недобавяне изтрива всичко, което клиентът е събрал. Точно това
-         * стана с колелото: наградата „Анти стрес" сочи вариант 228, който не
-         * съществува в магазина, и вместо подарък клиентът остана с празна
-         * количка. */
-        const before = await ctx.cart.get().catch(() => null);
-        const beforeId = (before as any)?.id as string | undefined;
-        const beforeLines = (((before as any)?.lines?.nodes ?? []) as any[])
-          .map((l) => ({merchandiseId: l?.merchandise?.id as string, quantity: Number(l?.quantity) || 0}))
-          .filter((l) => l.merchandiseId && l.quantity > 0);
-
-        let result = await ctx.cart.addLines(lines).catch(() => null);
+        // Абонамент: избраният план отива на реда и CloudCart прави поръчката
+        // повтаряща се. Без него редът е обикновена еднократна покупка.
+        const sellingPlanId = String(fd.get('sellingPlanId') || '');
+        const lines = [
+          {
+            merchandiseId,
+            quantity: Number(fd.get('quantity') || 1),
+            ...(sellingPlanId ? {sellingPlanId} : {}),
+          },
+        ];
+        /* Продукт от прозореца на кръстосаната оферта носи нейния номер - по него
+         * платформата прилага отстъпката и брои офертата, точно както при
+         * класическата тема. Тя обаче отказва реда, когато условието на офертата
+         * не е изпълнено, и то с вътрешна грешка вместо с обяснение (мерено
+         * 07.10.2026: `Undefined array key "targets_products_43"`). Тогава
+         * продуктът влиза без офертата: клиентът е натиснал „Добави" и трябва
+         * да го получи. Опитът е ТУК, преди проверката за приключена количка
+         * отдолу - иначе отказът би минал за приключена количка и би я подменил. */
+        const crossSellId = String(fd.get('crossSellId') || '');
+        let result = await ctx.cart
+          .addLines(crossSellId ? lines.map((l) => ({...l, crossSellId})) : lines)
+          .catch(() => null);
+        if (crossSellId && !hasLine(result?.cart, merchandiseId)) {
+          console.warn(`cross-sell: платформата не прие реда с оферта №${crossSellId}; добавя се без нея.`);
+          result = await ctx.cart.addLines(lines).catch(() => null);
+        }
         // Once an order is placed, the cart id in the session belongs to that
         // order and CloudCart will not take new lines into it. Nothing errors:
         // the add simply has no effect, so every button on the site looked dead
         // for a customer who had already bought once (client 2026-08-07). When
         // the line did not land, drop the finished cart and add to a fresh one.
         if (!hasLine(result?.cart, merchandiseId)) {
+          /* Каква е количката ПРЕДИ опита - чете се ЧАК ТУК, в аварийната
+           * ветка. Тази ветка се пали точно когато добавянето не е имало
+           * ефект, тоест количката е същата като преди опита, а щастливият
+           * път спестява една пълна API заявка на всяко „Купи" (беше
+           * половината от времето на POST-а, мерено 19.08).
+           *
+           * Защо изобщо я пазим: долният повторен опит изхвърля количката от
+           * сесията и започва нова. Ако продуктът не влезе и в новата, старата
+           * трябва да се върне - иначе едно недобавяне изтрива всичко, което
+           * клиентът е събрал. Точно това стана с колелото: наградата „Анти
+           * стрес" сочеше несъществуващ вариант 228 и клиентът остана с празна
+           * количка. */
+          const before = await ctx.cart.get().catch(() => null);
+          const beforeId = (before as any)?.id as string | undefined;
+          const beforeLines = (((before as any)?.lines?.nodes ?? []) as any[])
+            .map((l) => ({merchandiseId: l?.merchandise?.id as string, quantity: Number(l?.quantity) || 0}))
+            .filter((l) => l.merchandiseId && l.quantity > 0);
+
           ctx.session.unset('cartId');
           const retry = await ctx.cart.addLines(lines).catch(() => null);
 
@@ -110,6 +175,7 @@ export async function action({request, context}: Route.ActionArgs) {
         if (!errors.length && !hasLine(cart, merchandiseId)) {
           errors = [{message: 'Продуктът не можа да бъде добавен'}];
         }
+        if (!errors.length) cart = await pairCampaignLine(ctx, cart);
         break;
       }
       case 'UPDATE_CART': {
@@ -156,6 +222,18 @@ export async function action({request, context}: Route.ActionArgs) {
   // обект), а тук само се маха, когато сумата падне под прага - виж
   // `cart-gifts.server.ts`.
   cart = await dropUnearnedGifts(cart, ctx.cart);
+  // Промо кодът от QR линка, сканиран с празна количка - виж `pending-promo.server.ts`.
+  cart = (await applyPendingPromo(ctx, cart)) as typeof cart;
+
+  /* Откъде е дошъл купувачът се закача за количката веднъж, при появата ѝ.
+   * Без него всяка поръчка излиза като директен трафик в „Продажби по източник
+   * на трафик" - виж `app/lib/visit-source.ts`. Работата е фонова и мълчалива:
+   * количката не бива да чака заради една справка. */
+  const attributedCartId = (cart as any)?.id as string | undefined;
+  if (attributedCartId && ctx.session.get('srcCart') !== attributedCartId) {
+    ctx.session.set('srcCart', attributedCartId);
+    attributeCart(ctx.env as Record<string, string | undefined>, request, attributedCartId);
+  }
 
   if (ctx.session.isPending) {
     headers.set('Set-Cookie', await ctx.session.commit());

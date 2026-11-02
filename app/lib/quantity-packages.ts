@@ -21,9 +21,16 @@ export interface QuantityTier {
 
 let current: Record<string, QuantityTier[]> = {};
 
-/** Install the tiers fetched by the server. An empty payload changes nothing. */
+/**
+ * Install the tiers fetched by the server.
+ *
+ * `null` / `undefined` means the admin could not be read — keep what we have.
+ * An empty object is a real answer: no quantity rule is running, so the cards
+ * must go. Ignoring it too left them up after the merchant switched every rule
+ * off (12.10.2026) — the isolate kept the old tiers until it was recycled.
+ */
 export function setQuantityPackages(next: Record<string, QuantityTier[]> | null | undefined) {
-  if (!next || !Object.keys(next).length) return;
+  if (!next) return;
   current = next;
 }
 

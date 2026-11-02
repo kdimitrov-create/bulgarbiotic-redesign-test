@@ -1,12 +1,13 @@
 import {useLoaderData, data, Link} from 'react-router';
 import type {Route} from './+types/article.$handle';
+import {notFoundOrRedirect} from '~/lib/redirects';
 import {getContext} from '~/lib/context';
 import {getSeoMeta} from '@cloudcart/nitro';
 import {RichText, Image} from '@cloudcart/nitro-react';
 import {PageShell, PageBackLink} from '~/components/PageShell';
 import {enhanceArticleImage, setArticleImages} from '~/lib/article-images';
 import {fetchArticleImages} from '~/lib/blog-images.server';
-import {primaryBlogHandle} from '~/lib/blog.server';
+import {allArticles, primaryBlogHandle} from '~/lib/blog.server';
 import {RelatedArticles} from '~/components/RelatedArticles';
 
 /** Default blog handle on bulgarbiotic.bg. All articles live in this blog,
@@ -34,18 +35,22 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
     ctx.storefront.getArticle(blogHandle, params.handle).catch(() => null),
     fetchArticleImages(ctx.env as Record<string, string | undefined>),
     // Свързаните статии под текста. Провал тук не бива да събаря статията -
-    // просто редът отдолу няма да се появи.
-    ctx.storefront.getArticles(blogHandle, 12).catch(() => [] as any[]),
+    // просто редът отдолу няма да се появи. Целият блог, защото API-то дава
+    // статиите от най-старата: първите 12 бяха все едни и същи стари статии.
+    allArticles(ctx.storefront, blogHandle).catch(() => [] as any[]),
   ]);
-  if (!article) throw data('Статията не е намерена', {status: 404});
+  if (!article) notFoundOrRedirect(request, 'Статията не е намерена');
   // Decorate with the real cover image URL — storefront returns empty.
   // Covers come from the admin panel; the static map is the fallback.
   // Use a wider hero image (1600x900) for the article hero banner.
   setArticleImages(liveImages);
   /* Само полетата, които картата рисува. Цялото тяло на дванадесет статии в
    * кода на страницата беше същото натоварване, което махнахме от началната. */
+  // Най-новите първи, както в /blog; статия без дата отива най-отдолу.
+  const publishedAt = (a: any): number => (a?.publishedAt ? Date.parse(a.publishedAt) : 0);
   const related = (siblings as any[])
     .filter((a) => a?.handle && a.handle !== params.handle)
+    .sort((a, b) => publishedAt(b) - publishedAt(a))
     .slice(0, 8)
     .map((a) => enhanceArticleImage(a as any, {width: 420, height: 260}))
     .map((a: any) => ({id: a.id, title: a.title, handle: a.handle, image: a.image, excerpt: a.excerpt}));

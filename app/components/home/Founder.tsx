@@ -14,7 +14,7 @@ export function Founder() {
         <div className="bb-founder-portrait">
           <span className="bb-founder-stamp">Управител · от 2019</span>
           <img
-            src="/images/people/founder-enhanced.png"
+            src="/images/people/founder-enhanced.webp"
             alt="Мариета Захариева - управител на Bulgar Biotic"
             loading="lazy"
           />

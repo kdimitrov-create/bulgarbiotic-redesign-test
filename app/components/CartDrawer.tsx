@@ -2,15 +2,19 @@ import {Await, Link, useFetcher} from 'react-router';
 import {Suspense, useEffect, useMemo, useRef, useState} from 'react';
 import type {CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
-import {getEnhancedFeatured} from '~/lib/product-images';
+import {useTrackAddToCart} from '~/lib/use-track-add-to-cart';
+import {getEnhancedFeatured, cdnResize} from '~/lib/product-images';
 import {BUMP_CART_CONFIG} from '~/lib/bump-cart-config';
 import {displayDiscountPercent, freeShippingOver} from '~/lib/active-discounts';
 import {markPricingForLine, marksForHandle} from '~/lib/product-marks';
-import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from '~/lib/cart-summary';
+import {adjustmentLines, money, subtotalLine, totalLine, codeDiscounts, type CodeDiscount, type CartSummary} from '~/lib/cart-summary';
+import {buildRuleView, isCartRuleTotal, paidForLine, ruleLabel, type RuleView} from '~/lib/cart-rule-view';
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
-import {numericId} from '~/lib/analytics';
+import {numericId, setProductIds} from '~/lib/analytics';
 import {CartOffersStrip, CartGiftLines} from './CartOffers';
+import {cartProductIds, CartProgress} from './CartProgress';
+import {CheckoutTextBanner} from './CheckoutTextBanner';
 
 import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
@@ -34,6 +38,85 @@ export const fmtEur = (amount: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount) + ' €';
 export const fmtBgn = (amount: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(amount) + ' лв';
+
+/**
+ * Активните отстъпки като готови за рисуване редове - с ЧИСЛА, не с отметки.
+ *
+ * Едно описание, защото местата са ДВЕ: футърът (широк екран) и залепената
+ * лента (телефон). Два преписа на един и същи списък се разминават - това вече
+ * се е случвало с „Поръчай 4, плати 2".
+ *
+ * ⭐ Отметката отпадна (клиент, 18.08.2026): „искам истински числа".
+ * Числата ги имаше през цялото време, просто не се рисуваха - платформата
+ * отчита правилата по два начина и всеки носи сумата си на друго място:
+ *
+ *   • правило, което идва като ред в сбора → сумата е в самия ред (`money`).
+ *     Показваше се „✓", за да не изглежда, че се вади два пъти, щом продуктовият
+ *     ред горе вече е намален. В залепената лента този довод не важи: тя е
+ *     сметката, продуктите са далеч нагоре и купувачът иска да види колко
+ *     сваля всяко правило.
+ *
+ *   • правило, слязло върху реда → сумата е в разпределението и се сборува
+ *     в `extraRuleAmounts` (виж `cart-rule-view`).
+ *
+ * ⛔ Знакът НЕ се налага насила. `adjustments` носи и редове, които ДОБАВЯТ
+ * (наложен платеж, доставка); минус пред тях би излъгал. Затова отстъпките се
+ * рисуват с истинския си знак, а правилата - с изричен минус, защото техните
+ * числа идват като положителна големина „свалени пари".
+ */
+export type DiscountRow = {key: string; label: string; value: string};
+
+export function discountRows(
+  adjustments: any[],
+  ruleView: RuleView,
+  productPromoEur = 0,
+  codes: CodeDiscount[] = [],
+): DiscountRow[] {
+  const rows: DiscountRow[] = [];
+
+  /* ⛔ ТАКСИТЕ НЕ ВЛИЗАТ. Ред с положителна сума е такса, не отстъпка -
+     „Такса наложен платеж" например. Начинът на плащане се избира чак на
+     следващата стъпка, тоест тук тя е предположение: количката приемаше
+     наложен платеж, без клиентът да го е избрал. Бележката под промокода го
+     казва честно („Таксите и доставката се изчисляват на следващата стъпка"),
+     а сумата отдолу също е без тях - виж `payable`. */
+  const discounts = adjustments.filter((row) => (money(row) ?? 0) < -0.005);
+
+  /* Намалението на самите продукти - собствен ред, винаги когато го има
+     (клиент, 18.08.2026). Съвпада ли със „Спестяваш", защото е единствената
+     съставка, това е приемливо: редът казва ОТКЪДЕ идва спестеното. */
+  if (productPromoEur > 0.005) {
+    rows.push({key: 'product-promo', label: 'Намаление на продуктите', value: `−${fmtEur(productPromoEur)}`});
+  }
+  /* Промо кодът: свой ред, защото платформата не дава такъв в `totals` и го
+     сваля мълчаливо от междинната сума. Междинната сума вече е върната ПРЕДИ
+     кода, тоест този ред е това, което я довежда до крайната. */
+  for (const d of codes) {
+    rows.push({
+      key: `code-${d.code || d.title || 'promo'}`,
+      label: d.code ? `Промо код ${d.code.toUpperCase()}` : (d.title || 'Промо код'),
+      value: `−${fmtEur(d.amountEur)}`,
+    });
+  }
+  for (const row of discounts) {
+    const name = String(row.name || row.key || '');
+    rows.push({
+      key: String(row.key ?? row.name),
+      // Правилото за количката носи и процента си: „Buy More, Save More - 10%".
+      label: isCartRuleTotal(row) ? ruleLabel(ruleView, name) : name,
+      value: fmtEur(money(row) ?? 0),
+    });
+  }
+  for (const title of ruleView.extraRuleTitles) {
+    const off = ruleView.extraRuleAmounts.get(title) ?? 0;
+    rows.push({
+      key: `rule:${title}`,
+      value: off > 0 ? `−${fmtEur(off)}` : '',
+      label: ruleLabel(ruleView, title),
+    });
+  }
+  return rows;
+}
 
 /**
  * A product whose image file is missing on the store CDN returns 404, and the
@@ -110,6 +193,22 @@ export function CartDrawer({
 function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: CartSummary | null}) {
   const {close} = useAside();
 
+  /* Добавянето от cross sell предложението се управлява ОТТУК, а не от самата
+     карта.
+     *
+     * Картата изчезва от екрана в мига, в който продуктът влезе в количката:
+     * предложението отпада от списъка, а при преминат праг за безплатна
+     * доставка си отива цялата секция. Заедно с картата умира и нейният
+     * fetcher, тоест отговорът на добавянето няма кой да го изчете и
+     * `add_to_cart` не тръгва. В dev режим се разминаваше на косъм и изглеждаше
+     * работещо, на живо не тръгваше никога (проверено с браузър, 01.09.2026).
+     *
+     * Чекмеджето стои, докато е отворено, затова fetcher-ът живее тук и се
+     * подава надолу. `upsellPending` помни коя карта е натисната - и за да
+     * знае събитието кой продукт е влязъл, и за да върти въртележката само
+     * върху нея, а не върху четирите наведнъж. */
+  const {upsellAdd, upsellPending, setUpsellPending} = useUpsellAdd();
+
   /**
    * Височината на залепената лента отива в променлива.
    *
@@ -166,8 +265,43 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
   const summaryTotal = money(totalLine(summary));
   const summarySubtotal = money(subtotalLine(summary));
   const adjustments = adjustmentLines(summary);
-  const payable = summaryTotal ?? payableEur;
-  const shownSubtotal = summarySubtotal ?? payableEur;
+  // Двата начина, по които платформата отчита правилата за количката, се
+  // привеждат към един вид - виж `cart-rule-view`.
+  const ruleView = buildRuleView(summary);
+  /* Каталожната цена срещу зачеркнатата, сборувано по редовете. `payableEur`
+     е сборът на редовете ПО КАТАЛОЖНА цена (правилата за количката идват
+     отделно), затова разликата е точно продуктовото намаление. */
+  /* ⭐ Кое намаление къде вече е отчетено - иначе блокът брои два пъти.
+   *
+   * Платформата прилага правилата за количката по два начина и това решава
+   * всичко (мерено на живо 18.08.2026):
+   *   • „Поръчай 2, плати 1" идва като СОБСТВЕН РЕД в сбора. Редът с продукта
+   *     стои на пълната си цена, значи сумата на правилото е ОТДЕЛНА.
+   *   • „Поръчай 4, плати 2" слиза върху САМИЯ РЕД. Цената на реда вече е
+   *     намалена, значи сумата на правилото е ВЪТРЕ в `payableEur`.
+   *
+   * Вторият случай беше сгрешен: „Намаление на продуктите" носеше и парите на
+   * правилото, а правилото се изписваше пак отдолу. Оттам излизаше
+   * −131,22 и −42,94 над „Спестяваш 129,58" - сбор, който не излиза. Сега
+   * парите на правилото се ИЗВАЖДАТ от продуктовото намаление и остават само
+   * на своя ред. */
+  const lineRuleEur = [...ruleView.extraRuleAmounts.values()].reduce((a, b) => a + b, 0);
+  /* Промо кодът е третият случай към горното: платформата го сваля ВЪТРЕ в
+     междинната сума и не му дава ред. Затова се вади от продуктовото намаление
+     и се връща обратно в междинната сума - виж `codeDiscounts`. */
+  const codes = codeDiscounts(summary);
+  const codeDiscountEur = codes.reduce((sum, d) => sum + d.amountEur, 0);
+  const productPromoEur = Math.max(0, msrpEur - payableEur - lineRuleEur - codeDiscountEur);
+  const rows = discountRows(adjustments, ruleView, productPromoEur, codes);
+
+  /* Таксите излизат и от сумата, не само от списъка. Иначе зачеркнатата сума
+     минус показаните намаления нямаше да дава крайната. */
+  const feesEur = adjustments.reduce((sum, row) => {
+    const v = money(row) ?? 0;
+    return v > 0.005 ? sum + v : sum;
+  }, 0);
+  const payable = Math.max(0, (summaryTotal ?? payableEur) - feesEur);
+  const shownSubtotal = (summarySubtotal ?? payableEur) + codeDiscountEur;
   const savedEur = Math.max(0, msrpEur - payable);
   const subtotal = {eur: shownSubtotal, bgn: shownSubtotal * EUR_TO_BGN};
   const rawTotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
@@ -177,10 +311,25 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
   // is EUR (verified via generalSettings.currency). The Bulgarian-lev
   // value is shown alongside as a convenience.
   const shippingTarget = freeShippingTargetEur();
-  const remainingEur = Math.max(0, shippingTarget - subtotal.eur);
+  /* Сумата, по която се мерят ПРАГОВЕТЕ - безплатната доставка и подаръците.
+   *
+   * Нарочно НЕ е `subtotal.eur`. Показваната междинна сума връща промо кода
+   * обратно вътре, за да го види купувачът на свой ред отдолу. Спечели ли
+   * подарък от колелото на късмета, той влиза като редовен ред и се нулира
+   * със 100% код - тоест цената му се появяваше в сумата, по която мерим
+   * прага, и лентата пишеше „безплатна доставка", а касата после начисляваше
+   * доставка (клиент, 31.08).
+   *
+   * Тук се взима сумата на САМАТА платформа (`Cart.totals`, ред „Междинна
+   * сума"), в която кодът вече е свален. Тя е числото, с което касата решава,
+   * значи количката и касата казват едно и също. Няма ли обобщение, се пада
+   * обратно към показваната сума. */
+  const thresholdEur = summarySubtotal ?? shownSubtotal;
+    const remainingEur = Math.max(0, shippingTarget - thresholdEur);
   const remainingBgn = remainingEur * EUR_TO_BGN;
-  const shippingPct = shippingTarget > 0 ? Math.min(100, (subtotal.eur / shippingTarget) * 100) : 100;
-  const isFreeShip = remainingEur <= 0.005; // tolerate sub-cent rounding
+  /* Препоръките (BumpCart) се крият при достигнат праг - както досега. Дали
+     доставката НАИСТИНА е безплатна е друг въпрос - виж `CartProgress`. */
+  const reachedShipTarget = remainingEur <= 0.005; // tolerate sub-cent rounding
 
   return (
     <div className="bb-cd">
@@ -203,23 +352,15 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
 
       {!isEmpty && (
         <div className="bb-cd-shipping">
-          <div className="bb-cd-shipping-text">
-            {isFreeShip ? (
-              <>
-                <span className="bb-cd-shipping-icon" aria-hidden="true">✓</span>
-                Поздравления - <strong>безплатна доставка</strong> е включена!
-              </>
-            ) : (
-              <>
-                Поръчай за още <strong className="accent">{fmtEur(remainingEur)}</strong>{SHOW_BGN ? <span className="bb-cd-shipping-bgn"> ({fmtBgn(remainingBgn)})</span> : null} и доставката е безплатна
-              </>
-            )}
-          </div>
-          <div className="bb-cd-shipping-track">
-            <div className="bb-cd-shipping-fill" style={{width: `${shippingPct}%`}} />
-          </div>
+          <CartProgress
+            cls="bb-cd"
+            quantity={cart?.totalQuantity ?? 0}
+            productIds={cartProductIds(summary)}
+            thresholdEur={thresholdEur}
+            shippingTargetEur={shippingTarget}
+          />
           {/* The merchant's gift offers and cart rules, live from the panel. */}
-          <CartOffersStrip subtotalEur={subtotal.eur} messages={summary?.messages ?? []} />
+          <CartOffersStrip subtotalEur={thresholdEur} messages={summary?.messages ?? []} lines={lines} />
         </div>
       )}
 
@@ -255,22 +396,30 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
             <div className="bb-cd-scroll">
               <ul className="bb-cd-items" data-count={lines.length}>
                 {lines.map((line) => (
-                  <CartLineRow key={line.id} line={line} onProductClick={close} />
+                  <CartLineRow
+                    key={line.id}
+                    line={line}
+                    onProductClick={close}
+                    ruleView={ruleView}
+                  />
                 ))}
                 {/* Спечеленият подарък, докато платформата още не го е сложила. */}
-                <CartGiftLines subtotalEur={subtotal.eur} lines={lines} />
+                <CartGiftLines subtotalEur={thresholdEur} lines={lines} />
               </ul>
+              <CheckoutTextBanner cls="bb-cd" />
             </div>
 
             {/* Показва се само докато безплатната доставка не е достигната. */}
-            {!isFreeShip && (
+            {!reachedShipTarget && (
               <CartUpsell
                 remainingEur={remainingEur}
                 remainingBgn={remainingBgn}
                 cartHandles={lines
                   .map((l: any) => l.merchandise?.product?.handle as string | undefined)
                   .filter(Boolean) as string[]}
-                onAdded={() => { /* no-op — fetcher reload handles UI */ }}
+                add={upsellAdd}
+                pending={upsellPending}
+                onAdd={setUpsellPending}
               />
             )}
           </div>
@@ -281,17 +430,23 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
                 страницата `/cart` - два отделни преписа щяха да се разминат. */}
             <PromoCode cart={cart} variant="drawer" />
 
+
             {/* Single-line grand total — shipping already communicated
                 up top by the progress bar, VAT note moved to subtitle.
                 Drops 3 separate rows → 1 row + 1 subtitle. */}
             {/* Редовете на търговеца между междинната и крайната сума:
                 правила за количката, отстъпки, доставка. */}
-            {adjustments.length > 0 && (
+            {/* Редът с името на правилото не бива да зависи от това дали в
+                сбора има ДРУГИ редове: количка без такса „наложен платеж"
+                нямаше нито един и целият блок отпадаше заедно с него - точно
+                затова „Поръчай 4, плати 2" не се виждаше при едни колички, а
+                при други се виждаше. */}
+            {rows.length > 0 && (
               <div className="bb-cd-adjust">
-                {adjustments.map((row) => (
-                  <div key={row.key ?? row.name} className="bb-cd-adjust-row">
-                    <span>{row.name || row.key}</span>
-                    <span>{fmtEur(money(row) ?? 0)}</span>
+                {rows.map((row) => (
+                  <div key={row.key} className="bb-cd-adjust-row">
+                    <span>{row.label}</span>
+                    <span>{row.value}</span>
                   </div>
                 ))}
               </div>
@@ -307,9 +462,6 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
                     Спестяваш <strong>{fmtEur(savedEur)}</strong>
                   </div>
                 )}
-                <div className="bb-cd-grand-note">
-                  Таксите и доставката се изчисляват на следващата стъпка
-                </div>
               </div>
               <div className="bb-cd-grand-val-col">
                 {savedEur > 0 && (
@@ -329,11 +481,55 @@ function CartDrawerInner({cart, summary}: {cart: CartData | null; summary?: Cart
                 Нарочно е ЕДИН бутон, а не два: два бутона в двата режима са две
                 места, на които после се разминава поведението. */}
             <div className="bb-cd-action" ref={actionRef}>
+              {/* Сметката пътува СЪС залепената лента, не остава горе в потока.
+                  На телефон футърът е далеч надолу и купувачът натискаше „Към
+                  плащане", без да е видял нито едно от правилата, които го
+                  правят изгодно. Затова тук са същите редове: всяка активна
+                  отстъпка с числото си, после спестеното общо, после сумата.
+
+                  `aria-hidden`, защото това е ПОВТОРЕНИЕ - истинските редове
+                  стоят във футъра и екранният четец ги чете там веднъж.
+                  Показва се само под 1280px; на широк екран футърът се вижда
+                  без превъртане и повторението е излишно (виж `app.css`). */}
+              {(rows.length > 0 || savedEur > 0) && (
+                <div className="bb-cd-action-savings" aria-hidden="true">
+                  {rows.map((row) => (
+                    <div key={row.key} className="bb-cd-action-row">
+                      <span>{row.label}</span>
+                      <span>{row.value}</span>
+                    </div>
+                  ))}
+                  {savedEur > 0 && (
+                    <div className="bb-cd-action-saved">
+                      <span>
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Спестяваш
+                      </span>
+                      <strong>{fmtEur(savedEur)}</strong>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="bb-cd-action-total" aria-hidden="true">
                 <span>Крайна сума</span>
-                <strong>{fmtEur(total.eur)}</strong>
+                <span className="bb-cd-action-total-val">
+                  {/* Старата сума, зачеркната, точно преди новата - същото,
+                      което футърът показва на широк екран. */}
+                  {savedEur > 0 && (
+                    <s className="bb-cd-action-msrp">{fmtEur(rawTotal.eur)}</s>
+                  )}
+                  <strong>{fmtEur(total.eur)}</strong>
+                </span>
               </div>
-              <CheckoutButton cart={cart} className="bb-cd-checkout" />
+              <CheckoutButton cart={cart} className="bb-cd-checkout" trackValue={total.eur} />
+            </div>
+
+            {/* Точно под бутона: последното, което се чете преди натискане, е
+                какво още НЕ е в сумата. */}
+            <div className="bb-cd-grand-note">
+              Таксите и доставката се изчисляват на следващата стъпка
             </div>
 
             <CartTrustStrip />
@@ -409,7 +605,15 @@ export function CartTrustStrip() {
 
 /** Single cart-line row with image, title, price (dual currency),
  *  −/+ quantity, and remove button. */
-function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => void}) {
+function CartLineRow({
+  line,
+  onProductClick,
+  ruleView,
+}: {
+  line: any;
+  onProductClick: () => void;
+  ruleView?: RuleView;
+}) {
   const update = useFetcher({key: `update-${line.id}`});
   const remove = useFetcher({key: `remove-${line.id}`});
 
@@ -440,8 +644,18 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
   const sale = bothCurrencies(pricing.price);
   const msrp = pricing.compareAtPrice ? bothCurrencies(pricing.compareAtPrice) : sale;
   const hasDiscount = msrp.eur > sale.eur + 0.005;
-  const saleEur = sale.eur;
-  const saleBgn = sale.bgn;
+
+  /* Сумата на реда е тази, която клиентът плаща за него.
+   *
+   * При правило с условие по брой на продукта („Поръчай 2, плати 1") редът
+   * стои на пълната си сума, а отстъпката пътува отделно в сбора - тук тя се
+   * прибира обратно към реда, който я е спечелил, и картата спира да показва
+   * 42,94, когато на касата се плащат 21,47. При правило с условие по брой в
+   * количката редът вече е намален и нищо не се вади втори път. */
+  const paid = ruleView ? paidForLine(ruleView, String(line.id), sale.eur) : sale.eur;
+  const saleEur = paid ?? sale.eur;
+  const saleBgn = saleEur * EUR_TO_BGN;
+  const ruleTitles = ruleView?.lineRuleTitles.get(String(line.id)) ?? [];
 
   return (
     <li className="bb-cd-item">
@@ -451,7 +665,8 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
         className="bb-cd-item-imglink"
         prefetch="intent"
       >
-        <img src={img} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
+        {/* Миниатюрата е ~64 px, а адресът от API-то идва на 1920. */}
+        <img src={cdnResize(img, 160)} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
       </Link>
       <div className="bb-cd-item-info">
         <Link
@@ -463,6 +678,11 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
           {title}
         </Link>
         {variantTitle && <div className="bb-cd-item-meta">{variantTitle}</div>}
+        {/* Кое правило е свалило цената на този ред - иначе намалената сума
+            изглежда като грешка. */}
+        {ruleTitles.map((title) => (
+          <div key={title} className="bb-cd-item-rule">{ruleView ? ruleLabel(ruleView, title) : title}</div>
+        ))}
 
         <div className="bb-cd-item-row">
           {/* −/+ stepper */}
@@ -515,19 +735,18 @@ function CartLineRow({line, onProductClick}: {line: any; onProductClick: () => v
         </div>
       </div>
 
+      {/* Две числа, за избраното в момента количество: пълната сума на реда
+          зачеркната и платената под нея. Няма отстъпка - остава само едното.
+          (Клиент, 18.08.2026: без „× брой" и без цена „на брой".) */}
       <div className="bb-cd-item-price">
+        {hasDiscount && (
+          <div className="bb-cd-item-price-msrp">
+            <span className="bb-cd-item-price-msrp-eur">{fmtEur(msrp.eur)}</span>
+            {SHOW_BGN && <span className="bb-cd-item-price-msrp-bgn">{fmtBgn(msrp.bgn)}</span>}
+          </div>
+        )}
         <div className="bb-cd-item-price-eur">{fmtEur(saleEur)}</div>
         {SHOW_BGN && <div className="bb-cd-item-price-bgn">{fmtBgn(saleBgn)}</div>}
-        {hasDiscount && (
-          <>
-            <div className="bb-cd-item-price-msrp">
-              <span className="bb-cd-item-price-msrp-eur">{fmtEur(msrp.eur)}</span>
-              {SHOW_BGN && <span className="bb-cd-item-price-msrp-bgn">{fmtBgn(msrp.bgn)}</span>}
-            </div>
-            {/* Per-item "Спестяваш …" removed per client request (kept only the
-                strikethrough MSRP above; savings still shown on the grand total). */}
-          </>
-        )}
       </div>
     </li>
   );
@@ -571,16 +790,37 @@ interface UpsellSettings {
  * "Добави +" uses the existing /cart action so the cart re-fetches and
  * the progress bar updates automatically.
  */
-function CartUpsell({
+/** Общият fetcher за добавяне от bump cart-а - виж защо в `CartDrawerInner`.
+ *  Ползва го и страницата `/cart`, която държи въртележката по същия начин. */
+export function useUpsellAdd(key = 'cart-upsell-add') {
+  const upsellAdd = useFetcher({key});
+  const [upsellPending, setUpsellPending] = useState<UpsellSuggestion | null>(null);
+  useTrackAddToCart(
+    upsellAdd,
+    upsellPending?.merchandiseId ?? undefined,
+    1,
+    upsellPending?.handle,
+  );
+  return {upsellAdd, upsellPending, setUpsellPending};
+}
+
+export function CartUpsell({
   remainingEur,
   remainingBgn,
   cartHandles,
-  onAdded,
+  add,
+  pending,
+  onAdd,
+  className,
 }: {
   remainingEur: number;
   remainingBgn: number;
+  /** Допълнителен клас - на страницата `/cart` въртележката седи под продуктите. */
+  className?: string;
   cartHandles: string[];
-  onAdded: () => void;
+  add: ReturnType<typeof useFetcher>;
+  pending: UpsellSuggestion | null;
+  onAdd: (s: UpsellSuggestion) => void;
 }) {
   const fetcher = useFetcher<{
     settings: UpsellSettings;
@@ -614,6 +854,13 @@ function CartUpsell({
     return pool.filter((p) => p.availableForSale).slice(0, 4);
   }, [fetcher.data]);
 
+  /* Числата на предложените продукти. Без тях `add_to_cart` от чекмеджето
+     тръгва с handle вместо с id и не се връзва с нито един продукт в каталога
+     на Meta - същият капан, за който предупреждава `analytics.ts`. */
+  setProductIds(Object.fromEntries(
+    picks.map((p: any) => [p.handle, String(numericId(p.id))]),
+  ));
+
   // Nothing to suggest yet — render nothing rather than an awkward shell
   if (picks.length === 0) return null;
 
@@ -624,7 +871,7 @@ function CartUpsell({
   const discountPercent = settings?.percent ?? 0;
 
   return (
-    <div className="bb-cd-upsell">
+    <div className={className ? `bb-cd-upsell ${className}` : 'bb-cd-upsell'}>
       <div className="bb-cd-upsell-head">
         <div className="bb-cd-upsell-head-row">
           <div className="bb-cd-upsell-head-eyebrow">
@@ -637,7 +884,7 @@ function CartUpsell({
         </div>
         <div className="bb-cd-upsell-head-title">{headline}</div>
       </div>
-      <UpsellCarousel picks={picks} discountPercent={discountPercent} onAdded={onAdded} />
+      <UpsellCarousel picks={picks} discountPercent={discountPercent} add={add} pending={pending} onAdd={onAdd} />
     </div>
   );
 }
@@ -652,11 +899,15 @@ function CartUpsell({
 function UpsellCarousel({
   picks,
   discountPercent,
-  onAdded,
+  add,
+  pending,
+  onAdd,
 }: {
   picks: UpsellSuggestion[];
   discountPercent: number;
-  onAdded: () => void;
+  add: ReturnType<typeof useFetcher>;
+  pending: UpsellSuggestion | null;
+  onAdd: (s: UpsellSuggestion) => void;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const [pos, setPos] = useState<'start' | 'middle' | 'end' | 'static'>('static');
@@ -733,16 +984,23 @@ function UpsellCarousel({
       )}
       <div className="bb-cd-upsell-carousel" ref={scrollerRef}>
         {picks.map((p) => (
-          <UpsellCard key={p.id} suggestion={p} discountPercent={discountPercent} onAdded={onAdded} />
+          <UpsellCard key={p.id} suggestion={p} discountPercent={discountPercent} add={add} pending={pending} onAdd={onAdd} />
         ))}
       </div>
     </div>
   );
 }
 
-function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discountPercent: number; onAdded: () => void}) {
-  const add = useFetcher({key: `upsell-add-${suggestion.id}`});
-  const isAdding = add.state !== 'idle';
+function UpsellCard({suggestion, add, pending, onAdd}: {
+  suggestion: UpsellSuggestion;
+  discountPercent: number;
+  add: ReturnType<typeof useFetcher>;
+  pending: UpsellSuggestion | null;
+  onAdd: (s: UpsellSuggestion) => void;
+}) {
+  /* Fetcher-ът е един за всички карти и се държи от чекмеджето - виж защо в
+     `CartDrawerInner`. Върти се само натиснатата, не и трите ѝ съседки. */
+  const isAdding = add.state !== 'idle' && pending?.id === suggestion.id;
   const enhanced = getEnhancedFeatured(suggestion.handle);
   const img = enhanced || suggestion.image || '/noimage.svg';
   // `suggestion.price` is the variant price, which ALREADY has the promotion
@@ -758,16 +1016,14 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
   const saleEur = sale.eur;
   const saleBgn = sale.bgn;
 
-  useEffect(() => {
-    if (add.state === 'idle' && add.data) {
-      onAdded();
-    }
-  }, [add.state, add.data, onAdded]);
+  /* Тук стоеше ефект, който викаше `onAdded`. Той беше празен по подразбиране
+     („fetcher reload handles UI"), а с общия fetcher щеше да се пали и в
+     четирите карти наведнъж. Опресняването на списъка си върви само. */
 
   return (
     <div className="bb-cd-upsell-card">
       <Link to={`/product/${suggestion.handle}`} className="bb-cd-upsell-img" prefetch="intent">
-        <img src={img} alt={suggestion.title} loading="lazy" onError={fallbackToPlaceholder} />
+        <img src={cdnResize(img, 400)} alt={suggestion.title} loading="lazy" onError={fallbackToPlaceholder} />
         {hasDiscount && <span className="bb-cd-upsell-badge">−{discountPct}%</span>}
       </Link>
       <div className="bb-cd-upsell-info">
@@ -789,7 +1045,12 @@ function UpsellCard({suggestion, onAdded}: {suggestion: UpsellSuggestion; discou
             )}
           </div>
         )}
-        <add.Form method="post" action={CART_ACTION} className="bb-cd-upsell-add-form">
+        <add.Form
+          method="post"
+          action={CART_ACTION}
+          className="bb-cd-upsell-add-form"
+          onSubmit={() => onAdd(suggestion)}
+        >
           <input type="hidden" name="action" value="ADD_TO_CART" />
           <input type="hidden" name="merchandiseId" value={suggestion.merchandiseId ?? ''} />
           {/* Fallback: if the upsell suggestion has no variant id, send the

@@ -3,9 +3,8 @@ import {Suspense, useEffect, useRef, useState} from 'react';
 import type {Shop, Menu, CartData} from '@cloudcart/nitro';
 import {useAside} from './Aside';
 import {SearchOverlay} from './SearchOverlay';
-import {MegaMenu} from './MegaMenu';
-import {productsNode, hasRole, NAV_ROLE, type NavNode} from '~/lib/navigation';
-import {syncCartToPlatform} from '~/lib/cart-sync';
+import {MegaMenu, KIDS_CAMPAIGN} from './MegaMenu';
+import {productsNode, isFooterGroup, type NavNode} from '~/lib/navigation';
 
 interface HeaderProps {
   shop: Shop;
@@ -59,26 +58,10 @@ export function Header({shop, menu, cart}: HeaderProps) {
   const cartBtnRef = useRef<HTMLButtonElement>(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  /** Коя група в мобилното чекмедже е разтворена. Само една наведнъж. */
-  const [openGroup, setOpenGroup] = useState<string | null>(null);
-  /* Лентата мери сама себе си.
-   *
-   * ⚠️ Менюто идва от панела, тоест броят и дължината на имената се менят
-   * без да пипаме код. При Montserrat на 16px осем елемента вече не се
-   * събират и текстът лягаше върху логото и иконите. Затова, когато редът
-   * не стига, минаваме на бургер - същото поведение като на таблет, вместо
-   * счупена лента. Нуждата се запомня, докато навигацията е видима, иначе
-   * скритата навигация мери нула и режимът щеше да се самозаключи. */
-  const [navCompact, setNavCompact] = useState(false);
-  const navRef = useRef<HTMLElement | null>(null);
-  /** Естествената ширина на реда с връзките. */
-  const navNeedRef = useRef(0);
-  /** Всичко в лентата, което НЕ е редът: лого, икони и двете междини. */
-  const navChromeRef = useRef(0);
-  /** Кои връзки са премерени - сменят се от панела, без да пипаме код. */
-  const navMeasuredForRef = useRef('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
+  // Коя група в чекмеджето е разтворена (акордеонът на телефона).
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const megaCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /** Open mega-menu instantly; cancel any pending close. */
@@ -165,61 +148,19 @@ export function Header({shop, menu, cart}: HeaderProps) {
     };
   }, []);
 
-  // Двете посоки на решението вече не се отменят една друга.
-  //
-  // Първата версия питаше различно нещо в двата режима: разгъната сравняваше
-  // scrollWidth с clientWidth на самата колона, а свита пресмяташе свободното
-  // място по формула „ширина минус лого минус икони". Формулата излизаше с
-  // двайсетина пиксела по-щедра от истинската колона, тоест всяко от двете
-  // числа отменяше другото и лентата се люлееше по 170 пъти в секунда.
-  //
-  // Това не е козметика. Всяко превключване е обновяване с обикновен
-  // приоритет, а непрекъснатият им поток остави преходите без ред завинаги -
-  // а на преход вървят навигацията между страниците, дорисуването след
-  // hydration и изчакването на количката. Оттам идваше „адресът се сменя, а
-  // съдържанието остава" и „количката не се обновява без презареждане".
-  //
-  // Затова, докато редът е видим, се записват две числа: колко му трябва и
-  // колко заема всичко останало в лентата. Второто е постоянно (лого + икони +
-  // междините), тоест мястото за реда е „ширина на лентата минус него" и се
-  // смята и когато редът е скрит и мери нула. Решението става чиста функция на
-  // ширината на лентата - едно и също число и в двата режима, затова двете
-  // посоки не могат да се редуват.
-  useEffect(() => {
-    const signature = items.map((i) => i.title).join('|');
-    if (navMeasuredForRef.current !== signature) {
-      // Менюто се смени от панела - старите мерки вече не важат.
-      navMeasuredForRef.current = signature;
-      navNeedRef.current = 0;
-      navChromeRef.current = 0;
-      if (navCompact) {
-        setNavCompact(false); // разгъваме, за да има какво да се премери
-        return;
-      }
-    }
-    const decide = () => {
-      const inner = document.querySelector<HTMLElement>('.bb-header-inner');
-      if (!inner) return;
-      const nav = navRef.current;
-      if (!navCompact && nav?.clientWidth) {
-        navNeedRef.current = nav.scrollWidth;
-        navChromeRef.current = inner.clientWidth - nav.clientWidth;
-      }
-      if (!navNeedRef.current || !navChromeRef.current) return;
-      const next = navNeedRef.current > inner.clientWidth - navChromeRef.current;
-      setNavCompact((prev) => (prev === next ? prev : next));
-    };
-    decide();
-    window.addEventListener('resize', decide);
-    // Шрифтът се качва след първата рисунка и буквите сменят ширината си,
-    // затова се премерва още веднъж, щом лицата са готови.
-    document.fonts?.ready.then(decide).catch(() => {});
-    return () => window.removeEventListener('resize', decide);
-  }, [navCompact, items]);
+  /* 🛑 Тук стоеше измерване, което сваляше цялата лента в бургер, щом менюто не
+   * се събере на един ред. На истинския магазин менюто от панела е по-дълго и
+   * лентата излизаше с бургер на десктоп - нещо, което никой не е искал
+   * (клиент, 2026-08-13). Махнато е нарочно: хоризонталното меню е решението,
+   * а свиването става с разстоянието и кегела по-долу в CSS-а. Бургер има само
+   * под 1200px, където колоната наистина не стига.
+   *
+   * Ако някой ден менюто пак не се събира, отговорът е по-малко разстояние или
+   * по-къси имена в панела, не скриване на цялата навигация. */
 
   return (
     <>
-    <header ref={headerRef} className={`bb-header${navCompact ? ' bb-header--compact' : ''}`}>
+    <header ref={headerRef} className="bb-header">
       <div className="bb-container bb-header-inner">
         {/* Mobile-only hamburger pinned to the LEFT edge of the header — this
          * matches the elegant "burger / logo-center / search+cart" pattern
@@ -242,7 +183,7 @@ export function Header({shop, menu, cart}: HeaderProps) {
           <img className="bb-logo" src="/logo.svg" alt={shop.name} />
         </Link>
 
-        <nav className="bb-nav" ref={navRef}>
+        <nav className="bb-nav">
           {items.map((item) => {
             // The "Продукти" item is enhanced with a hover mega-menu.
             // Treat any nav item that targets /category/all-products (or
@@ -280,12 +221,16 @@ export function Header({shop, menu, cart}: HeaderProps) {
             const isPromo =
               !isNewsletter &&
               (item.url === '/selection/sale' || item.title.toLowerCase().includes('промоции'));
+            // Back to school: „За деца" изпъква, докато кампанията е активна.
+            // По адреса, не по надписа - панелът може да преименува елемента.
+            // `item.url` идва от панела и може да липсва (елемент-заглавие).
+            const isKids = KIDS_CAMPAIGN.active && !!item.url && item.url.endsWith(KIDS_CAMPAIGN.to);
             return (
               <NavLink
                 key={item.title}
                 to={item.url}
                 className={({isActive}) =>
-                  `bb-nav-link${isPromo ? ' bb-nav-link--promo' : ''}${isNewsletter ? ' bb-nav-link--newsletter' : ''}${isActive ? ' active' : ''}`
+                  `bb-nav-link${isPromo ? ' bb-nav-link--promo' : ''}${isNewsletter ? ' bb-nav-link--newsletter' : ''}${isKids ? ' bb-nav-link--kids' : ''}${isActive ? ' active' : ''}`
                 }
                 prefetch="intent"
               >
@@ -326,28 +271,25 @@ export function Header({shop, menu, cart}: HeaderProps) {
                 <path d="M5.5 19.5c1.4-3.2 3.9-4.8 6.5-4.8s5.1 1.6 6.5 4.8" />
               </svg>
             </NavLink>
-            {/* Иконката отваря количката на CloudCart.
+            {/* Иконката отваря НАШАТА количка.
 
-                `/cart` е резервиран в диспечера на Nova, тоест го рисува
-                платформата. Тя обаче не знае за количката, направена през
-                Storefront API-то, докато не я „осинови" - затова точно преди
-                излизането се вика `checkoutUrl` (`/checkout/adopt/<jwt>`).
+                🔄 До 13.08.2026 тук имаше тихо „осиновяване": преди излизането
+                се викаше `checkoutUrl` (`/checkout/adopt/<jwt>`), защото `/cart`
+                беше резервиран в диспечера на Nova и го рисуваше платформата,
+                която не знае за количката от Storefront API-то.
 
-                ⚠️ Прехвърлянето е ТУК, а не при всяко добавяне. Пробвано на
-                всеки „Купи", то изпразваше количката: отговорът на adopt носи
-                сесийна бисквитка, която през проксито се пренаписва към нашия
-                домейн и застъпва нашата, заедно с ключа на количката. */}
+                Резервацията падна, `/cart` е наш и рисува нашата количка, тоест
+                осиновяването няма какво да догонва. Махнато е нарочно: на
+                насочен домейн `/checkout/adopt/*` се обслужва от платформата
+                и заявката щеше да е истинска - хабеше талон и връщаше сесийна
+                бисквитка, която застъпва нашата и изпразва количката (същият
+                симптом, заради който прехвърлянето беше преместено тук от
+                бутоните „Купи"). Прехвърлянето става веднъж, на излизане към
+                касата, през `/checkout-start`. */}
             <a
               ref={cartBtnRef as any}
               href="/cart"
               className="bb-icon-btn bb-icon-cart"
-              onClick={async (e) => {
-                const resolved = await cart;
-                if (!resolved?.checkoutUrl || (resolved?.totalQuantity ?? 0) === 0) return;
-                e.preventDefault();
-                await syncCartToPlatform(resolved.checkoutUrl);
-                window.location.href = '/cart';
-              }}
               aria-label="Количка"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -386,128 +328,6 @@ export function Header({shop, menu, cart}: HeaderProps) {
       />
 
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
-    </header>
-
-      {/* Мобилното чекмедже стои ИЗВЪН <header> нарочно.
-        *
-        * Лентата има `backdrop-filter`, а филтърът прави от нея отправна рамка
-        * за всичко `position: fixed` вътре. Тоест чекмеджето се залепваше за
-        * лентата, вместо за екрана. Докато лентата е залепена горе, това не
-        * личи - но в мига, в който чекмеджето се отвори, заключването на
-        * превъртането слага `overflow: hidden` на body, това чупи `sticky`,
-        * лентата отскача на мястото си в документа и отнася чекмеджето със
-        * себе си. Измерено на живо при превъртане 1754: чекмеджето излизаше на
-        * -1753, тоест далеч над видимото. Оттам „менюто се отваря най-горе на
-        * страницата и не се вижда".
-        *
-        * Извън лентата `fixed` се отнася към екрана и менюто излиза където и да
-        * се намира посетителят. */}
-      <div
-        className={`bb-mobile-overlay${mobileOpen ? ' open' : ''}`}
-        onClick={() => setMobileOpen(false)}
-        aria-hidden="true"
-      />
-      <aside className={`bb-mobile-drawer${mobileOpen ? ' open' : ''}`} aria-label="Навигация">
-        <div className="bb-mobile-head">
-          <img src="/logo.svg" alt={shop.name} />
-          <button
-            type="button"
-            className="bb-mobile-close"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Затвори"
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
-        </div>
-        {/* Подменютата ги имаше само на десктоп.
-            „Продукти" отваря панел с групи (по цел, по форма, по възраст) и
-            седемнайсет връзки към категории - на телефон те бяха недостижими,
-            защото чекмеджето рисуваше само първото ниво. Тук същото дърво става
-            акордеон: групата се разтваря на място, вместо да води в задънена
-            улица. */}
-        <nav className="bb-mobile-nav">
-          {items.map((item) => {
-            const kids = ((item as any).children ?? []) as NavNode[];
-            const branches = kids.filter((k) => k.url || k.children?.some((c) => c.url));
-            if (!branches.length) {
-              return (
-                <Link
-                  key={item.title}
-                  to={item.url}
-                  prefetch="intent"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {item.title}
-                </Link>
-              );
-            }
-            const isOpen = openGroup === item.title;
-            return (
-              <div key={item.title} className="bb-mobile-group">
-                <button
-                  type="button"
-                  className={`bb-mobile-group-btn${isOpen ? ' open' : ''}`}
-                  aria-expanded={isOpen}
-                  onClick={() => setOpenGroup(isOpen ? null : item.title)}
-                >
-                  {item.title}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-                {isOpen && (
-                  <div className="bb-mobile-sub">
-                    {item.url && (
-                      <Link to={item.url} className="bb-mobile-sub-all" onClick={() => setMobileOpen(false)}>
-                        Виж всички
-                      </Link>
-                    )}
-                    {branches.map((child) =>
-                      child.children?.some((c) => c.url) ? (
-                        <div key={child.id} className="bb-mobile-subgroup">
-                          {/* Групата с ролята „footer" е редът с бутони под
-                              панела на десктоп - името ѝ („Долен ред") е
-                              вътрешно за панела и не се показва на клиента. */}
-                          {hasRole(child, NAV_ROLE.footer) ? null : (
-                            <span className="bb-mobile-subhead">{child.title}</span>
-                          )}
-                          {child.children
-                            .filter((c) => c.url)
-                            .map((c) => (
-                              <Link key={c.id} to={c.url!} onClick={() => setMobileOpen(false)}>
-                                {c.title}
-                              </Link>
-                            ))}
-                        </div>
-                      ) : child.url ? (
-                        <Link key={child.id} to={child.url} onClick={() => setMobileOpen(false)}>
-                          {child.title}
-                        </Link>
-                      ) : null,
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          <Link to="/account" onClick={() => setMobileOpen(false)}>
-            Профил
-          </Link>
-          <Link to="/page/about-us#contact" onClick={() => setMobileOpen(false)}>
-            Контакти
-          </Link>
-        </nav>
-        <div className="bb-mobile-foot">
-          <a href="tel:+359882754163" className="bb-mobile-call">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-            </svg>
-            +359 88 275 4163
-          </a>
-        </div>
-      </aside>
 
       <style>{`
         .bb-header {
@@ -538,17 +358,16 @@ export function Header({shop, menu, cart}: HeaderProps) {
            long menu label from the admin panel shrank the logo to a stamp. */
         .bb-nav { grid-area: nav; min-width: 0; }
         .bb-header-actions { grid-area: actions; }
-        /* Свит режим: редът не стига, минаваме на бургер. Правилата са
-           същите като на таблет, само че се пускат по мярка, а не по ширина. */
-        .bb-header--compact .bb-header-inner {
-          grid-template-columns: auto 1fr auto;
-          grid-template-areas: "burger logo actions";
-        }
-        .bb-header--compact .bb-nav { display: none; }
-        .bb-header--compact .bb-nav-toggle--left { display: flex !important; }
-        .bb-header--compact .bb-logo-link { justify-self: center; }
-
-        @media (max-width: 1100px) {
+        /* 1200, не 1100: под тази ширина колоната за менюто пада под 750px.
+           ⚠️ Разстоянията и кегелът се върнаха на тези от макета (16px, gap до
+           24). Свиването от 13.08 беше заради „Научноизследователска дейност" в
+           панела; днес пунктът се казва „Наука" и цялото меню иска 737px при
+           1200 - остават 32px до иконата за търсене. Мерено на живо 17.08 на
+           1200, 1280 и 1440.
+           Кегелът е 16 от 1280 нагоре - точно като макета - и слиза на 15 чак
+           при 1200: там редът иска 746 пиксела в колона от 737 и „Продукти" и
+           „Блог" се режеха по буква. Мерено на живо, не на око. */
+        @media (max-width: 1199px) {
           /* Tablet + mobile: swap layout to burger-center-actions */
           .bb-header-inner {
             grid-template-columns: auto 1fr auto;
@@ -582,20 +401,35 @@ export function Header({shop, menu, cart}: HeaderProps) {
            Manrope, тоест при същите пиксели се чете по-ситно.
            Забраната за пренасяне върви заедно с това: на по-голям кегел дългите имена
            („Абонирай се за бюлетин") се пречупваха на два реда и разбиваха
-           реда. Под 1100px менюто и бездруго се скрива в чекмеджето. */
+           реда. Под 1200px менюто и бездруго се скрива в чекмеджето. */
         /* ⚠️ Разстоянието е гъвкаво, не заковано на 30px.
          * Montserrat е чувствително по-широк от Akrobat, а менюто порасна на
          * 16px и на 8 елемента. При закованите 30px редът искаше 1010px в
          * 932px налични - излизаше извън мястото си и стъпваше върху логото
          * отляво и върху иконите отдясно. Свива се според ширината на екрана,
          * а кегелът остава 16px, както е искането. */
-        .bb-nav { display: flex; gap: clamp(10px, 1vw, 24px); justify-content: center; font-size: 16px; font-weight: 600; letter-spacing: 0.2px; }
+        /* Кегелът също се свива, не само разстоянието.
+         *
+         * ⚠️ Числата не са на око, мерени са върху живата лента с истинското
+         * меню на магазина (седем елемента, едно от които е
+         * „Научноизследователска дейност" - само то иска към 270px при 16px):
+         *
+         *   16px    ред иска 973px, колоната дава 932px  → реже се
+         *   14.5px  ред иска 911px                        → събира се
+         *
+         * Затова горната граница е 14.5px, а не исканите 16px. Иска ли се пак
+         * 16px, начинът е по-късо име в панела („Наука" вместо
+         * „Научноизследователска дейност"), не по-малко меню.
+         *
+         * Под 1200px колоната става под 750px и никакво свиване не помага -
+         * там менюто минава в чекмеджето, както си беше. */
+        .bb-nav { display: flex; gap: clamp(10px, 1vw, 24px); justify-content: center; font-size: clamp(15px, 1.25vw, 16px); font-weight: 600; letter-spacing: 0.2px; }
         /* Предпазител: каквото не се събере, се отрязва в собствената си
          * колона, вместо да се изсипе върху логото и иконите. Преливането е
          * видимо (последният елемент се реже), но не чупи цялата лента. */
         .bb-nav { overflow: hidden; }
         .bb-nav-link { white-space: nowrap; }
-        @media (max-width: 1100px) { .bb-nav { display: none; } }
+        @media (max-width: 1199px) { .bb-nav { display: none; } }
         .bb-nav-link {
           color: var(--color-ink);
           padding: 6px 0;
@@ -618,6 +452,13 @@ export function Header({shop, menu, cart}: HeaderProps) {
         }
         .bb-nav-link--newsletter::after { display: none; }
         .bb-nav-link--newsletter:hover { background: #c20d59; color: #fff; }
+        /* Back to school: „За деца" е розов текст, докато трае кампанията
+           (флагът е KIDS_CAMPAIGN в MegaMenu.tsx). Розовият фон на капсулата
+           е махнат на 09.10.2026 по клиент. */
+        .bb-nav-link--kids {
+          color: var(--color-brand-pink);
+          font-weight: 800;
+        }
         /* Keep the CTA pill unchanged (white label on pink) even when its page
            is active — the generic ".active → pink text" rule would otherwise
            hide the label on the pink background. Color only, so hover still
@@ -762,9 +603,16 @@ export function Header({shop, menu, cart}: HeaderProps) {
           transition: color 0.2s, padding 0.2s;
         }
         .bb-mobile-nav a:hover { color: var(--color-brand-pink); padding-left: 6px; }
+        .bb-mobile-foot { padding: 18px 24px; border-top: 1px solid rgba(10, 37, 64, 0.1); }
+        .bb-mobile-call {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: var(--color-ink); color: var(--color-cream-1);
+          padding: 9px 18px; border-radius: 999px;
+          font-size: 12px; font-weight: 700;
+        }
+        .bb-mobile-call svg { width: 13px; height: 13px; }
 
-        /* Група с подменю: същият ред, но се разтваря на място. */
-        .bb-mobile-group-btn {
+        /* Акордеонът в чекмеджето на телефона. */        .bb-mobile-group-btn {
           width: 100%;
           display: flex; align-items: center; justify-content: space-between; gap: 12px;
           padding: 14px 0;
@@ -798,15 +646,119 @@ export function Header({shop, menu, cart}: HeaderProps) {
           padding: 11px 0;
           border-bottom: 1px solid rgba(10, 37, 64, 0.07);
         }
-        .bb-mobile-foot { padding: 18px 24px; border-top: 1px solid rgba(10, 37, 64, 0.1); }
-        .bb-mobile-call {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: var(--color-ink); color: var(--color-cream-1);
-          padding: 9px 18px; border-radius: 999px;
-          font-size: 12px; font-weight: 700;
-        }
-        .bb-mobile-call svg { width: 13px; height: 13px; }
       `}</style>
+    </header>
+
+      {/* Чекмеджето стои ИЗВЪН лентата нарочно.
+        * `.bb-header` е с `backdrop-filter`, а всеки предшественик с филтър или
+        * трансформация става отправна точка за `position: fixed` наследниците
+        * си - тоест чекмеджето се закачаше за лентата, не за екрана. Докато
+        * лентата е залепена горе, разликата не личи; отварянето обаче слага
+        * `body { overflow: hidden }` за заключване на скрола, това чупи
+        * `sticky`, лентата пада на мястото си в документа и влачи чекмеджето
+        * със себе си. Мерено при скрол 1754: чекмеджето с `top: -1753`, тоест
+        * далеч над видимото - „менюто се отваря най-горе и не се вижда".  */}
+      <div
+        className={`bb-mobile-overlay${mobileOpen ? ' open' : ''}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+      <aside className={`bb-mobile-drawer${mobileOpen ? ' open' : ''}`} aria-label="Навигация">
+        <div className="bb-mobile-head">
+          <img src="/logo.svg" alt={shop.name} />
+          <button
+            type="button"
+            className="bb-mobile-close"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Затвори"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+        <nav className="bb-mobile-nav">
+          {items.map((item) => {
+            const kids = ((item as any).children ?? []) as NavNode[];
+            const branches = kids.filter((k) => k.url || k.children?.some((c) => c.url));
+            if (!branches.length) {
+              return (
+                <Link
+                  key={item.title}
+                  to={item.url}
+                  prefetch="intent"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {item.title}
+                </Link>
+              );
+            }
+            const isOpen = openGroup === item.title;
+            return (
+              <div key={item.title} className="bb-mobile-group">
+                <button
+                  type="button"
+                  className={`bb-mobile-group-btn${isOpen ? ' open' : ''}`}
+                  aria-expanded={isOpen}
+                  onClick={() => setOpenGroup(isOpen ? null : item.title)}
+                >
+                  {item.title}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {isOpen && (
+                  <div className="bb-mobile-sub">
+                    {item.url && (
+                      <Link to={item.url} className="bb-mobile-sub-all" onClick={() => setMobileOpen(false)}>
+                        Виж всички
+                      </Link>
+                    )}
+                    {branches.map((child) =>
+                      child.children?.some((c) => c.url) ? (
+                        <div key={child.id} className="bb-mobile-subgroup">
+                          {/* Групата с ролята „footer" е редът с бутони под
+                              панела на десктоп - името ѝ („Долен ред") е
+                              вътрешно за панела и не се показва на клиента. */}
+                          {isFooterGroup(child) ? null : (
+                            <span className="bb-mobile-subhead">{child.title}</span>
+                          )}
+                          {child.children
+                            .filter((c) => c.url)
+                            .map((c) => (
+                              <Link key={c.id} to={c.url!} onClick={() => setMobileOpen(false)}>
+                                {c.title}
+                              </Link>
+                            ))}
+                        </div>
+                      ) : child.url ? (
+                        <Link key={child.id} to={child.url} onClick={() => setMobileOpen(false)}>
+                          {child.title}
+                        </Link>
+                      ) : null,
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          <Link to="/account" onClick={() => setMobileOpen(false)}>
+            Профил
+          </Link>
+          <Link to="/contacts" onClick={() => setMobileOpen(false)}>
+            Контакти
+          </Link>
+        </nav>
+        <div className="bb-mobile-foot">
+          <a href="tel:+359882754163" className="bb-mobile-call">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+            </svg>
+            +359 88 275 4163
+          </a>
+        </div>
+      </aside>
+
     </>
   );
 }

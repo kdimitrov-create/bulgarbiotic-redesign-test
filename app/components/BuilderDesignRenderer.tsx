@@ -2,7 +2,7 @@ import React, {Fragment, useEffect, useRef, useState} from 'react';
 import {Link} from 'react-router';
 import {entries, headingPairs, isOn, listItems, number, text, withinSchedule} from '~/lib/builder-settings';
 import {readMarker, renderMarker, type SectionData} from '~/components/home/SectionRegistry';
-import {renderPageSection} from '~/components/PageSectionRegistry';
+import {renderPageSection, renderVisualMarker} from '~/components/PageSectionRegistry';
 import {ProductCard} from '~/components/ProductCard';
 import {BannerSlider} from '~/components/home/HeroBannerSlider';
 import {BlogCards} from '~/components/home/BlogHighlights';
@@ -513,11 +513,12 @@ function renderBlock(
       // the merchant placing one of the shop's own sections here.
       const marker = readMarker(html);
       if (marker) {
-        // `bb:page:<handle>` places a whole designed page; anything else is a
+        // `bb:page:<handle>` places a whole designed page; a visual marker
+        // (`bb:sci-manifesto`) places one coded animation; anything else is a
         // homepage section.
         const node = marker.startsWith('page:')
           ? renderPageSection(marker.slice('page:'.length))
-          : renderMarker(marker, sections ?? {});
+          : renderVisualMarker(marker) ?? renderMarker(marker, sections ?? {});
         return node ? <Fragment key={idx}>{node}</Fragment> : null;
       }
       return <CodeBlock key={idx} html={html} />;
@@ -719,6 +720,37 @@ export function builderHasContent(design: BuilderNode | null | undefined): boole
   const walk = (node: BuilderNode) => {
     if (found) return;
     if (node.map && !DATA_BLOCKS.has(node.map)) found = true;
+    for (const child of node.children ?? []) walk(child);
+  };
+  walk(design);
+  return found;
+}
+
+/**
+ * Поставя ли тази страница НАШИ секции, или е просто чужда композиция?
+ *
+ * ⚠️ Платено с една вечер: класическата тема ползва СЪЩИЯ конструктор. Началната
+ * на bulgarbiotic.bg е сглобена в него, тоест `builderHasContent` казва „да" за
+ * нея и редизайнът показа старата начална страница на магазина вместо своята.
+ * Разликата между двете е една: композицията на редизайна ПОСТАВЯ негови
+ * секции, с маркери `<!-- bb:hero -->` и подобни. Няма ли нито един маркер,
+ * страницата е на търговеца и кодираната начална остава.
+ *
+ * Тоест влизането в конструктора е изричен избор: първият сложен маркер
+ * предава началната на панела.
+ */
+export function designPlacesOurSections(design: BuilderNode | null | undefined): boolean {
+  if (!design) return false;
+  let found = false;
+  const walk = (node: BuilderNode) => {
+    if (found) return;
+    if (node.map === 'code') {
+      const html = text((node.settings as any)?.code) || text((node.settings as any)?.html);
+      if (html && readMarker(html)) {
+        found = true;
+        return;
+      }
+    }
     for (const child of node.children ?? []) walk(child);
   };
   walk(design);

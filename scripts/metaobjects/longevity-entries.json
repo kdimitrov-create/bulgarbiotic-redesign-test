@@ -1,0 +1,296 @@
+[
+ {
+  "type": "item",
+  "handle": "longevity-stat-50",
+  "title": "Число: 50 · млрд. активни бактерии / формула",
+  "fields": {
+   "admin_name": "Longevity – число 50",
+   "value": "50",
+   "label": "млрд. активни бактерии / формула"
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-stat-5",
+  "title": "Число: 5 · пробиотични щама с Lactobacillus Bulgaricus",
+  "fields": {
+   "admin_name": "Longevity – число 5",
+   "value": "5",
+   "label": "пробиотични щама с Lactobacillus Bulgaricus"
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-stat-3",
+  "title": "Число: 3 · взаимнодопълващи се формули",
+  "fields": {
+   "admin_name": "Longevity – число 3",
+   "value": "3",
+   "label": "взаимнодопълващи се формули"
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-step-1",
+  "title": "Стъпка 1: Сутрин · Hepato Care",
+  "fields": {
+   "admin_name": "Longevity – ритуал 1",
+   "label": "Сутрин",
+   "title": "Hepato Care",
+   "text": "Стартирай деня с подкрепа за черния дроб и естествен детокс.",
+   "color": "маслинено"
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-step-2",
+  "title": "Стъпка 2: През деня · Menopause Balance",
+  "fields": {
+   "admin_name": "Longevity – ритуал 2",
+   "label": "През деня",
+   "title": "Menopause Balance",
+   "text": "Подкрепи хормоналния баланс и комфорта през активните часове на деня.",
+   "color": "розово"
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-step-3",
+  "title": "Стъпка 3: Вечер · Longevity Cellular",
+  "fields": {
+   "admin_name": "Longevity – ритуал 3",
+   "label": "Вечер",
+   "title": "Longevity Cellular",
+   "text": "Завърши деня с антиоксидантна защита и клетъчно обновяване.",
+   "color": "лилаво"
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-trust-1",
+  "title": "Предимство 1: Пробиотик + Пребиотик + Постбиотик",
+  "fields": {
+   "admin_name": "Longevity – предимство 1",
+   "title": "Пробиотик + Пребиотик + Постбиотик",
+   "text": "Пълен цикъл на подкрепа в едно капсулиране."
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-trust-2",
+  "title": "Предимство 2: DR капсули",
+  "fields": {
+   "admin_name": "Longevity – предимство 2",
+   "title": "DR капсули",
+   "text": "Забавено освобождаване — активните съставки достигат целта си."
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-trust-3",
+  "title": "Предимство 3: Lactobacillus Bulgaricus",
+  "fields": {
+   "admin_name": "Longevity – предимство 3",
+   "title": "Lactobacillus Bulgaricus",
+   "text": "Уникален щам, характерен за българската микробна традиция."
+  }
+ },
+ {
+  "type": "item",
+  "handle": "longevity-trust-4",
+  "title": "Предимство 4: Клинично тествани формули",
+  "fields": {
+   "admin_name": "Longevity – предимство 4",
+   "title": "Клинично тествани формули",
+   "text": "Съставки, подкрепени от изследвания."
+  }
+ },
+ {
+  "type": "product_block",
+  "handle": "longevity-hepato",
+  "title": "Продукт: Hepato Care",
+  "fields": {
+   "admin_name": "Longevity – Hepato Care",
+   "product": "gid://cloudcart/Product/152",
+   "image": "gid://cloudcart/File/37278",
+   "video": "gid://cloudcart/File/37279",
+   "video_poster": "gid://cloudcart/File/37281",
+   "video_caption": "Hepato Care в движение",
+   "eyebrow": "Черен дроб & детокс",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Hepato\", \"italic\": true}, {\"type\": \"text\", \"value\": \" Care\"}]}]}",
+   "tagline": "Артишок · Бял трън · Lactobacillus bulgaricus",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Формула за ежедневна подкрепа на нормалната функция на черния дроб и вътрешния баланс. Съчетава пробиотик, пребиотик и постбиотик с растителни екстракти в DR капсули със забавено освобождаване за оптимално усвояване.\"}]}]}",
+   "benefits": "[\"Подпомага нормалната функция на черния дроб\", \"Подкрепя естествените процеси на организма\", \"Подпомага нормалния метаболизъм на мазнините\", \"Допринася за поддържането на имунната система\"]",
+   "pills": "[\"5 пробиотични щама\", \"30 DR капсули\"]",
+   "badge_value": "50B",
+   "badge_label": "активни бактерии",
+   "sticker": "с екстракт\nот бял трън",
+   "button_label": "Купи Hepato Care",
+   "color": "маслинено"
+  }
+ },
+ {
+  "type": "product_block",
+  "handle": "longevity-menopause",
+  "title": "Продукт: Menopause Balance",
+  "fields": {
+   "admin_name": "Longevity – Menopause Balance",
+   "product": "gid://cloudcart/Product/155",
+   "image": "gid://cloudcart/File/37287",
+   "eyebrow": "Хормонален баланс",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Menopause\", \"italic\": true}, {\"type\": \"text\", \"value\": \" Balance\"}]}]}",
+   "tagline": "Червена детелина · Хормонален баланс · Longevity формула",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Формула, разработена за периода на перименопауза и менопауза. Съчетава пробиотик, пребиотик и постбиотик с растителни екстракти в подкрепа на хормоналния баланс, ежедневния комфорт и женската жизненост.\"}]}]}",
+   "benefits": "[\"Подпомага хормоналния баланс през периода на перименопауза и менопауза\", \"Допринася за повече комфорт при горещи вълни и изпотяване\", \"Подкрепя спокойствието, доброто настроение и нервната система\", \"Допринася за по-спокоен сън и повече енергия през деня\"]",
+   "pills": "[\"5 пробиотични щама\", \"Червена детелина\", \"30 DR капсули\"]",
+   "badge_value": "30",
+   "badge_label": "DR капсули",
+   "sticker": "с екстракт от\nчервена детелина",
+   "button_label": "Купи Menopause Balance",
+   "color": "розово"
+  }
+ },
+ {
+  "type": "product_block",
+  "handle": "longevity-cellular",
+  "title": "Продукт: Longevity Cellular",
+  "fields": {
+   "admin_name": "Longevity – Longevity Cellular",
+   "product": "gid://cloudcart/Product/158",
+   "image": "gid://cloudcart/File/37284",
+   "video": "gid://cloudcart/File/37286",
+   "video_poster": "gid://cloudcart/File/37277",
+   "video_caption": "Longevity Cellular в движение",
+   "eyebrow": "Клетъчно обновяване",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Longevity\", \"italic\": true}, {\"type\": \"text\", \"value\": \" Cellular\"}]}]}",
+   "tagline": "Спермидин · Глутатион · Lactobacillus bulgaricus",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Формула за клетъчна защита и дългосрочна жизненост, съчетаваща пробиотик, пребиотик и постбиотик със спермидин и глутатион. Разработена да подкрепя здравия микробиом, антиоксидантния баланс и естествените процеси на клетъчна поддръжка.\"}]}]}",
+   "benefits": "[\"Подпомага естествените процеси на клетъчна поддръжка и обновяване\", \"Допринася за защитата на клетките от оксидативен стрес\", \"Подкрепя баланса на чревния микробиом и здравата чревна бариера\", \"Подпомага енергийния метаболизъм и жизнеността\"]",
+   "pills": "[\"50 млрд. активни бактерии\", \"30 DR капсули\"]",
+   "badge_value": "5",
+   "badge_label": "пробиотични щама",
+   "sticker": "+ глутатион\nи спермидин",
+   "button_label": "Купи Longevity Cellular",
+   "color": "лилаво"
+  }
+ },
+ {
+  "type": "product_block",
+  "handle": "longevity-bundle-1",
+  "title": "Пакет: Bactology Her Evolution 40+",
+  "fields": {
+   "admin_name": "Longevity – пакет Her Evolution 40+",
+   "product": "gid://cloudcart/Product/160",
+   "image": "gid://cloudcart/File/37273",
+   "eyebrow": "LONGEVITY СЕРИЯ · ПАКЕТ",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Bactology\"}]}, {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Her Evolution 40+\", \"italic\": true}]}]}",
+   "subtitle": "Hepato Care + Menopause Balance + Longevity Cellular",
+   "tagline": "Годините носят увереност. Дай на тялото си грижата, която я подкрепя.",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Женското тяло навлиза в нов етап и има нужда от различен, по-цялостен подход. Her Evolution 40+ обединява три допълващи се формули за подкрепа на женския баланс, чернодробната функция и клетъчната жизненост.\"}]}, {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Един синхронизиран ежедневен ритуал, създаден за жената, която иска да се чувства жизнена, уверена и добре в тялото си — днес и през годините напред.\"}]}]}",
+   "button_label": "Купи пакета",
+   "color": "корал"
+  }
+ },
+ {
+  "type": "product_block",
+  "handle": "longevity-bundle-2",
+  "title": "Пакет: Bactology Вътрешен Рестарт",
+  "fields": {
+   "admin_name": "Longevity – пакет Вътрешен Рестарт",
+   "product": "gid://cloudcart/Product/162",
+   "image": "gid://cloudcart/File/37274",
+   "eyebrow": "LONGEVITY СЕРИЯ · ПАКЕТ",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Bactology\"}]}, {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Вътрешен Рестарт\", \"italic\": true}]}]}",
+   "subtitle": "Hepato Care + Longevity Cellular",
+   "tagline": "Рестарт отвътре. Повече жизненост отвън.",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Две допълващи се формули, създадени да подкрепят естествените процеси на организма, нормалната функция на черния дроб и клетъчната защита.\"}]}, {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Един лесен ежедневен ритуал за повече лекота, вътрешен баланс и жизненост.\"}]}]}",
+   "button_label": "Купи пакета",
+   "color": "корал"
+  }
+ },
+ {
+  "type": "section_hero",
+  "handle": "longevity-hero",
+  "title": "Начален банер",
+  "fields": {
+   "admin_name": "Longevity – начален банер",
+   "image": "gid://cloudcart/File/37282",
+   "title": "Longevity\nСерия",
+   "subtitle": "Три формули. Един принцип:\nДълголетието започва с баланса отвътре.\nКомплексна синбиотична подкрепа за здрав микробиом и естествените функции на организма.",
+   "button": "{\"text\": \"Разгледай серията\", \"url\": \"https://bulgarbiotic.bg/category/longevity-seriya\"}",
+   "scroll_label": "Скролни"
+  }
+ },
+ {
+  "type": "section_marquee",
+  "handle": "longevity-marquee",
+  "title": "Бягаща лента",
+  "fields": {
+   "admin_name": "Longevity – бягаща лента",
+   "items": "[\"50 МИЛИАРДА АКТИВНИ БАКТЕРИИ\", \"5 ПРОБИОТИЧНИ ЩАМА\", \"100% НАТУРАЛНИ\", \"LACTOBACILLUS BULGARICUS\", \"DR КАПСУЛИ СЪС ЗАБАВЕНО ОСВОБОЖДАВАНЕ\"]"
+  }
+ },
+ {
+  "type": "section_text_media",
+  "handle": "longevity-intro",
+  "title": "Текст със снимка: Философията",
+  "fields": {
+   "admin_name": "Longevity – философията",
+   "eyebrow": "Философията",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Дълголетието не е \"}, {\"type\": \"text\", \"value\": \"въпрос на възраст\", \"italic\": true}, {\"type\": \"text\", \"value\": \".\"}]}, {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"То е резултат от ежедневна грижа и вътрешен баланс.\"}]}]}",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Серията Longevity е създадена, за да подкрепи три ключови аспекта на доброто здраве и жизнеността – баланса на чернодробните функции, естествените процеси на организма и клетъчната защита. Всяка формула съчетава пробиотик, пребиотик и постбиотик с внимателно подбрани растителни екстракти, капсулирани в DR капсули със забавено освобождаване, които доставят активните съставки точно там, където са най-необходими.\"}]}]}",
+   "image": "gid://cloudcart/File/37270",
+   "image_side": "дясно",
+   "stats": "[\"@item:longevity-stat-50\", \"@item:longevity-stat-5\", \"@item:longevity-stat-3\"]"
+  }
+ },
+ {
+  "type": "section_cards",
+  "handle": "longevity-routine",
+  "title": "Карти: Един ритуал, три формули",
+  "fields": {
+   "admin_name": "Longevity – ритуал",
+   "eyebrow": "Как да ги комбинираш",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Един ритуал, \"}, {\"type\": \"text\", \"value\": \"три формули\", \"italic\": true}]}]}",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Продуктите от Longevity серията са създадени да работят заедно — всеки покрива различен аспект на вътрешния баланс.\"}]}]}",
+   "layout": "стъпки",
+   "items": "[\"@item:longevity-step-1\", \"@item:longevity-step-2\", \"@item:longevity-step-3\"]"
+  }
+ },
+ {
+  "type": "section_cards",
+  "handle": "longevity-trust",
+  "title": "Карти: предимства",
+  "fields": {
+   "admin_name": "Longevity – предимства",
+   "layout": "предимства",
+   "items": "[\"@item:longevity-trust-1\", \"@item:longevity-trust-2\", \"@item:longevity-trust-3\", \"@item:longevity-trust-4\"]"
+  }
+ },
+ {
+  "type": "section_offers",
+  "handle": "longevity-offers",
+  "title": "Оферти: пакетите",
+  "fields": {
+   "admin_name": "Longevity – пакети",
+   "eyebrow": "Longevity Серия · Пакети",
+   "heading": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Избери своя \"}, {\"type\": \"text\", \"value\": \"път\", \"italic\": true}]}, {\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"към дълготрайния баланс.\"}]}]}",
+   "text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Два пакета, съобразени с различните нужди на жената във времето.\"}]}]}",
+   "offers": "[\"@product_block:longevity-bundle-1\", \"@product_block:longevity-bundle-2\"]"
+  }
+ },
+ {
+  "type": "landing_page",
+  "handle": "longevity-bactology",
+  "title": "Страница: Longevity Серия",
+  "fields": {
+   "title": "Longevity Серия",
+   "seo_title": "Longevity Серия | Bactology",
+   "seo_description": "Longevity Серия | Bactology",
+   "sections": "[\"@section_hero:longevity-hero\", \"@section_marquee:longevity-marquee\", \"@section_text_media:longevity-intro\", \"@product_block:longevity-hepato\", \"@product_block:longevity-menopause\", \"@product_block:longevity-cellular\", \"@section_cards:longevity-routine\", \"@section_cards:longevity-trust\", \"@section_offers:longevity-offers\"]",
+   "sticky_text": "{\"type\": \"root\", \"children\": [{\"type\": \"paragraph\", \"children\": [{\"type\": \"text\", \"value\": \"Longevity Серия — \"}, {\"type\": \"text\", \"value\": \"три формули, един ритуал\", \"bold\": true}]}]}",
+   "sticky_button": "{\"text\": \"Разгледай\", \"url\": \"https://bulgarbiotic.bg/category/longevity-seriya\"}",
+   "footnote": "bactology · Longevity серия — food supplement. Хранителните добавки не заместват разнообразното и балансирано хранене и здравословния начин на живот."
+  }
+ }
+]

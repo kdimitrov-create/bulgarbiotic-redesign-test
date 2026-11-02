@@ -26,7 +26,7 @@ export function FeaturedProducts({products}: {products: Product[]}) {
               * Класът остава `section-h2` нарочно: той носи вида на секционно
               * заглавие и нищо на екрана не помръдва. Секцията се рисува само
               * на началната, тоест нийде другаде не се появява втори H1. */}
-            <h1 className="section-h2">Здравето започва в <span className="accent">микробиома.</span><br />Грижата започва с <span className="accent">превенция.</span></h1>
+            <h1 className="section-h2">Здравето започва в <span className="accent">микробиома.</span><br />Грижата започва с <span className="accent">пробиотик.</span></h1>
           </div>
           <div>
             <p className="bb-section-sub">Формули с научно доказани щамове за храносмилането, имунитета и женското здраве.</p>

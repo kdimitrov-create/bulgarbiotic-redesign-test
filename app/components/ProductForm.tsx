@@ -6,14 +6,20 @@ import {OptionSwatch} from './OptionSwatch';
 import {MonthlyPackages} from './pdp/MonthlyPackages';
 import {markPricing, markDiscount} from '~/lib/product-marks';
 import {DiscountCountdown} from './DiscountCountdown';
+import {ProductSubscription} from './ProductSubscription';
+import type {SellingPlan} from '~/lib/selling-plans.server';
 
-import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
+import {SHOW_BGN} from '~/lib/currency';
+import {isAvailable} from '~/lib/availability';
 interface ProductFormProps {
   product: any;
   selectedVariant: any;
+  /** Абонаментните планове на избрания вариант; празно = няма абонамент. */
+  sellingPlans?: SellingPlan[];
 }
 
 /** BG legal: 1 € = 1.95583 лв (fixed). */
+const EUR_TO_BGN = 1.95583;
 
 const fmtBg = (n: number, currency: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {
@@ -34,8 +40,11 @@ function bothCurrencies(money: {amount: string; currencyCode?: string} | null | 
   return {eur, bgn};
 }
 
-export function ProductForm({product, selectedVariant}: ProductFormProps) {
+export function ProductForm({product, selectedVariant, sellingPlans = []}: ProductFormProps) {
   const [qty, setQty] = useState(1);
+  const [planChoice, setPlanChoice] = useState('');
+  // При смяна на варианта избраният план може да не важи за новия.
+  const sellingPlanId = sellingPlans.some((p) => p.id === planChoice) ? planChoice : '';
   const variant = selectedVariant;
   const hasMultiplePrices =
     product.priceRange.minVariantPrice.amount !== product.priceRange.maxVariantPrice.amount;
@@ -154,16 +163,24 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
         }
       </VariantSelector>
 
-      {/* Месечни пакети — the merchant's quantity discounts from the admin
-          panel. Picking one just sets the quantity below, so there is still a
-          single add-to-cart path. */}
+      {/* Месечни пакети - количествените отстъпки от админ панела.
+          Всяка карта добавя своето количество със собствения си бутон; клик по
+          картата не мени количеството отдолу (клиент, 20.08.2026). */}
       {variant && price && (
         <MonthlyPackages
           product={product}
           variant={variant}
           singlePriceEur={price.eur}
-          quantity={qty}
-          onSelect={(next) => setQty(Math.min(maxQty, next))}
+        />
+      )}
+
+      {/* Еднократно / абонамент - само ако продуктът има план в CloudCart. */}
+      {variant && price && sellingPlans.length > 0 && (
+        <ProductSubscription
+          plans={sellingPlans}
+          oneTimePriceEur={price.eur}
+          value={sellingPlanId}
+          onChange={setPlanChoice}
         />
       )}
 
@@ -198,7 +215,8 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
           <AddToCartButton
             merchandiseId={variant.id}
             quantity={qty}
-            disabled={!variant.availableForSale}
+            sellingPlanId={sellingPlanId || undefined}
+            disabled={!isAvailable(variant)}
             className="bb-pdp-add"
           >
             <span className="bb-pdp-add-inner">
@@ -207,7 +225,7 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
                 <path d="M9 8a3 3 0 016 0" />
               </svg>
               <span className="bb-pdp-add-label">
-                {variant.availableForSale ? 'Купи' : 'Изчерпан'}
+                {isAvailable(variant) ? 'Купи' : 'Изчерпан'}
               </span>
               {/* Price intentionally NOT shown on the button — client request.
                   The price already lives in the price block above the button;
@@ -221,7 +239,7 @@ export function ProductForm({product, selectedVariant}: ProductFormProps) {
 }
 
 function StockIndicator({variant}: {variant: any}) {
-  if (!variant.availableForSale) {
+  if (!isAvailable(variant)) {
     return (
       <div className="bb-pdp-stock bb-pdp-stock--out">
         <span className="bb-pdp-stock-dot" /> Изчерпан временно

@@ -1,12 +1,15 @@
 import {Link, useFetcher} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
-import {getEnhancedFeatured} from '~/lib/product-images';
+import {getEnhancedFeatured, cdnResize} from '~/lib/product-images';
 import {CheckoutButton} from './CheckoutButton';
 import {PromoCode} from './PromoCode';
-import {fallbackToPlaceholder} from './CartDrawer';
+import {fallbackToPlaceholder, discountRows} from './CartDrawer';
 import {CartOffersStrip, CartGiftLines} from './CartOffers';
+import {cartProductIds, CartProgress, isShippingFree} from './CartProgress';
+import {CheckoutTextBanner} from './CheckoutTextBanner';
 import {markPricingForLine} from '~/lib/product-marks';
-import {adjustmentLines, money, subtotalLine, totalLine, type CartSummary} from '~/lib/cart-summary';
+import {adjustmentLines, money, subtotalLine, totalLine, codeDiscounts, type CartSummary} from '~/lib/cart-summary';
+import {buildRuleView, paidForLine, ruleLabel, type RuleView} from '~/lib/cart-rule-view';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {numericId} from '~/lib/analytics';
 import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
@@ -16,6 +19,8 @@ import {
   fmtBgn,
   bothCurrencies,
   CartTrustStrip,
+  CartUpsell,
+  useUpsellAdd,
 } from './CartDrawer';
 import {CART_ACTION} from '~/lib/cart-action';
 
@@ -29,6 +34,9 @@ import {CART_ACTION} from '~/lib/cart-action';
 export function CartPage({cart, summary}: {cart: CartData | null; summary?: CartSummary | null}) {
   const lines = cart?.lines?.nodes ?? [];
   const isEmpty = !cart || cart.totalQuantity === 0;
+  // Bump cart-ът и тук, както в чекмеджето. Свой ключ, за да не броят
+  // страницата и чекмеджето едно добавяне два пъти.
+  const {upsellAdd, upsellPending, setUpsellPending} = useUpsellAdd('cart-page-upsell-add');
 
   if (isEmpty) return <CartPageEmpty />;
 
@@ -56,8 +64,27 @@ export function CartPage({cart, summary}: {cart: CartData | null; summary?: Cart
   const summaryTotal = money(totalLine(summary));
   const summarySubtotal = money(subtotalLine(summary));
   const adjustments = adjustmentLines(summary);
-  const payable = summaryTotal ?? payableEur;
-  const shownSubtotal = summarySubtotal ?? payableEur;
+  // Един и същ изглед на правилата като в чекмеджето - виж `cart-rule-view`.
+  const ruleView = buildRuleView(summary);
+  /* Същата сметка като в чекмеджето - виж коментара там. Накратко: правило,
+     слязло върху реда, вече е вътре в `payableEur` и се изважда от продуктовото
+     намаление, за да не се брои два пъти; таксите излизат и от списъка, и от
+     сумата, защото начинът на плащане се избира на следващата стъпка. */
+  const lineRuleEur = [...ruleView.extraRuleAmounts.values()].reduce((a, b) => a + b, 0);
+  /* Промо кодът се вади от междинната сума и се показва на свой ред: платформата
+     го сваля мълчаливо вътре в `subtotal` и спечеленото от колелото не се
+     виждаше никъде. Виж `codeDiscounts`. */
+  const codes = codeDiscounts(summary);
+  const codeDiscountEur = codes.reduce((sum, d) => sum + d.amountEur, 0);
+  /* Кодът излиза със свой ред, значи трябва да излезе И от намалението на
+     продуктите - иначе една и съща отстъпка се брои два пъти. */
+  const productPromoEur = Math.max(0, msrpEur - payableEur - lineRuleEur - codeDiscountEur);
+  const feesEur = adjustments.reduce((sum, row) => {
+    const v = money(row) ?? 0;
+    return v > 0.005 ? sum + v : sum;
+  }, 0);
+  const payable = Math.max(0, (summaryTotal ?? payableEur) - feesEur);
+  const shownSubtotal = (summarySubtotal ?? payableEur) + codeDiscountEur;
   const savedEur = Math.max(0, msrpEur - payable);
   const subtotalEur = shownSubtotal;
   const rawSubtotal = {eur: msrpEur, bgn: msrpEur * EUR_TO_BGN};
@@ -66,9 +93,15 @@ export function CartPage({cart, summary}: {cart: CartData | null; summary?: Cart
   const totalBgn = payable * EUR_TO_BGN;
 
   const shippingTarget = freeShippingTargetEur();
-  const remainingEur = Math.max(0, shippingTarget - subtotalEur);
-  const shippingPct = shippingTarget > 0 ? Math.min(100, (subtotalEur / shippingTarget) * 100) : 100;
-  const isFreeShip = remainingEur <= 0.005; // tolerate sub-cent rounding
+  /* Праговете се мерят по сумата на платформата, не по показваната - виж
+     дългата бележка в `CartDrawer`. Подарък от колелото влиза като редовен ред
+     с 100% код и иначе бута прага, без касата да го признава. */
+  const thresholdEur = summarySubtotal ?? shownSubtotal;
+  // Само при действащо правило за доставка в панела - виж `CartProgress`.
+  const isFreeShip = isShippingFree(thresholdEur, shippingTarget);
+  /* Същото условие като в чекмеджето: предложенията се крият при достигнат праг. */
+  const remainingEur = Math.max(0, shippingTarget - thresholdEur);
+  const reachedShipTarget = remainingEur <= 0.005;
 
   const qty = cart.totalQuantity;
 
@@ -84,34 +117,40 @@ export function CartPage({cart, summary}: {cart: CartData | null; summary?: Cart
       <div className="bb-cart-grid">
         <div className="bb-cart-main">
           <div className="bb-cart-shipping">
-            <div className="bb-cart-shipping-text">
-              {isFreeShip ? (
-                <>
-                  <span className="bb-cart-shipping-icon" aria-hidden="true">✓</span>
-                  Поздравления - <strong>безплатна доставка</strong> е включена!
-                </>
-              ) : (
-                <>
-                  Поръчай за още <strong className="accent">{fmtEur(remainingEur)}</strong>{' '}
-                  {SHOW_BGN && <span className="bb-cart-shipping-bgn">({fmtBgn(remainingEur * EUR_TO_BGN)})</span>}{' '}
-                  и доставката е безплатна
-                </>
-              )}
-            </div>
-            <div className="bb-cart-shipping-track">
-              <div className="bb-cart-shipping-fill" style={{width: `${shippingPct}%`}} />
-            </div>
+            <CartProgress
+              cls="bb-cart"
+              quantity={cart?.totalQuantity ?? 0}
+              productIds={cartProductIds(summary)}
+              thresholdEur={thresholdEur}
+              shippingTargetEur={shippingTarget}
+            />
             {/* The merchant's gift offers and cart rules, live from the panel. */}
-            <CartOffersStrip subtotalEur={subtotalEur} messages={summary?.messages ?? []} />
+            <CartOffersStrip subtotalEur={thresholdEur} messages={summary?.messages ?? []} lines={lines} />
           </div>
 
           <ul className="bb-cart-items">
             {lines.map((line) => (
-              <CartPageRow key={line.id} line={line} />
+              <CartPageRow key={line.id} line={line} ruleView={ruleView} />
             ))}
             {/* Спечеленият подарък, докато платформата още не го е сложила. */}
-            <CartGiftLines subtotalEur={subtotalEur} lines={lines} variant="page" />
+            <CartGiftLines subtotalEur={thresholdEur} lines={lines} variant="page" />
           </ul>
+
+          {!reachedShipTarget && (
+            <CartUpsell
+              className="bb-cart-upsell"
+              remainingEur={remainingEur}
+              remainingBgn={remainingEur * EUR_TO_BGN}
+              cartHandles={lines
+                .map((l: any) => l.merchandise?.product?.handle as string | undefined)
+                .filter(Boolean) as string[]}
+              add={upsellAdd}
+              pending={upsellPending}
+              onAdd={setUpsellPending}
+            />
+          )}
+
+          <CheckoutTextBanner cls="bb-cart" />
 
           <Link to="/category/all-products" className="bb-cart-continue" prefetch="intent">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -133,10 +172,10 @@ export function CartPage({cart, summary}: {cart: CartData | null; summary?: Cart
             {/* Редовете между междинната и крайната сума, с етикетите на
                 търговеца: правила за количката, отстъпки, доставка. Тях сами
                 никога няма да ги познаем. */}
-            {adjustments.map((row) => (
-              <div key={row.key ?? row.name} className="bb-cart-sum-row">
-                <span>{row.name || row.key}</span>
-                <span>{fmtEur(money(row) ?? 0)}</span>
+            {discountRows(adjustments, ruleView, productPromoEur, codes).map((row) => (
+              <div key={row.key} className="bb-cart-sum-row">
+                <span>{row.label}</span>
+                <span>{row.value}</span>
               </div>
             ))}
             {savedEur > 0 && (
@@ -168,7 +207,7 @@ export function CartPage({cart, summary}: {cart: CartData | null; summary?: Cart
 
             <PromoCode cart={cart} />
 
-            <CheckoutButton cart={cart} className="bb-cart-checkout" />
+            <CheckoutButton cart={cart} className="bb-cart-checkout" trackValue={totalEur} />
 
             <p className="bb-cart-note">
               Таксите и доставката се изчисляват на следващата стъпка
@@ -212,7 +251,13 @@ function CartPageEmpty() {
 }
 
 /** One cart line on the page — roomier than the drawer row. */
-function CartPageRow({line}: {line: any}) {
+function CartPageRow({
+  line,
+  ruleView,
+}: {
+  line: any;
+  ruleView?: RuleView;
+}) {
   const update = useFetcher({key: `page-update-${line.id}`});
   const remove = useFetcher({key: `page-remove-${line.id}`});
 
@@ -240,13 +285,16 @@ function CartPageRow({line}: {line: any}) {
   const rowPct = hasDiscount
     ? displayDiscountPercent(null, sale.eur, msrp.eur)
     : 0;
-  const saleEur = sale.eur;
-  const saleBgn = sale.bgn;
+  // Сумата, която клиентът плаща за реда (виж `cart-rule-view`).
+  const paidEur = ruleView ? paidForLine(ruleView, String(line.id), sale.eur) ?? sale.eur : sale.eur;
+  const saleEur = paidEur;
+  const saleBgn = paidEur * EUR_TO_BGN;
+  const ruleTitles = ruleView?.lineRuleTitles.get(String(line.id)) ?? [];
 
   return (
     <li className="bb-cart-item">
       <Link to={to} className="bb-cart-item-img" prefetch="intent">
-        <img src={img} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
+        <img src={cdnResize(img, 160)} alt={m.image?.altText || title} loading="lazy" onError={fallbackToPlaceholder} />
         {hasDiscount && rowPct > 0 && <span className="bb-cart-item-badge">−{rowPct}%</span>}
       </Link>
 
@@ -255,6 +303,9 @@ function CartPageRow({line}: {line: any}) {
           {title}
         </Link>
         {variantTitle && <div className="bb-cart-item-meta">{variantTitle}</div>}
+        {ruleTitles.map((title) => (
+          <div key={title} className="bb-cd-item-rule">{ruleView ? ruleLabel(ruleView, title) : title}</div>
+        ))}
 
         <div className="bb-cart-item-actions">
           <div className="bb-cart-qty">

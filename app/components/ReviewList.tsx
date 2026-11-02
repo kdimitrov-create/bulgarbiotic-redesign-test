@@ -1,11 +1,18 @@
 import type {ProductReviewSummary, ProductReviewNode} from '@cloudcart/nitro';
 import {StarRating} from './StarRating';
 import {StarIcon} from '@heroicons/react/20/solid';
+import {ReviewForm} from './ReviewForm';
 
 interface ReviewListProps {
   reviews: ProductReviewNode[];
   summary: ProductReviewSummary | null;
   totalCount: number;
+  /** За формата „Остави отзив". Без него секцията е само за четене. */
+  productId?: string;
+  productHandle?: string;
+  /** Политиката от приложението „Отзиви" в панела. `null` = не се знае. */
+  reviewPolicy?: {enabled: boolean; condition: 'all' | 'buyer'} | null;
+  loggedIn?: boolean;
 }
 
 /**
@@ -16,24 +23,51 @@ interface ReviewListProps {
  * profile photos so we render initials in a brand pink avatar circle. Each
  * review title (when present) is bold; comment body is below.
  */
-export function ReviewList({reviews, summary, totalCount}: ReviewListProps) {
-  if (!summary || totalCount === 0) return null;
+export function ReviewList({
+  reviews,
+  summary,
+  totalCount,
+  productId,
+  productHandle,
+  reviewPolicy,
+  loggedIn,
+}: ReviewListProps) {
+  const hasReviews = Boolean(summary) && totalCount > 0;
+  // Формата се показва само ако панелът приема отзиви. Спре ли приложението,
+  // секцията остава само за четене, без да пипаме код.
+  const showForm = Boolean(productId) && Boolean(reviewPolicy?.enabled);
+  // Няма ли нито отзиви, нито форма, секцията е празна кутия - тогава не се
+  // рисува изобщо, както преди.
+  if (!hasReviews && !showForm) return null;
 
   return (
     <section className="bb-reviews-pdp" aria-labelledby="bb-reviews-pdp-title">
       <div className="bb-reviews-pdp-head">
-        <span className="bb-reviews-pdp-tag">Отзиви от истински клиенти</span>
-        <h2 id="bb-reviews-pdp-title">Какво казват те за продукта</h2>
+        <span className="bb-reviews-pdp-tag">Отзиви от клиенти</span>
+        <h2 id="bb-reviews-pdp-title">
+          {hasReviews ? 'Какво казват те за продукта' : 'Бъди първият с отзив'}
+        </h2>
       </div>
 
-      <div className="bb-reviews-pdp-layout">
-        <ReviewSummary summary={summary} totalCount={totalCount} reviews={reviews} />
-        <div className="bb-reviews-pdp-list">
-          {reviews.map((review) => (
-            <ReviewItem key={review.id} review={review} />
-          ))}
+      {hasReviews ? (
+        <div className="bb-reviews-pdp-layout">
+          <ReviewSummary summary={summary!} totalCount={totalCount} reviews={reviews} />
+          <div className="bb-reviews-pdp-list">
+            {reviews.map((review) => (
+              <ReviewItem key={review.id} review={review} />
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
+
+      {showForm ? (
+        <ReviewForm
+          productId={productId!}
+          productHandle={productHandle ?? ''}
+          buyersOnly={reviewPolicy?.condition === 'buyer'}
+          loggedIn={Boolean(loggedIn)}
+        />
+      ) : null}
 
       <style>{`
         .bb-reviews-pdp {

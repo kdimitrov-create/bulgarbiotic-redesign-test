@@ -2,7 +2,7 @@ import {number} from './builder-settings';
 import {enhanceProducts} from '~/lib/product-images';
 import {enhanceArticleImages, setArticleImages} from '~/lib/article-images';
 import {fetchArticleImages} from '~/lib/blog-images.server';
-import {primaryBlogHandle} from '~/lib/blog.server';
+import {allArticles, primaryBlogHandle} from '~/lib/blog.server';
 import {adminGql, adminOrigin, adminPat} from './admin-api.server';
 
 /**
@@ -91,7 +91,7 @@ export async function fetchBuilderData(
     // does it. Asking it for three would have given three arbitrary articles.
     needs.articleCount
       ? primaryBlogHandle(storefront)
-          .then((h) => storefront.getArticles(h, ARTICLE_POOL))
+          .then((h) => allArticles(storefront, h))
           .catch(() => [])
       : Promise.resolve([]),
     // Covers live in the admin: the Storefront API hands back an empty
@@ -203,9 +203,6 @@ async function resolveBuilderLinks(
     return {};
   }
 }
-
-/** One request covers the blog; the merchant's `count` picks from the newest. */
-const ARTICLE_POOL = 100;
 
 // Every money field carries its currency: `Money` throws without one, and a
 // single missing `currencyCode` on a struck-through price took the whole page

@@ -105,15 +105,92 @@ export function pushCcPageData(data: CcPageData) {
   dataLayer().push({cc_page_data: data});
 }
 
+/**
+ * Кой е посетителят — вторият обект, който контейнерът очаква.
+ *
+ * Класическата тема НЕ го слага в HTML-а: платформата сервира отделен файл
+ * `https://<магазин>/datalayer.js`, който съдържа точно това (разчетено на
+ * живо от `visvitalis.bg` на 20.08.2026):
+ *
+ * ```js
+ * var cc_customer_data = {"id":null,"group_id":2,"group_name":"Guests",
+ *   "first_name":null,"last_name":null,"full_name":null,"email":null,
+ *   "type":"guest","cpadm":0,"country":"BG"};
+ * var cc_subscriber_data = [];
+ * dataLayer.push(cc_customer_data);
+ * dataLayer.push(cc_subscriber_data);
+ * ```
+ *
+ * ⚠️ При нас този път е НАШ: `GET /datalayer.js` удряше витрината и връщаше
+ * 404 с 39 KB HTML тяло. Тоест `cc_customer_data` не влизаше никога.
+ *
+ * Кой го чете: контейнерът `GTM-5X5M2HX` има променливи
+ * `cc_page_data.customer.first_name`, `.last_name` и `.email` — това е храната
+ * за Enhanced Conversions на Google Ads (тагове 30 и 71, които РАБОТЯТ).
+ * Тоест конверсиите вървяха, но без подобрените данни.
+ *
+ * ⛔ Полетата не се преименуват и не се измислят. Каквото не знаем, е `null` —
+ * празно поле е честно, изсмукано поле трови отчета.
+ */
+export type CcCustomerData = {
+  id: number | string | null;
+  group_id: number | null;
+  group_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
+  email: string | null;
+  type: 'guest' | 'customer';
+  cpadm: 0 | 1;
+  country: string | null;
+};
+
+export const GUEST_CUSTOMER_DATA: CcCustomerData = {
+  id: null,
+  group_id: 2,
+  group_name: 'Guests',
+  first_name: null,
+  last_name: null,
+  full_name: null,
+  email: null,
+  type: 'guest',
+  cpadm: 0,
+  country: 'BG',
+};
+
+export function pushCcCustomerData(data: CcCustomerData) {
+  if (typeof window === 'undefined') return;
+  (window as any).cc_customer_data = data;
+  // Същият договор като при `cc_page_data`: изчистваме, после подаваме.
+  // GTM слива вложените обекти рекурсивно, тоест старото име на влязъл клиент
+  // би останало да виси, след като той излезе.
+  dataLayer().push({cc_customer_data: undefined});
+  dataLayer().push({cc_customer_data: data});
+  // Платформата бута и голия обект (без ключ) - контейнерът чете и двата вида.
+  dataLayer().push(data);
+}
+
 /* ------------------------------------------------------------------ */
 /* GA4 ecommerce                                                       */
 /* ------------------------------------------------------------------ */
+
+/**
+ * Пари до стотинка.
+ *
+ * ⚠️ `31.56 - 25.25` дава `6.309999999999999` в JavaScript и точно това
+ * заминаваше към GA4 (хванато на живо 18.08.2026). Всяко число, което пращаме
+ * навън, минава оттук.
+ */
+export const money2 = (n: number) => Math.round((Number(n) || 0) * 100) / 100;
 
 export type EcomItem = {
   item_id: string | number;
   item_name: string;
   item_category?: string;
+  /** ОСНОВНАТА цена за един брой (зачеркнатата), не платената. */
   price?: number;
+  /** Колко се сваля от основната за един брой. `price - discount` = платеното. */
+  discount?: number;
   quantity?: number;
   index?: number;
 };
@@ -122,11 +199,12 @@ export type EcomItem = {
  * Стандартните GA4 ecommerce събития: view_item, view_item_list, select_item,
  * add_to_cart, view_cart, begin_checkout, purchase, search.
  *
- * Тези имена не са избрани от нас - проверени са срещу самия контейнер
- * GTM-5X5M2HX (публично четим на googletagmanager.com/gtm.js?id=…). Вътре
- * тригерите чакат точно тях, а променливите четат `eventModel.items.0.item_id`,
- * `eventModel.value`, `eventModel.currency`. Значи подадем ли ги в този вид,
- * GA4 и Google Ads проработват БЕЗ да се пипа нищо в контейнера.
+ * Тези имена не са избрани от нас - тригерите в контейнера GTM-5X5M2HX
+ * (CE - ViewContent / AddToCart / Begin Checkout / Purchase) чакат точно тях.
+ *
+ * ⚠️ НО контейнерът предава събитията само на Google Ads (конверсиите).
+ * GA4 event тагове в него НЯМА и никога не е имало (проверено вътре в GTM на
+ * 20.08.2026) - затова GA4 се храни отделно, през gtag моста по-долу.
  */
 export function pushEcommerce(
   event: string,
@@ -137,8 +215,83 @@ export function pushEcommerce(
   // GTM пази стария `ecommerce` обект и ги слива.
   dataLayer().push({ecommerce: null});
   dataLayer().push({event, ecommerce: withLegacyAliases(payload)});
+  pushGa4Bridge(event, payload);
   pushMetaEvent(event, payload);
   pushTikTokEvent(event, payload);
+}
+
+/* ------------------------------------------------------------------ */
+/* GA4 мостът                                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Праща каталожните ecommerce събития директно на GA4, защото никой друг
+ * не го прави (пълната история: `tracking.server.ts`, GA4_BRIDGE_ID).
+ *
+ * Как работи: контейнерът зарежда Google Tag конфигурацията на G-TJENFFMPTW
+ * (tag 59) и тя регистрира дестинацията в общия gtag runtime на страницата.
+ * Push на arguments-обект в dataLayer с {send_to} се доставя на тази
+ * дестинация - все едно е викнат gtag('event', …). Доказано на живо на
+ * 20.08.2026: събитието стигна до Realtime на property-то.
+ *
+ * Опашката е безплатна: arguments-push-овете стоят в масива и дестинацията
+ * ги изпива, щом контейнерът се качи - същият механизъм, който пази и
+ * събитията за GTM. Тоест нищо не се губи преди/около съгласието; Consent
+ * Mode на Cookiebot важи и тук (без съгласие излизат cookieless ping-ове,
+ * точно както за page_view).
+ */
+/**
+ * ⛔ САМО каталожните събития - касата е платформена и /checkout сам праща
+ * begin_checkout, add_shipping_info, add_payment_info и purchase към GA4
+ * (проверено в Realtime на 20.08.2026, с новата витрина на живо). Добавим ли
+ * ги и ние, всяка каса се брои два пъти - същото правило като при Meta.
+ */
+const GA4_BRIDGE_EVENTS = new Set([
+  'view_item',
+  'view_item_list',
+  'select_item',
+  'add_to_cart',
+  'view_cart',
+  'remove_from_cart',
+  'add_to_wishlist',
+  'search',
+]);
+
+let ga4BridgeId: string | null = null;
+
+/**
+ * Събитията, изпреварили id-то.
+ *
+ * Ефектът на route-а (useEcommerceEvent) тече ПРЕДИ ефекта на <Analytics/>
+ * (децата се качват първи), тоест view_item на първата страница пристига тук
+ * преди setGa4BridgeId. Без опашка точно той се губи - същият капан като при
+ * Meta/TikTok по-горе.
+ */
+const pendingGa4: Pending[] = [];
+
+/** Вика се от <Analytics/> с id-то от root loader-а. Само в браузъра. */
+export function setGa4BridgeId(id: string | null | undefined) {
+  if (typeof window === 'undefined') return;
+  ga4BridgeId = id ?? null;
+  if (!ga4BridgeId) return;
+  for (const p of pendingGa4.splice(0, pendingGa4.length)) pushGa4Bridge(p.event, p.payload);
+}
+
+function pushGa4Bridge(
+  event: string,
+  payload: {currency?: string; value?: number; items: EcomItem[]; [key: string]: unknown},
+) {
+  if (!GA4_BRIDGE_EVENTS.has(event)) return;
+  if (!ga4BridgeId) {
+    if (pendingGa4.length < MAX_PENDING) pendingGa4.push({event, payload});
+    return;
+  }
+  // Истински Arguments-обект: дестинацията разпознава само него, обикновен
+  // масив се подминава. Затова function, не стрелка.
+  const push = function () {
+    dataLayer().push(arguments);
+  } as (...args: unknown[]) => void;
+  push('event', event, {...payload, send_to: ga4BridgeId});
 }
 
 /**
@@ -171,15 +324,25 @@ function withLegacyAliases(payload: {items: EcomItem[]; [key: string]: unknown})
 /**
  * ⚠️ Нарочно БЕЗ `begin_checkout` и `purchase`.
  *
- * Касата и количката не са наши: `/cart` и `/checkout` са резервирани пътища и
- * ги рисува класическата тема. Там приложението „Facebook Dynamic Ads" вече
- * пуска `facebook_pixel.min.js` и сам подава `InitiateCheckout` и `Purchase`
- * (проверено на живо на bulgarbiotic.bg - скриптът се зарежда на страницата).
+ * Касата не е наша: `/checkout` е резервиран път и го рисува платформата. Там
+ * приложението „Facebook Dynamic Ads" вече пуска `facebook_pixel.min.js` и само
+ * подава `InitiateCheckout` и `Purchase`.
  *
- * Платформата НЕ засича повторно инсталиран пиксел. Подадем ли и ние същите
- * две събития, всяка поръчка се брои два пъти и ROAS-ът става двойно по-хубав,
- * отколкото е. Затова тук стоят само събитията, които класическата тема вече
- * не вижда, защото Nitrogen е поел тези страници.
+ * Платформата НЕ засича повторно инсталиран пиксел. Подадем ли и ние същите две
+ * събития, всяка поръчка се брои два пъти и ROAS-ът става двойно по-хубав,
+ * отколкото е.
+ *
+ * ⭐ ПРЕПРОВЕРЕНО на живо на 18.08.2026, защото маркетолозите съобщиха „на
+ * begin_checkout липсва Meta пикселът". Разширението им (Meta Ads Data Advisor)
+ * казва „No Pixels found on this page", но това е грешка на разширението.
+ * Хванат е самият сигнал на касата, с вярната сума:
+ *
+ *   facebook.com/tr/?id=530956661433130&ev=InitiateCheckout
+ *     &cd[value]=21.47&cd[currency]=EUR&cd[content_ids]=["79"]
+ *
+ * `fbq` е функция, `facebook_pixel.min.js` от assets.cloudcart.com се зарежда.
+ * ⛔ Значи редът си остава празен - добавим ли `InitiateCheckout`, всяка каса
+ * се брои два пъти.
  */
 const META_EVENTS: Record<string, string> = {
   view_item: 'ViewContent',

@@ -64,12 +64,29 @@ export async function dropUnearnedGifts(cart: any, cartApi: any): Promise<any> {
 
   const giftVariants = new Set(withVariant.map((gift) => gift.variantId as string));
   const subtotal = subtotalWithoutGifts(cart, giftVariants);
+  /* Кои продукти клиентът наистина е сложил - подаръчните редове не се броят.
+     Иначе подарък, чието условие е продукт, се самоподдържа. */
+  const boughtHandles = new Set(
+    ((cart?.lines?.nodes ?? []) as any[])
+      .filter((line) => !giftVariants.has(line?.merchandise?.id))
+      .map((line) => String(line?.merchandise?.product?.handle ?? ''))
+      .filter(Boolean),
+  );
 
   const unearned = (cart?.lines?.nodes ?? []).filter((line: any) => {
     const gift = withVariant.find((g) => g.variantId === line?.merchandise?.id);
     if (!gift) return false;
-    // Оферта без праг (задействана от конкретен продукт, не от сума) не се
-    // мери срещу нищо и не се маха оттук.
+    /* Оферта с условие по ПРОДУКТ: подаръкът живее, докато задействащият
+     * продукт е в количката. Махне ли го клиентът, подаръкът си отива с него.
+     *
+     * Дотук такава оферта нарочно се пропускаше („не се мери срещу нищо"), защото
+     * когато този файл беше писан, всички оферти бяха по сума. С кампанията „1+1"
+     * това стана дупка: клиентът маха продукта, безплатният ред остава на 0,00 €
+     * и пътува до касата - подарък без покупка (клиент, 01.09). */
+    if (gift.requiresHandles.length) {
+      return !gift.requiresHandles.some((handle) => boughtHandles.has(handle));
+    }
+    // Оферта без праг И без продуктово условие не се мери срещу нищо.
     if (!(gift.minTotal > 0)) return false;
     return subtotal < gift.minTotal;
   });

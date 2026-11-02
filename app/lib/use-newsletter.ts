@@ -29,7 +29,7 @@ export function isSubscribed(status: SubscribeStatus): boolean {
   return status === 'created' || status === 'updated';
 }
 
-export function useNewsletter() {
+export function useNewsletter(source?: string) {
   const [email, setEmail] = useState('');
   const [consent, setConsent] = useState(false);
   const [state, setState] = useState<NewsletterState>('idle');
@@ -54,11 +54,35 @@ export function useNewsletter() {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email: email.trim(), consent: true}),
+        body: JSON.stringify({email: email.trim(), consent: true, ...(source ? {source} : {})}),
       });
       const body = (await res.json().catch(() => ({}))) as {status?: SubscribeStatus};
       const status: SubscribeStatus = body.status ?? 'error';
       setState(status);
+      /* Етикетът се слага на втори ход - нарочно.
+       *
+       * Записването на нов абонат е опашка: платформата го създава веднага, но
+       * се намира по имейл едва след няколко секунди (мерено 17.08.2026 - около
+       * пет). Дотогава няма номер, а `tagSubscribers` иска номер. Сървърът не
+       * може да го изчака - работникът приключва с отговора и започнатото
+       * догонване умира с него (точно това се случваше: абонатът влизаше, но
+       * оставаше без етикет).
+       *
+       * Затова изчакването е ТУК, в страницата, която и без това стои отворена:
+       * същата заявка се праща пак и сървърът минава по пътя „вече съществува",
+       * където етикетът се слага веднага. Повторното записване е безобидно -
+       * връща „вече си абониран" и нищо не се дублира. Състоянието на формата
+       * не се пипа, за да не мигне съобщението пред човека. */
+      if (source && status === 'created') {
+        const again = () =>
+          fetch('/api/subscribe', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({email: email.trim(), consent: true, source, tagOnly: true}),
+          }).catch(() => {});
+        window.setTimeout(again, 6000);
+        window.setTimeout(again, 15000);
+      }
       return status;
     } catch {
       setState('error');

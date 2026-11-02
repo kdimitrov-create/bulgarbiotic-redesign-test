@@ -1,4 +1,4 @@
-import {entries, number, text, withinSchedule} from './builder-settings';
+import {entries, isOn, number, text, withinSchedule} from './builder-settings';
 
 /**
  * The client-safe half of the page-builder's data blocks.
@@ -89,11 +89,88 @@ export function showcaseProducts(settings: Record<string, any>, data: BuilderDat
 }
 
 /** Slides for a carousel block — images only, no catalogue data involved. */
+/**
+ * Слайдовете на въртележката от началната, както са насрочени в панела.
+ *
+ * Витрината рисуваше пет зашити банера, а в панела насрочените са два - другите
+ * три са с изтекъл прозорец (проверено 17.08.2026: слайд 3 свършва в 09:26,
+ * слайд 4 на 06.08, слайд 5 на 09.07). Оттук нататък банерите идват от панела и
+ * се сменят сами: сложи ли търговецът нов с дати, витрината го показва точно в
+ * неговия прозорец, без промяна в кода.
+ *
+ * Търси се ПЪРВАТА въртележка в дървото - тя е героят на страницата.
+ */
+export function heroSlidesFromDesign(
+  design: any,
+  data?: BuilderData | null,
+  storeDomain?: string | null,
+): Array<{
+  desktop: string;
+  mobile?: string;
+  link?: string;
+  target?: string;
+}> {
+  let block: any = null;
+  const walk = (node: any) => {
+    if (block || !node) return;
+    if (Array.isArray(node)) {
+      for (const child of node) walk(child);
+      return;
+    }
+    if (typeof node !== 'object') return;
+    if (node.map === 'carousel' && node.settings) {
+      block = node;
+      return;
+    }
+    for (const value of Object.values(node)) walk(value);
+  };
+  walk(design);
+  if (!block) return [];
+  // Изключена въртележка не се показва, дори да има насрочени слайдове.
+  if (block.settings?.enabled != null && !isOn(block.settings.enabled, true)) return [];
+  /* ⚠️ Ключовете се преименуват тук нарочно. Конструкторът нарича широкия
+     банер `src`, а слайдерът чака `desktop` - подаден както си е, `<img>`
+     оставаше без адрес и на телефон се виждаше само `<source>`. Оттам „точките
+     са верни, а картинки няма". */
+  return carouselSlides(block.settings, data).map((slide) => ({
+    desktop: slide.src,
+    mobile: slide.mobile,
+    link: internalise(slide.link, storeDomain),
+    target: slide.target,
+  }));
+}
+
+/**
+ * Адрес към собствения магазин става вътрешен път.
+ *
+ * Панелът пази връзката както я е написал търговецът - слайд 1 е с пълен адрес
+ * `https://bulgarbiotic.bg/category/all-products`. Слайдерът смята за външно
+ * всичко, което не започва с наклонена черта, и го отваря В НОВ ПРОЗОРЕЦ, при
+ * все че в панела пише „същия прозорец". Свален до път, адресът си остава
+ * същият, но отварянето е в същия раздел и през маршрутизатора.
+ */
+export function internalise(href: string | undefined, storeDomain?: string | null): string | undefined {
+  if (!href) return href;
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return href; // вече е път
+  }
+  const own = String(storeDomain ?? '').replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+  const host = url.host.toLowerCase().replace(/^www\./, '');
+  const mine = own.replace(/^www\./, '');
+  if (!mine || host !== mine) return href;
+  return `${url.pathname}${url.search}${url.hash}` || '/';
+}
+
 export function carouselSlides(settings: Record<string, any>, data?: BuilderData | null): Array<{
   src: string;
   mobile?: string;
   link?: string;
   alt?: string;
+  /** „Същия прозорец" / „нов прозорец", както е избрано в панела. */
+  target?: string;
 }> {
   return entries(settings.slides)
     // „Активен от / до" от панела: слайд извън прозореца си не се рисува.
@@ -108,6 +185,7 @@ export function carouselSlides(settings: Record<string, any>, data?: BuilderData
         // a hand-written block uses.
         link: builderHref(slide, data),
         alt: slide.alt || slide.caption || text(settings.text) || '',
+        target: slide.target ? String(slide.target) : undefined,
       };
     })
     .filter(Boolean) as Array<{src: string; mobile?: string; link?: string; alt?: string}>;

@@ -3,9 +3,7 @@ import type {Article} from '@cloudcart/nitro';
 import {getContext} from '~/lib/context';
 import {generateSitemap} from '@cloudcart/nitro';
 
-// Bactology's single blog. No getPages() list API exists, so static content
-// pages are listed from their real handles (see page.$handle.tsx HANDLE_TITLES).
-import {primaryBlogHandle} from '~/lib/blog.server';
+import {allArticles, primaryBlogHandle} from '~/lib/blog.server';
 import {sitemapPageHandles} from '~/lib/pages.server';
 
 export async function loader({context, request}: Route.LoaderArgs) {
@@ -15,12 +13,16 @@ export async function loader({context, request}: Route.LoaderArgs) {
   const [products, collections, articles, pageHandles] = await Promise.all([
     ctx.storefront.getProducts(100),
     ctx.storefront.getCollections(100),
-    ctx.storefront.getArticles(blogHandle, 100).catch((): Article[] => []),
+    allArticles(ctx.storefront, blogHandle).catch((): Article[] => []),
     sitemapPageHandles(ctx.env as Record<string, string | undefined>, ctx.storefront),
   ]);
   const entries = [
     {url: origin, changefreq: 'daily' as const, priority: 1.0},
-    {url: origin + '/blog/' + blogHandle, changefreq: 'weekly' as const, priority: 0.6},
+    // Същите три адреса, които класическата тема държи в sitemap-а си под
+    // „boilerplate": /blog и /contacts са реални страници там, значи и тук.
+    {url: origin + '/blog', changefreq: 'weekly' as const, priority: 0.6},
+    {url: origin + '/blog/category/' + blogHandle, changefreq: 'weekly' as const, priority: 0.6},
+    {url: origin + '/contacts', changefreq: 'monthly' as const, priority: 0.4},
     ...collections.map((c) => ({url: origin + '/category/' + c.handle, changefreq: 'weekly' as const, priority: 0.7})),
     ...products.map((p) => ({url: origin + '/product/' + p.handle, changefreq: 'weekly' as const, priority: 0.6})),
     ...articles.map((a) => ({url: origin + '/article/' + a.handle, changefreq: 'monthly' as const, priority: 0.5})),

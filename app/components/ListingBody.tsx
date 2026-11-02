@@ -1,0 +1,212 @@
+import {useEffect, useState} from 'react';
+import {useSearchParams, useNavigate} from 'react-router';
+import {ProductCard} from '~/components/ProductCard';
+import {ListingAside} from '~/components/ListingAside';
+import {ActiveFilterChips} from '~/components/ActiveFilterChips';
+import {Pagination} from '~/components/Pagination';
+
+/**
+ * Общото тяло на списък с продукти: лентата с брой и подредба, активните
+ * филтри, страничната колона и решетката с карти.
+ *
+ * Живееше в `app/routes/product._index.tsx` и се внасяше оттам от категорията и
+ * търсенето. Този маршрут отпадна на 2026-08-12 (`/product` не съществува на
+ * bulgarbiotic.bg и дублираше `/category/all-products`), затова тялото се
+ * премести тук - при компонентите, където му е мястото.
+ */
+export function ListingBody({
+  products,
+  collections,
+  footer,
+}: {
+  products: any;
+  collections?: any[];
+  /** Съдържание под решетката, В колоната с картите - подравнено с тях,
+   *  не с целия контейнер (кампанийният банер на детската категория). */
+  footer?: React.ReactNode;
+}) {
+  const filters = (products as any).filters ?? [];
+  const totalCount = (products as any).totalCount ?? 0;
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const currentSort = searchParams.get('sort') ?? '';
+  /* Филтрите на телефон са в изскачащ панел, не под продуктите.
+   *
+   * Досега страничната колона беше `order-2`, тоест на телефон падаше ПОД
+   * всички карти: за да стигне до нея, купувачът трябваше да превърти целия
+   * списък - точно нещата, които търси, стояха най-накрая. Сега над списъка
+   * има бутон „Филтри", а панелът се отваря на цял екран. */
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  /* Колко филтъра са включени - числото в бутона.
+   *
+   * Броят се САМО познатите филтърни ключове (същите, които чете
+   * `buildFiltersFromParams`). Ако вместо това се броеше всичко освен
+   * сортирането, всеки чужд параметър в адреса щеше да се брои за филтър -
+   * `utm_source`, `fbclid`, `gclid` от реклама - и посетител, дошъл от обява,
+   * щеше да вижда „Филтри 2", без да е пипал нищо. */
+  const FILTER_KEYS = ['available', 'minPrice', 'maxPrice', 'vendor', 'tag', 'onSale', 'isNew', 'isFeatured', 'category'];
+  const activeFilterCount = [...searchParams.entries()].filter(
+    ([k, v]) =>
+      !!v && (FILTER_KEYS.includes(k) || k.startsWith('option_') || k.startsWith('prop_') || k.startsWith('brand_')),
+  ).length;
+
+  // Панелът заключва фона, докато е отворен, и се затваря с Esc.
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setFiltersOpen(false);
+    };
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [filtersOpen]);
+
+  function changeSort(value: string) {
+    const params = new URLSearchParams(searchParams);
+    if (value) params.set('sort', value);
+    else params.delete('sort');
+    params.delete('cursor');
+    params.delete('direction');
+    navigate(`?${params.toString()}`, {preventScrollReset: true});
+  }
+
+  return (
+    <>
+      {/* Toolbar above grid */}
+      <div className="bb-listing-toolbar">
+        <div className="bb-listing-toolbar-info">
+          <strong>{totalCount}</strong>{' '}
+          {totalCount === 1 ? 'продукт' : 'продукта'}
+        </div>
+        {/* Само на телефон и таблет - на широк екран колоната е винаги видима. */}
+        <button
+          type="button"
+          className="bb-filters-open"
+          onClick={() => setFiltersOpen(true)}
+          aria-expanded={filtersOpen}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden="true">
+            <line x1="4" y1="7" x2="20" y2="7" />
+            <line x1="7" y1="12" x2="17" y2="12" />
+            <line x1="10" y1="17" x2="14" y2="17" />
+          </svg>
+          Филтри
+          {activeFilterCount > 0 && <span className="bb-filters-open-count">{activeFilterCount}</span>}
+        </button>
+        <div className="bb-listing-sort">
+          <label htmlFor="bb-sort">Сортирай:</label>
+          <select
+            id="bb-sort"
+            className="bb-listing-sort-select"
+            value={currentSort}
+            onChange={(e) => changeSort(e.target.value)}
+          >
+            {/* Default = ranked by units actually sold (admin order data). */}
+            <option value="">Най-продавани</option>
+            <option value="store">Ред на магазина</option>
+            <option value="created-desc">Най-нови</option>
+            <option value="price-asc">Цена: ниска → висока</option>
+            <option value="price-desc">Цена: висока → ниска</option>
+            <option value="title-asc">Име: А → Я</option>
+            <option value="title-desc">Име: Я → А</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Включените филтри стоят точно под лентата със сортирането и „Филтри",
+          за да се махне някой с едно докосване - без панелът да се отваря пак.
+          Дотук този ред стоеше НАД лентата и оставаше незабелязан. */}
+      <ActiveFilterChips filters={filters} />
+
+      {/* Sidebar (value-add: quiz + discovery + filters + trust) + grid */}
+      {/* Колоната с филтрите се появява от 1024px нагоре - под тази ширина тя е
+          панел (виж `.bb-filters-aside`), затова решетката там е една колона,
+          вместо да пази празно място за нещо, което го няма в потока. */}
+      <div className="grid gap-8 lg:grid-cols-[260px_1fr] lg:gap-10">
+        {/* Един и същ списък с филтри в двата режима: на широк екран е колона
+            вляво, на телефон - панел на цял екран. Няма втори препис, който
+            после да се разминава. */}
+        <div
+          className={`bb-filters-scrim${filtersOpen ? ' is-open' : ''}`}
+          onClick={() => setFiltersOpen(false)}
+          aria-hidden="true"
+        />
+        <aside className={`bb-filters-aside order-2 lg:order-1${filtersOpen ? ' is-open' : ''}`}>
+          <div className="bb-filters-sheet-head">
+            <strong>Филтри</strong>
+            <button type="button" onClick={() => setFiltersOpen(false)} aria-label="Затвори филтрите">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
+          <div className="bb-filters-sheet-body">
+            {/* Същият преглед и вътре в панела: отваряйки го, купувачът първо
+                вижда какво вече е избрал. На широк екран не се рисува - там
+                редът с етикетите стои под лентата над списъка. */}
+            <div className="bb-filters-sheet-chips">
+              <ActiveFilterChips filters={filters} />
+            </div>
+            <ListingAside filters={filters} totalCount={totalCount} collections={collections} />
+          </div>
+          <div className="bb-filters-sheet-foot">
+            <button type="button" className="bb-filters-apply" onClick={() => setFiltersOpen(false)}>
+              Виж {totalCount} {totalCount === 1 ? 'продукт' : 'продукта'}
+            </button>
+          </div>
+        </aside>
+
+        <div className="order-1 lg:order-2">
+          {totalCount === 0 ? (
+            <div className="bb-listing-empty">
+              <svg className="bb-listing-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <path d="M21 21l-4.35-4.35" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+              <h3>Не намерихме продукти</h3>
+              <p>Опитай да изчистиш филтрите или промени критериите.</p>
+            </div>
+          ) : (
+            <Pagination connection={products}>
+              {({nodes, NextLink, isLoading}) => (
+                <div>
+                  {/* `auto-rows-fr` изравнява ВСИЧКИ карти на страницата, не само
+                      тези в един ред. Иначе редът с петредово име стои по-висок
+                      от съседния и бутоните „Купи" се разминават през страницата;
+                      свободното място сяда под късото име, където не личи. */}
+                  <div className="grid auto-rows-fr grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                    {nodes.map((product: any) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                  <NextLink className={`bb-listing-loadmore${isLoading ? ' loading' : ''}`}>
+                    {isLoading ? (
+                      <>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="animate-spin">
+                          <path d="M12 3a9 9 0 11-6.3 2.6" />
+                        </svg>
+                        Зареждам…
+                      </>
+                    ) : (
+                      <>
+                        Зареди още продукти
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </>
+                    )}
+                  </NextLink>
+                </div>
+              )}
+            </Pagination>
+          )}
+          {footer}
+        </div>
+      </div>
+    </>
+  );
+}

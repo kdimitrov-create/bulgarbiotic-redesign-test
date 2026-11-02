@@ -1,59 +1,26 @@
 import {useEffect, useState} from 'react';
 import {Link} from 'react-router';
-import {freeShippingTargetEur} from './CartDrawer';
+import {plainText} from '~/lib/html-entities';
 import {liveModule} from '~/lib/theme-modules';
 
 /**
- * Sticky promo bar at the very top of every page. Cycles through live
- * campaigns every 6 seconds with a soft fade. Closable; persists dismissal
- * in sessionStorage so it doesn't pester within a session.
+ * Лепкавата лента най-горе на всяка страница.
  *
- * Campaigns are sourced from real CloudCart data:
- *   1. /pages/pateshestvie  → Disneyland family-trip giveaway (active CMS page)
- *   2. Discount 467 "30%-may-kampaniq" → 30% auto-applied for May (6,397 uses)
- *      end date 2026-06-30, no code needed.
- *   3. Free shipping over 50 € — matches the real Speedy v2 / Sameday
- *      threshold (verified via Admin API `shippingSettings(key:)`).
- *      Same threshold used by CartDrawer's progress bar + upsell logic.
+ * Съдържанието е изцяло на търговеца: модулът „Promo Bar" (`htmlLine`) в
+ * Дизайн → Модули. Оттам идват текстът, бутонът и прозорецът от дати, а всеки
+ * абзац в редактора е едно съобщение от въртележката - сменят се на 6 секунди
+ * с меко избледняване. Лентата се затваря и затварянето се помни за сесията.
+ *
+ * ⚠️ НЯМА резервно съдържание и това е нарочно.
+ *
+ * Дотук, ако модулът беше изключен, изтекъл или админът не отговореше, лентата
+ * падаше на три съобщения, изписани в кода - сред тях „-30% за май", писано през
+ * май. Заявката към админа се прави с `soft`: откаже ли, модулите идват празни
+ * и витрината рисуваше старото, без нищо да личи. Така панелът показваше едно,
+ * а магазинът - друго, без търговецът да може да го поправи отникъде.
+ *
+ * Затова сега няма съдържание от панела - няма лента.
  */
-type Campaign = {
-  id: string;
-  text: string;
-  cta: string;
-  to: string;
-  /** Emoji or short ASCII glyph rendered before the text. */
-  glyph: string;
-};
-
-function campaigns(): Campaign[] {
-  return [
-  {
-    id: 'disneyland-giveaway',
-    glyph: '✦',
-    text: 'Спечели семейна екскурзия до Дисниленд в Париж',
-    cta: 'Виж как',
-    to: '/page/pateshestvie',
-  },
-  {
-    id: 'may-30',
-    glyph: '◉',
-    text: '-30% за май - автоматично прилагане, без код',
-    cta: 'Виж промо продуктите',
-    to: '/category/all-products',
-  },
-  {
-    id: 'free-shipping-bump',
-    glyph: '⬢',
-    // Сумата е същата, която количката показва в лентата за доставка: първо
-    // правилото от панела, иначе настройката на BumpCart. Функция, а не
-    // константа, защото правилото пристига през root loader-а.
-    text: `Безплатна доставка при поръчка над ${freeShippingTargetEur()} €`,
-    cta: 'Към продуктите',
-    to: '/category/all-products',
-    },
-  ];
-}
-
 
 /**
  * Всеки абзац в модула „Promo Bar" е едно съобщение от въртележката - точно
@@ -89,16 +56,9 @@ type OwnSlide = {glyph: string; text: string; cta: string; to: string};
 const LEADING_GLYPH = /^\s*([^\p{L}\p{N}\s<])\s*/u;
 
 function stripTags(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\s+/g, ' ')
-    .trim();
+  // Знаците се разчитат от общия декодер: тукашният списък познаваше шест на
+  // брой и „&euro;" не беше сред тях - лентата пишеше „над 70&euro;".
+  return plainText(html);
 }
 
 function parseOwnSlide(html: string): OwnSlide {
@@ -121,10 +81,9 @@ const STORAGE_KEY = 'bb-promo-bar-v1';
 const ROTATE_MS = 6000;
 
 export function PromoBar() {
-  // The merchant's own bar wins when they have switched it on in
-  // Дизайн → Модули → "Promo Bar": it carries HTML, an optional button and a
-  // date window, and it replaces the designed campaigns entirely. Without it,
-  // the three curated messages below keep rotating.
+  // Единственият източник: модулът „Promo Bar" в Дизайн → Модули. Носи HTML,
+  // незадължителен бутон и прозорец от дати. `liveModule` връща null, ако е
+  // изключен, извън прозореца или изобщо не е стигнал до тук.
   const own = liveModule('htmlLine');
   const ownSlides = splitOwnSlides(
     typeof own?.settings?.text === 'string' ? own.settings.text : '',
@@ -144,10 +103,7 @@ export function PromoBar() {
     }
   }, []);
 
-  // Изчислява се при рендиране, защото прагът за безплатна доставка идва през
-  // root loader-а и не се знае, докато модулът се зарежда.
-  const fallbackCampaigns = campaigns();
-  const slideCount = ownSlides.length || fallbackCampaigns.length;
+  const slideCount = ownSlides.length;
   useEffect(() => {
     if (dismissed || slideCount < 2) return;
     const t = setInterval(() => {
@@ -166,10 +122,13 @@ export function PromoBar() {
   }
 
   if (dismissed) return null;
+  // Изключен модул, изтекъл прозорец, празен текст или мълчащ админ - и в
+  // четирите случая лентата просто я няма, вместо витрината да измисля
+  // съобщения вместо търговеца.
+  if (!ownSlides.length) return null;
 
   const button = own?.settings?.button ?? {};
   const showButton =
-    ownSlides.length > 0 &&
     (String(button.enabled ?? '').toLowerCase() === 'true' || button.enabled === true) &&
     Boolean(button.link);
 
@@ -212,22 +171,6 @@ export function PromoBar() {
             </div>
           );
         })}
-        {ownSlides.length === 0 &&
-          fallbackCampaigns.map((camp, i) => (
-          <div
-            key={camp.id}
-            className={`bb-promo-slide${i === idx ? ' bb-promo-slide--on' : ''}`}
-            aria-hidden={i !== idx}
-          >
-            <span className="bb-promo-glyph" aria-hidden="true">{camp.glyph}</span>
-            <Link to={camp.to} className="bb-promo-text">
-              <strong>{camp.text}</strong>
-              <span className="bb-promo-cta">
-                {camp.cta} <span aria-hidden="true">»</span>
-              </span>
-            </Link>
-          </div>
-        ))}
       </div>
 
       <button
@@ -241,11 +184,14 @@ export function PromoBar() {
         </svg>
       </button>
 
-      {/* Dot indicators (only render if there are multiple campaigns) */}
-      {fallbackCampaigns.length > 1 && (
+      {/* Точките показват колко са съобщенията в модула и кое се вижда. */}
+      {ownSlides.length > 1 && (
         <div className="bb-promo-dots" aria-hidden="true">
-          {fallbackCampaigns.map((_, i) => (
-            <span key={i} className={`bb-promo-dot${i === idx ? ' on' : ''}`} />
+          {ownSlides.map((_, i) => (
+            <span
+              key={i}
+              className={`bb-promo-dot${i === idx % ownSlides.length ? ' on' : ''}`}
+            />
           ))}
         </div>
       )}

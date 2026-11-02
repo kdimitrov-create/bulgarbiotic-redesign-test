@@ -11,7 +11,59 @@
  * (проверено в самите файлове), Montserrat също. Тоест „в", „д", „и", „к", „п"
  * се изписват по български, а не по руски - капанът, в който Roboto ни вкара.
  */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&display=swap');
+/* ⛔ Montserrat вече НЕ идва през `@import` от Google.
+ *
+ * `@import` вътре в CSS е най-бавният път: браузърът трябва да свали и разчете
+ * ТОЗИ файл, за да открие реда, чак тогава да поиска CSS-а на Google, и чак
+ * след него самите шрифтове - три обиколки една след друга, на два чужди
+ * домейна, преди първата буква да се нарисува с верния шрифт.
+ *
+ * Сега файловете са при нас. Montserrat е ПРОМЕНЛИВ шрифт: един файл покрива
+ * всички дебелини 100–900, затова 8-те лица се събират в 4 файла (стил ×
+ * подмножество) - 114 KB общо вместо 452, ако се вадеше лице по лице.
+ *
+ * ⭐ Проверено в самия файл преди пускане: `cyrl` носи `BGR` (плюс MKD и SRB)
+ * и `locl`, тоест „в", „д", „и", „к", „п" се изписват по БЪЛГАРСКИ, а не по
+ * руски. Това не се приема на доверие - виж капана с Roboto.
+ *
+ * ⛔ Взети са само `cyrillic` и `latin`. `cyrillic-ext`, `latin-ext` и
+ * `vietnamese` не се ползват на този сайт; `unicode-range` така или иначе не
+ * би ги поискал, но не им е и мястото в хранилището.
+ *
+ * Лиценз: Montserrat е под SIL Open Font License - собственото хостване е
+ * изрично позволено. */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/montserrat/montserrat-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/montserrat/montserrat-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/montserrat/montserrat-normal-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/montserrat/montserrat-normal-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 /* Akrobat няма Medium (500), а сайтът го ползва на 27 места. Затова лицата са
  * обявени с ДИАПАЗОН на дебелината: браузърът взима най-близкото истинско лице
@@ -746,6 +798,131 @@ body::after {
 .bb-npopup-close:hover { background: var(--color-ink); color: var(--color-cream-1); }
 .bb-npopup-close svg { width: 14px; height: 14px; }
 
+/* ─── CROSS-SELL POPUP ───
+   Кръстосаната оферта от панела (`CrossSellPopup.tsx`). Цветовете идват от
+   офертата през --cs-*; незададените падат към цветовете на марката. */
+.bb-xs-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 37, 64, 0.6);
+  backdrop-filter: blur(6px);
+  z-index: 190;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.4s, visibility 0.4s;
+}
+.bb-xs-overlay.open { opacity: 1; visibility: visible; }
+.bb-xs {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.92);
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  background: var(--cs-bg, var(--color-cream-1));
+  color: var(--cs-text, var(--color-ink));
+  border-radius: 26px;
+  padding: 34px 32px 24px;
+  z-index: 191;
+  opacity: 0; visibility: hidden;
+  transition: opacity 0.4s, visibility 0.4s, transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1.1);
+  box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.4);
+}
+.bb-xs.open { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+/* Прегледът: в страницата, не върху нея. */
+.bb-xs.is-inline {
+  position: relative; top: auto; left: auto;
+  transform: scale(0.96); margin: 0 auto; max-height: none;
+}
+.bb-xs.is-inline.open { transform: none; }
+.bb-xs-stage { display: flex; justify-content: center; padding: 8px 0 40px; }
+.bb-xs-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 32px; height: 32px; border-radius: 999px;
+  background: rgba(10, 37, 64, 0.06); color: inherit;
+  display: flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; transition: background 0.2s;
+}
+.bb-xs-close:hover { background: rgba(10, 37, 64, 0.14); }
+.bb-xs-close svg { width: 14px; height: 14px; }
+.bb-xs-head { text-align: center; padding: 0 24px; margin-bottom: 22px; }
+.bb-xs-badge {
+  display: inline-block; margin-bottom: 10px;
+  padding: 5px 12px; border-radius: 999px;
+  background: var(--color-brand-pink); color: #fff;
+  font-size: 12px; font-weight: 800; letter-spacing: 0.2px;
+}
+.bb-xs h2 {
+  font-size: 26px; font-weight: 800; line-height: 1.15;
+  letter-spacing: -0.6px; color: inherit;
+}
+.bb-xs-desc { margin-top: 8px; font-size: 14px; line-height: 1.55; opacity: 0.75; }
+.bb-xs-list {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.bb-xs-list.count-1 { grid-template-columns: minmax(0, 240px); justify-content: center; }
+.bb-xs-list.count-2 { grid-template-columns: repeat(2, minmax(0, 220px)); justify-content: center; }
+.bb-xs-item {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  background: #fff; color: var(--color-ink);
+  border-radius: 18px; padding: 14px 12px 14px;
+  box-shadow: 0 1px 0 rgba(10, 37, 64, 0.06);
+}
+.bb-xs-img {
+  display: block; width: 100%; aspect-ratio: 1;
+  border-radius: 12px; overflow: hidden; background: var(--color-cream-2);
+}
+.bb-xs-img img { width: 100%; height: 100%; object-fit: contain; }
+.bb-xs-name {
+  margin-top: 10px; font-size: 13px; font-weight: 700; line-height: 1.3;
+  color: inherit; min-height: 2.6em;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.bb-xs-name:hover { color: var(--color-brand-pink); text-decoration: none; }
+.bb-xs-price { margin: 6px 0 10px; display: flex; gap: 6px; align-items: baseline; justify-content: center; flex-wrap: wrap; }
+.bb-xs-price s { font-size: 12px; opacity: 0.5; }
+.bb-xs-price strong { font-size: 15px; font-weight: 800; }
+.bb-xs-price s + strong { color: var(--color-brand-pink); }
+.bb-xs-add {
+  margin-top: auto; width: 100%;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 11px 16px; border-radius: 999px; border: none; cursor: pointer;
+  background: var(--cs-btn-bg, var(--color-brand-pink));
+  color: var(--cs-btn-text, #fff);
+  font-family: inherit; font-size: 13px; font-weight: 800;
+  transition: filter 0.2s, transform 0.2s;
+}
+.bb-xs-stage > .bb-xs-add { width: auto; padding: 12px 24px; }
+.bb-xs-add:hover:not([disabled]) { filter: brightness(0.92); text-decoration: none; }
+.bb-xs-add[disabled] { opacity: 0.7; cursor: default; }
+.bb-xs-note {
+  margin: 14px 0 0; text-align: center; font-size: 13px;
+  padding: 10px 14px; border-radius: 12px; background: rgba(10, 37, 64, 0.06);
+}
+.bb-xs-cancel {
+  display: block; margin: 16px auto 0;
+  background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 600; color: inherit;
+  opacity: 0.6; text-decoration: underline; text-underline-offset: 3px;
+}
+.bb-xs-cancel:hover { opacity: 1; }
+@media (max-width: 560px) {
+  .bb-xs { padding: 30px 16px 20px; border-radius: 22px; }
+  .bb-xs h2 { font-size: 21px; }
+  .bb-xs-head { padding: 0 18px; }
+  /* Три карти на телефон не се събират - стават редове: снимка вляво, текст вдясно. */
+  .bb-xs-list,
+  .bb-xs-list.count-1,
+  .bb-xs-list.count-2 { grid-template-columns: 1fr; gap: 10px; }
+  .bb-xs-item {
+    display: grid; grid-template-columns: 76px 1fr; grid-template-rows: auto auto auto;
+    column-gap: 12px; text-align: left; align-items: center; padding: 10px;
+  }
+  .bb-xs-img { grid-row: 1 / span 3; width: 76px; }
+  .bb-xs-name { margin-top: 0; min-height: 0; }
+  .bb-xs-price { margin: 2px 0 6px; justify-content: flex-start; }
+  .bb-xs-add { padding: 9px 14px; }
+}
+
 /* ─── CART DRAWER (v10 redesign) ─── */
 .bb-cd { display: flex; flex-direction: column; height: 100%; background: var(--color-cream-1); color: var(--color-ink); }
 
@@ -757,7 +934,18 @@ body::after {
  *
  * На телефон панелът е цял екран, от 768px е странично чекмедже, а от 1280px
  * се разгръща на две колони. */
-.bb-aside-panel { width: 100%; }
+/* ⛔ `100vh` (Tailwind `h-screen` в `Aside.tsx`) е ГРЕШНАТА мярка на телефон.
+ * На iOS тя мери ГОЛЕМИЯ изглед - екрана, какъвто би бил, ако лентите на
+ * Safari са скрити. Панелът излизаше по-висок от видимото, а залепената лента
+ * седи на `bottom: 0` СПРЯМО ПАНЕЛА, тоест под адресната лента. Точно оттам
+ * идваше оплакването: „Към плащане" го няма, докато не превъртиш до дъното -
+ * превъртането свива лентите на Safari и чак тогава дъното на панела влиза в
+ * екрана.
+ *
+ * `100dvh` следва видимия изглед: свият ли се лентите, панелът расте с тях и
+ * долната лента стои залепена за истинския долен ръб при всяко положение.
+ * Първият ред е резерва за браузър без `dvh`. */
+.bb-aside-panel { width: 100%; height: 100vh; height: 100dvh; }
 .bb-aside-scrim { display: none; }
 
 @media (min-width: 768px) {
@@ -782,8 +970,10 @@ body::after {
 .bb-aside-main { overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
 .bb-cd-head { flex-shrink: 0; }
-/* На широк екран лентата е обикновен ред във футъра и сумата не се повтаря. */
-.bb-cd-action-total { display: none; }
+/* На широк екран лентата е обикновен ред във футъра: футърът се вижда без
+   превъртане, значи сметката не се повтаря вътре в нея. */
+.bb-cd-action-total,
+.bb-cd-action-savings { display: none; }
 
 /* Селекторите са с `.bb-cd` отпред: този блок стои преди правилата на самите
    части и при равна тежест печели по-долното правило. */
@@ -830,8 +1020,51 @@ body::after {
     font-family: var(--font-serif); font-style: italic; font-weight: 500;
     font-size: 22px; letter-spacing: -0.5px; color: var(--color-brand-pink);
   }
-  /* Крайната сума вече стои в залепената лента - във футъра се повтаряше. */
-  .bb-cd .bb-cd-grand-val-col { display: none; }
+  /* Старата сума до новата - зачеркната, дребна, бледа. */
+  .bb-cd .bb-cd-action-total-val {
+    display: inline-flex; align-items: baseline; gap: 8px;
+  }
+  .bb-cd .bb-cd-action-msrp {
+    font-size: 14px; font-weight: 600;
+    color: rgba(10, 37, 64, 0.42);
+    text-decoration-thickness: 1px;
+    white-space: nowrap;
+  }
+  /* Ред без число (правило без разпределена сума) не оставя празна колона. */
+  .bb-cd .bb-cd-action-row span:last-child:empty { display: none; }
+  /* Сметката вече стои в залепената лента - във футъра се повтаряше.
+     Остава само бележката за таксите: тя не е число и не се дублира. */
+  .bb-cd .bb-cd-grand-val-col,
+  .bb-cd .bb-cd-grand-lbl,
+  .bb-cd .bb-cd-grand-savings,
+  .bb-cd .bb-cd-adjust { display: none; }
+  .bb-cd .bb-cd-grand { margin-bottom: 0; }
+
+  /* Редовете с отстъпките вътре в лентата.
+     Дребни нарочно: лентата яде от височината, заради която количката изобщо
+     се отваря - да се видят продуктите. */
+  .bb-cd .bb-cd-action-savings {
+    display: flex; flex-direction: column; gap: 3px;
+    margin-bottom: 7px;
+  }
+  .bb-cd .bb-cd-action-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-size: 12.5px; line-height: 1.35; color: rgba(10, 37, 64, 0.66);
+  }
+  .bb-cd .bb-cd-action-row span:last-child {
+    font-weight: 700; color: var(--color-ink); white-space: nowrap;
+  }
+  /* Спестеното общо - единственият зелен ред, за да се хване с един поглед. */
+  .bb-cd .bb-cd-action-saved {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    margin-top: 2px; padding-top: 5px;
+    border-top: 1px solid rgba(10, 37, 64, 0.08);
+    font-size: 13px; color: rgb(34, 110, 70);
+  }
+  .bb-cd .bb-cd-action-saved span {
+    display: inline-flex; align-items: center; gap: 4px; font-weight: 700;
+  }
+  .bb-cd .bb-cd-action-saved strong { font-weight: 800; white-space: nowrap; }
 }
 
 /* Заглавната лента е една и носи бутона за затваряне. */
@@ -974,6 +1207,35 @@ body::after {
 }
 .bb-offer.is-earned .bb-offer-fill { background: #16a34a; }
 
+/* Кампанията „1 + 1 подарък + томбола за Dyson".
+   Полето е същото като на праговете отгоре, за да се чете като един и същ
+   език, и добавя само едно нещо: ред с името на продукта и бутон „Купи",
+   когато той още не е в количката. Бутонът е тук, а не под текста, защото
+   на телефон полето е тясно и два реда една под друга изяждат екрана. */
+.bb-offer-dyson-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-top: 8px;
+}
+.bb-offer-dyson-name {
+  font-size: 13px; font-weight: 700; line-height: 1.3;
+  color: var(--color-ink); text-decoration: none;
+  /* Дългото име се реже, за да не изблъска бутона извън полето. */
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.bb-offer-dyson-name:hover { color: var(--color-brand-pink); }
+.bb-offer-dyson-form { margin: 0; flex: none; }
+.bb-offer-dyson-btn {
+  border: 0; cursor: pointer; white-space: nowrap;
+  background: var(--color-brand-pink); color: #fff;
+  font-size: 13px; font-weight: 800; letter-spacing: 0.2px;
+  padding: 9px 18px; border-radius: 999px;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.bb-offer-dyson-btn:hover { background: var(--color-brand-pink-dark); }
+.bb-offer-dyson-btn:active { transform: translateY(1px); }
+.bb-offer-dyson-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
 /* Редът на спечеления подарък - в чекмеджето и на страницата /cart.
    Изглежда като обикновен ред, но без брояч и без кошче: не се купува и не се
    маха, а идва сам. Зелената рамка го отличава от платените редове. */
@@ -1039,13 +1301,42 @@ body::after {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     column-gap: 32px;
+    row-gap: 14px;
     align-items: start;
   }
-  .bb-cd .bb-cd-foot > .bb-cart-promo { grid-column: 1; grid-row: 1 / span 2; }
-  .bb-cd .bb-cd-foot > .bb-cd-trust   { grid-column: 1; grid-row: 3; align-self: end; }
-  .bb-cd .bb-cd-foot > .bb-cd-adjust  { grid-column: 2; grid-row: 1; margin-top: 0; }
-  .bb-cd .bb-cd-foot > .bb-cd-grand   { grid-column: 2; grid-row: 2; }
-  .bb-cd .bb-cd-foot > .bb-cd-action  { grid-column: 2; grid-row: 3; }
+  /* Ляво: промокод, бележката под него, знаците за плащане.
+     Дясно: намаленията и крайната сума.
+     Бутонът е ПОД двете колони, по цялата ширина - той е едно действие за
+     цялата количка, не принадлежи на дясната половина. */
+  /* И двете колони тръгват с еднакъв отстъп отгоре - долепени до ръба на
+     лентата изглеждаха отрязани. */
+  .bb-cd .bb-cd-foot > .bb-cart-promo     { grid-column: 1; grid-row: 1 / span 2; margin-top: 10px; }
+  .bb-cd .bb-cd-foot > .bb-cd-adjust      { grid-column: 2; grid-row: 1; margin-top: 10px; }
+  .bb-cd .bb-cd-foot > .bb-cd-grand       { grid-column: 2; grid-row: 2; }
+  /* Бутонът по цялата ширина, под него бележката, най-долу знаците за плащане:
+     първо действието, после какво още не е в сумата, после уверението. */
+  .bb-cd .bb-cd-foot > .bb-cd-action      { grid-column: 1 / -1; grid-row: 3; }
+  /* Бележката и знаците за плащане делят ЕДИН ред - две дребни неща едно под
+     друго ядяха два реда височина без нужда. */
+  .bb-cd .bb-cd-foot > .bb-cd-grand-note  { grid-column: 1; grid-row: 4; margin: 0; align-self: center; }
+  .bb-cd .bb-cd-foot > .bb-cd-trust       { grid-column: 2; grid-row: 4; align-self: center; }
+
+  /* Дясната колона дишаше твърде малко - редовете седяха един върху друг. */
+  .bb-cd .bb-cd-adjust { gap: 11px; }
+  .bb-cd .bb-cd-adjust-row { line-height: 1.4; }
+  /* Чертата дели крайната сума от редовете НАД нея. Няма ли ги, няма какво да
+     дели и увисва сама - затова е на съседния селектор, не на самия блок. */
+  .bb-cd .bb-cd-adjust + .bb-cd-grand {
+    padding-top: 12px; border-top: 1px solid rgba(10, 37, 64, 0.1);
+  }
+
+  .bb-cd .bb-cd-action { margin-top: 4px; }
+  /* На един ред с бележката чертата отгоре би минала само над половината. */
+  .bb-cd .bb-cd-trust { margin-top: 0; padding-top: 0; border-top: none; }
+  .bb-cd .bb-cd-trust-row { justify-content: flex-end; }
+
+  /* Бележката е единственият текст в лявата колона - дребна се губеше. */
+  .bb-cd .bb-cd-grand-note { font-size: 14px; line-height: 1.45; }
   /* Обвивката се разтваря и решетката вижда списъка и bump cart-а поотделно. */
   .bb-cd .bb-cd-mid { display: contents; }
   .bb-cd .bb-cd-scroll {
@@ -1131,12 +1422,13 @@ body::after {
   border-bottom: 1px solid rgba(10, 37, 64, 0.1);
 }
 .bb-cd-shipping-text {
-  font-size: 12px; font-weight: 700;
+  /* 12 → 14.5px по молба на клиента (14.10.2026): прагът на отстъпката не се четеше. */
+  font-size: 14.5px; font-weight: 700;
   color: var(--color-ink); margin-bottom: 8px;
   line-height: 1.4;
 }
 .bb-cd-shipping-text .accent { color: var(--color-brand-pink); font-weight: 800; }
-.bb-cd-shipping-bgn { color: rgba(10, 37, 64, 0.5); font-size: 11.5px; font-weight: 600; margin-left: 2px; }
+.bb-cd-shipping-bgn { color: rgba(10, 37, 64, 0.5); font-size: 13px; font-weight: 600; margin-left: 2px; }
 .bb-cd-shipping-track {
   height: 6px; background: white;
   border-radius: 999px; overflow: hidden;
@@ -1933,8 +2225,6 @@ body.bb-drawer-open .bb-promo {
   .bb-finder,
   .bb-blog { padding: 44px 0 48px !important; }
 
-  .bb-stories { padding: 40px 0 50px !important; }
-
   .bb-award { padding: 36px 0 !important; }
 
   .bb-ctas { padding: 16px 0 60px !important; }
@@ -2368,6 +2658,17 @@ html, body {
   color: rgba(10, 37, 64, 0.55);
   line-height: 1.35;
 }
+/* Back to school: връзката „За деца" свети, докато трае кампанията
+   (класа го слага MegaMenu.tsx по адреса на детската категория). */
+/* Розовият фон на капсулата е махнат на 09.10.2026 по клиент: остава само
+   розовият текст. */
+.bb-megamenu-link--spotlight .bb-megamenu-link-label {
+  color: var(--color-brand-pink);
+  font-weight: 800;
+}
+/* Списъкът с капсула се свива до най-дългия си ред - така капсулата свършва
+   при „За домашни любимци", а не при ръба на колоната. */
+.bb-megamenu-col-list--fit { width: fit-content; }
 
 /* ─── Featured column ─── */
 .bb-megamenu-feat-card {
@@ -2398,6 +2699,20 @@ html, body {
   max-width: 100%;
   object-fit: contain;
   transition: transform 0.35s ease;
+}
+/* Кампанийният банер е квадратен и се показва ЦЯЛ: 16:10 с изрязване би
+   махнало или заглавието, или продуктите от него. */
+.bb-megamenu-feat-img--banner {
+  aspect-ratio: 1 / 1;
+  padding: 0;
+}
+.bb-megamenu-feat-img--portrait {
+  aspect-ratio: 4 / 5;
+}
+.bb-megamenu-feat-img--banner img {
+  width: 100%; height: 100%;
+  max-width: none; max-height: none;
+  object-fit: cover;
 }
 .bb-megamenu-feat-card:hover .bb-megamenu-feat-img img {
   transform: scale(1.04) rotate(-1deg);
@@ -4333,6 +4648,63 @@ body.bb-pdp-sticky-active { padding-bottom: 84px; }
   .bb-listing { padding: 32px 36px 100px; }
 }
 
+/* Рамките на кампаниите. Класовете са два набора нарочно: `bb-kids-*` е на
+   Back to school, `bb-campaign-*` е общото име за всяка следваща кампания
+   (днес „1+1 + томбола Dyson"). Правилата са едни и същи, за да изглеждат
+   еднакво - клиентът иска новото „по подобие на Back to school" - но краят
+   на едната кампания не може да събори другата.
+
+/* Back to school: кампанийният банер под продуктите на детската категория.
+   Живее В колоната с картите (footer на ListingBody), тоест е подравнен с
+   решетката - започва след страничната лента и свършва с картите. */
+.bb-kids-banner,
+.bb-campaign-banner {
+  margin: 28px 0 4px;
+}
+.bb-kids-banner img,
+.bb-campaign-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  box-shadow: 0 18px 40px -18px rgba(10, 37, 64, 0.25);
+}
+
+/* Back to school: бележката за подаръка - между видеото и текста на
+   описанието на детските PDP-та (вътре в контейнера на описанието). */
+.bb-kids-gift,
+.bb-campaign-gift {
+  margin: 18px 0 26px;
+}
+.bb-kids-gift-box,
+.bb-campaign-gift-box {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  background: rgba(227, 22, 108, 0.07);
+  border: 1px solid rgba(227, 22, 108, 0.18);
+  border-radius: 18px;
+  padding: 18px 22px;
+}
+.bb-kids-gift-icon,
+.bb-campaign-gift-icon { font-size: 28px; line-height: 1.2; }
+/* Типографията на описанието (Akrobat, нормална тежест), но една стъпка
+   под основния 16px текст - тоест 15px: по-едра от prose-sm абзаците,
+   без да се изравнява с акцентните редове (клиент, 24.08). */
+.bb-kids-gift-text,
+.bb-campaign-gift-text {
+  margin: 0;
+  font-family: var(--font-small);
+  font-size: 15px;
+  line-height: 1.65;
+  font-weight: 400;
+  color: var(--color-ink);
+}
+@media (max-width: 540px) {
+  .bb-kids-gift-box,
+  .bb-campaign-gift-box { padding: 14px 16px; gap: 12px; }
+}
+
 /* Collection hero */
 .bb-listing-hero {
   background: linear-gradient(135deg, var(--color-cream-2) 0%, var(--color-pink-1) 100%);
@@ -4655,7 +5027,8 @@ body.bb-pdp-sticky-active { padding-bottom: 84px; }
 
 /* --- free-shipping progress (mirrors .bb-cd-shipping) --- */
 .bb-cart-shipping { background: var(--color-cream-2); border-radius: 14px; padding: 14px 16px; margin-bottom: 16px; }
-.bb-cart-shipping-text { font-size: 13px; line-height: 1.45; margin-bottom: 9px; }
+/* 13 → 15.5px по молба на клиента (14.10.2026), както в чекмеджето. */
+.bb-cart-shipping-text { font-size: 15.5px; line-height: 1.45; margin-bottom: 9px; }
 .bb-cart-shipping-text .accent { color: var(--color-brand-pink); }
 .bb-cart-shipping-bgn { color: rgba(10, 37, 64, 0.55); }
 .bb-cart-shipping-icon { color: #16a34a; font-weight: 800; margin-right: 4px; }
@@ -4846,6 +5219,19 @@ img.pm-banner {
 /* Редовете на търговеца в чекмеджето: правило за количката, отстъпка, доставка.
    Идват от `Cart.totals` и стоят между продуктите и крайната сума. */
 .bb-cd-adjust { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 2px; }
+
+/* ── Сметката на реда в количката ────────────────────────────────────────────
+ * Отгоре надолу: беше · какво по колко · какво сваля правилото · колко плащаш.
+ * Само последното е едро и цветно - другите три са опората, по която числото
+ * се проверява. */
+.bb-cd-item-price-unit {
+  font-size: 12.5px; line-height: 1.3; font-weight: 600;
+  color: rgba(10, 37, 64, 0.6); white-space: nowrap;
+}
+.bb-cd-item-price-rule {
+  font-size: 12.5px; line-height: 1.3; font-weight: 700;
+  color: rgb(34, 110, 70); white-space: nowrap;
+}
 .bb-cd-adjust-row {
   display: flex; justify-content: space-between; gap: 12px;
   font-size: 14px; color: rgba(10, 37, 64, 0.72);
@@ -6967,7 +7353,13 @@ img.pm-banner {
    ========================================================================== */
 /* --- промокод --- */
 .bb-cart-promo { border-top: 1px solid rgba(10, 37, 64, 0.09); margin-top: 14px; padding-top: 14px; }
-.bb-cart-promo-label { display: block; font-size: 13.5px; font-weight: 700; color: rgba(10, 37, 64, 0.75); margin-bottom: 7px; }
+/* Montserrat, за да е от същото семейство като „Намаление на продуктите"
+   отсреща - Akrobat правеше двете заглавия на реда видимо различни. */
+.bb-cart-promo-label {
+  display: block; font-family: var(--font-sans);
+  font-size: 13.5px; font-weight: 700;
+  color: rgba(10, 37, 64, 0.75); margin-bottom: 7px;
+}
 .bb-cart-promo-row { display: flex; gap: 8px; }
 .bb-cart-promo-input {
   flex: 1; min-width: 0; padding: 10px 12px; font-size: 13px; font-family: inherit;
@@ -6985,7 +7377,7 @@ img.pm-banner {
 }
 .bb-cart-promo-apply:hover:not([disabled]) { background: var(--color-ink); color: var(--color-cream-1); }
 .bb-cart-promo-apply[disabled] { opacity: 0.55; cursor: default; }
-.bb-cart-promo-list { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.bb-cart-promo-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
 .bb-cart-promo-list li { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .bb-cart-promo-tag {
   display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
@@ -7034,3 +7426,41 @@ img.pm-banner {
   .bb-cart-toast { top: auto; bottom: 20px; right: 16px; left: 16px; max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) { .bb-cart-toast { transition: none; } }
+
+/* Името на правилото, което е свалило цената на реда в количката. */
+.bb-cd-item-rule {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  margin-top: 3px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(227, 22, 108, 0.08);
+  color: var(--color-brand-pink);
+  font-size: 11.5px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+/* --- „Купи повече, спести повече" в количката (`CheckoutTextBanner`) ---
+   Съдържанието е HTML-ът на уиджета „Checkout text" от панела. */
+.bb-ct-banner {
+  background: var(--color-cream-2);
+  border: 1px solid rgba(10, 37, 64, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  font-size: 13.5px; line-height: 1.5; color: var(--color-ink);
+}
+.bb-ct-banner-title { font-weight: 800; margin-bottom: 8px; }
+.bb-ct-banner-body p { margin: 0; }
+.bb-ct-banner-body p + p { margin-top: 10px; }
+.bb-ct-banner-body img { display: block; width: 100%; height: auto; border-radius: 10px; }
+.bb-cd-ct-banner { margin: 12px 16px 16px; }
+.bb-cart-ct-banner { margin-top: 16px; padding: 14px; font-size: 14.5px; }
+
+/* Bump cart-ът на страницата `/cart` - под продуктите, със собствени полета. */
+.bb-cart-main .bb-cart-upsell { margin: 16px 0 0; padding: 16px; border-radius: 16px; }
+/* Текстът от панела носи свои `<strong>`; шрифтът и дебелината са на магазина. */
+.bb-ct-banner-body, .bb-ct-banner-body * { font-family: inherit; }
+.bb-ct-banner-body strong, .bb-ct-banner-body b { font-weight: 700; }

@@ -11,7 +11,6 @@ import {Link} from 'react-router';
 type Tile = {
   key: string;
   title: string;
-  accent?: string;
   desc: string;
   img: string;
   link: string;
@@ -19,13 +18,13 @@ type Tile = {
 };
 
 const TILES: Tile[] = [
-  {key: 'women',     title: 'За жени',     accent: 'жени', desc: 'Интимно здраве, хормонален баланс, женско благополучие.', img: '/images/generated-v2/c-women.png',         link: '/category/probiotik-za-jeni', big: true},
-  {key: 'kids',      title: 'За деца',     accent: 'деца', desc: 'Smart Start + перли с шоколад.',                                          img: '/images/generated-v2/c-kids.png',          link: '/category/probiotik-za-deca'},
-  {key: 'pregnancy', title: 'За бременни',                desc: 'Специализиран пакет за бременност и кърмене.',                            img: '/images/generated/cat-pregnancy.png',      link: '/page/probiotik-za-bremenni'},
-  {key: 'pearls',    title: 'Перли',                       desc: 'С натурален или млечен шоколад.',                                          img: '/images/generated-v2/c-pearls.png',        link: '/category/perli'},
-  {key: 'beauty',    title: 'За отслабване', accent: 'отслабване', desc: 'Грижа за микробиома и метаболизма в борбата с излишните килограми.', img: '/images/categories/weight-loss-600900.png', link: '/category/probiotik-za-otslabvane'},
-  {key: 'pets',      title: 'За домашни любимци',           desc: 'Bactology Pets - кучета и котки.',                                       img: '/images/generated-v2/c-pets.png',          link: '/product/bactology-pets'},
-  {key: 'bundles',   title: 'Пакети',                       desc: 'Family Pack, Travel Pack и още комплекти с отстъпка.',                   img: '/images/generated-v2/c-bundles.png',       link: '/category/packages'},
+  {key: 'women',     title: 'За жени', desc: 'Интимно здраве, хормонален баланс, женско благополучие.', img: '/images/generated-v2/c-women.webp',         link: '/category/probiotik-za-jeni', big: true},
+  {key: 'kids',      title: 'За деца', desc: 'Smart Start + перли с шоколад.',                                          img: '/images/generated-v2/c-kids.webp',          link: '/category/probiotik-za-deca'},
+  {key: 'pregnancy', title: 'За бременни',                desc: 'Специализиран пакет за бременност и кърмене.',                            img: '/images/generated/cat-pregnancy.webp',      link: '/page/probiotik-za-bremenni'},
+  {key: 'pearls',    title: 'Перли',                       desc: 'С натурален или млечен шоколад.',                                          img: '/images/generated-v2/c-pearls.webp',        link: '/category/perli'},
+  {key: 'beauty',    title: 'За отслабване', desc: 'Грижа за микробиома и метаболизма в борбата с излишните килограми.', img: '/images/categories/weight-loss-600900.webp', link: '/category/probiotik-za-otslabvane'},
+  {key: 'pets',      title: 'За домашни любимци',           desc: 'Bactology Pets - кучета и котки.',                                       img: '/images/generated-v2/c-pets.webp',          link: '/product/bactology-pets'},
+  {key: 'bundles',   title: 'Пакети',                       desc: 'Family Pack, Travel Pack и още комплекти с отстъпка.',                   img: '/images/generated-v2/c-bundles.webp',       link: '/category/packages'},
 ];
 
 export function Categories() {
@@ -39,9 +38,16 @@ export function Categories() {
         <div className="bb-bento bb-mobile-slider reveal">
           {TILES.map((t) => (
             <Link key={t.key} to={t.link} className={`bb-ctile ${t.big ? 'bb-ctile-big' : ''}`} prefetch="intent">
-              <img src={t.img} alt={t.title} />
+              {/* Плочките са осмата секция надолу - никога не се виждат при отваряне.
+                  Нетърпеливи, те теглеха ~4 MB преди първото превъртане, сред тях
+                  cat-pregnancy.png от 1,47 MB. */}
+              <img src={t.img} alt={t.title} loading="lazy" decoding="async" />
               <div className="bb-ctile-content">
-                <h3>{t.accent ? <>За <span className="accent">{t.accent}</span></> : t.title}</h3>
+                {/* Второто изречение беше в розов курсив (`.accent`), а
+                    плочките са снимки: светлорозовото се губеше върху тях.
+                    Клиентът поиска бяло и същия шрифт като „За", тоест
+                    заглавието е едно цяло и не се разделя. */}
+                <h3>{t.title}</h3>
                 <p>{t.desc}</p>
                 <span className="bb-ctile-arrow">
                   Виж {t.big ? 'серията' : ''}
@@ -109,7 +115,6 @@ export function Categories() {
           font-size: 28px; font-weight: 800; letter-spacing: -0.8px;
           line-height: 1.05; margin-bottom: 6px;
         }
-        .bb-ctile-content h3 .accent { font-family: var(--font-serif); font-style: italic; font-weight: 400; color: var(--color-pink-3); }
         .bb-ctile-content p { font-size: 13px; opacity: 0.9; margin-bottom: 16px; max-width: 320px; line-height: 1.5; }
         .bb-ctile-arrow {
           display: inline-flex; align-items: center; gap: 6px;

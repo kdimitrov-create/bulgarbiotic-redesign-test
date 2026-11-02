@@ -3,6 +3,8 @@ interface Props {
   benefits: string[];
   /** Single-column, tighter layout for the narrow buy-box (right) column. */
   compact?: boolean;
+  /** Plain text lines without check marks (`bb-key-text` copy, e.g. the gift boxes). */
+  plain?: boolean;
 }
 
 /**
@@ -16,8 +18,8 @@ interface Props {
  * Position: first thing inside the Description tab, before the rest of the
  * RichText description.
  */
-export function ProductBenefits({benefits, compact = false}: Props) {
-  if (!benefits || benefits.length < 3) return null;
+export function ProductBenefits({benefits, compact = false, plain = false}: Props) {
+  if (!benefits || benefits.length < (plain ? 1 : 3)) return null;
 
   return (
     <section id="benefits" className={`bb-benefits${compact ? ' bb-benefits--compact' : ''}`} aria-label="Ключови ползи">
@@ -25,6 +27,13 @@ export function ProductBenefits({benefits, compact = false}: Props) {
         <span className="bb-benefits-tag">Какво прави продуктът</span>
         <h3>Ключови ползи</h3>
       </header>
+      {plain ? (
+        <div className="bb-benefits-plain">
+          {benefits.map((line, i) => (
+            <p key={i} className="bb-benefits-text">{line}</p>
+          ))}
+        </div>
+      ) : (
       <ul className="bb-benefits-list">
         {benefits.map((b, i) => (
           <li key={i} className="bb-benefits-item">
@@ -37,6 +46,7 @@ export function ProductBenefits({benefits, compact = false}: Props) {
           </li>
         ))}
       </ul>
+      )}
 
       <style>{`
         .bb-benefits {
@@ -121,6 +131,9 @@ export function ProductBenefits({benefits, compact = false}: Props) {
           font-weight: 500;
           letter-spacing: -0.1px;
         }
+
+        .bb-benefits-plain { display: flex; flex-direction: column; gap: 12px; }
+        .bb-benefits-plain .bb-benefits-text { margin: 0; }
       `}</style>
     </section>
   );

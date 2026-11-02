@@ -1,4 +1,4 @@
-import type {Blog} from '@cloudcart/nitro';
+import type {Article, Blog, PaginationConnection} from '@cloudcart/nitro';
 
 /**
  * Кой е блогът на магазина - според админ панела, не според кода.
@@ -40,6 +40,53 @@ export async function primaryBlogHandle(storefront: BlogSource): Promise<string>
     // Без кеширане на провала: следващата заявка да пробва пак.
     return FALLBACK_BLOG_HANDLE;
   }
+}
+
+/* Всички статии на един блог, на страници по сто.
+ *
+ * Storefront API-то връща най-много 100 статии на заявка (поискани 200, идват
+ * 100) и пренебрегва `sortKey: PUBLISHED_AT, reverse: true`: подрежда ги от
+ * най-старата към най-новата, бездатните първи. Проверено на 26.10.2026.
+ * Затова `getArticles(handle, 100)` отрязва точно НАЙ-НОВИТЕ: когато блогът
+ * мина 100 статии (105 към 26.10), статиите от октомври изчезнаха от /blog и
+ * от началната, макар да са активни в панела.
+ *
+ * Курсорът на `getArticlesPaginated` работи: три страници по 50 дават всички
+ * 105, без повторения. Подредбата по дата остава на извикващия. */
+const ARTICLES_PAGE = 100;
+/** Хиляда статии - таван срещу безкраен цикъл, ако API-то върти курсора. */
+const ARTICLES_MAX_PAGES = 10;
+
+type ArticleSource = {
+  getArticlesPaginated(
+    blogHandle: string,
+    options: {first?: number; after?: string},
+  ): Promise<PaginationConnection<Article>>;
+};
+
+/**
+ * Всички статии на блога, в реда на API-то. Ако страница след първата откаже,
+ * връща изтеглените дотук: непълен блог е по-добре от празен. Отказ на първата
+ * страница се хвърля - извикващият си има резервна стойност.
+ */
+export async function allArticles(storefront: ArticleSource, blogHandle: string): Promise<Article[]> {
+  const out: Article[] = [];
+  let after: string | undefined;
+  for (let page = 0; page < ARTICLES_MAX_PAGES; page++) {
+    let conn: PaginationConnection<Article>;
+    try {
+      conn = await storefront.getArticlesPaginated(blogHandle, {first: ARTICLES_PAGE, after});
+    } catch (error) {
+      if (page === 0) throw error;
+      console.error('[блог] страница %d на статиите се отказа: %s', page + 1, (error as Error).message);
+      break;
+    }
+    out.push(...(conn?.nodes ?? []));
+    const next = conn?.pageInfo?.hasNextPage ? conn.pageInfo.endCursor : null;
+    if (!next) break;
+    after = next;
+  }
+  return out;
 }
 
 /** Всички блогове, за когато магазинът добави втора категория. */

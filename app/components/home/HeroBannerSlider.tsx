@@ -1,4 +1,5 @@
 import {useState, useEffect} from 'react';
+import {cdnResize} from '~/lib/product-images';
 
 /**
  * Home campaign banner slider (client request). Responsive: shows the wide
@@ -13,7 +14,7 @@ import {useState, useEffect} from 'react';
  * stack of images. `HeroStats` is the overlay, separated for the same reason:
  * on a builder-composed homepage it is placed with its own `bb:stats` marker.
  */
-export type Slide = {desktop: string; mobile?: string; link?: string};
+export type Slide = {desktop: string; mobile?: string; link?: string; target?: string};
 
 const CDN = 'https://cdncloudcart.com/26377/files/image';
 
@@ -22,15 +23,23 @@ const CDN = 'https://cdncloudcart.com/26377/files/image';
 const D = '&width=1800';
 const M = '&width=800';
 
-export const HERO_SLIDES: Slide[] = [
-  // Клиентът поиска този да е първи (2026-08-10). Локален е, защото го
-  // получих като файл, а не като адрес в CDN-а на магазина.
-  {desktop: '/images/banners/towel-desktop.jpg', mobile: '/images/banners/towel-mobile.jpg'},
-  {desktop: `${CDN}/desktopksks.png?1784098033${D}`, mobile: `${CDN}/a3e1f7bf-e9ac-43ca-9757-3cdebf6e4b93.png?1784098050${M}`},
-  {desktop: `${CDN}/853a794b-cb62-47f1-9598-6539e7c93105.png?1784103350${D}`, mobile: `${CDN}/6b0460c8-31a8-4fae-87b9-17edbc7a6a26.png?1784103375${M}`},
-  {desktop: `${CDN}/17d8f089-eb9c-425f-a016-8413a307cbf4.png?1784184876${D}`, mobile: `${CDN}/c84cb9ae-7d62-4057-955e-20a6024bda9d.png?1784184901${M}`},
-  {desktop: `${CDN}/popopopopsodpsoadpospfodspgkikkif.png?1784186234${D}`, mobile: `${CDN}/7ba62aa0-7cba-49aa-9228-3ac8aa1c38b5.png?1784186323${M}`},
-];
+/**
+ * Резервният списък е ПРАЗЕН нарочно (клиент, 01.09).
+ *
+ * Дотук тук стояха пет летни банера и при всеки отказ на панела те се
+ * появяваха на живо: „печелиш хавлия над 70 €" (тази оферта е изключена),
+ * „FEMIN −40%", „Summer Sale −45%", „−30%", „КЕТО перли −15%". Нито един не е
+ * верен днес, тоест магазинът обещаваше отстъпки, които касата не дава - и то
+ * точно в мигове, в които вече нещо не е наред.
+ *
+ * Празен списък значи, че `BannerSlider` не рисува нищо: началната остава без
+ * герой, докато панелът се върне. По-добре липсваща картинка, отколкото
+ * невярна оферта.
+ *
+ * Ако някога има ВЕЧЕН банер - марка или продукт, без цена, процент и срок -
+ * мястото му е тук.
+ */
+export const HERO_SLIDES: Slide[] = [];
 
 export function BannerSlider({
   slides,
@@ -60,12 +69,23 @@ export function BannerSlider({
         {slides.map((s, i) => {
           const picture = (
             <picture className="bb-hslider-slide">
-              {s.mobile && <source media="(max-width: 767px)" srcSet={s.mobile} />}
-              <img src={s.desktop} alt={`Кампания ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
+              {/* Банерите от панела идват без параметри - голи PNG-та.
+                  Героят тежеше 740 KB; като WebP е 57. Ширина НЕ се налага:
+                  източникът е 1640 px и всяко по-голямо число само го надува
+                  (1800 → 827 KB). */}
+              {s.mobile && <source media="(max-width: 767px)" srcSet={cdnResize(s.mobile)} />}
+              <img src={cdnResize(s.desktop)} alt={`Кампания ${i + 1}`} loading={i === 0 ? 'eager' : 'lazy'} />
             </picture>
           );
           if (!s.link) return <div key={i} className="bb-hslider-cell">{picture}</div>;
-          const external = !s.link.startsWith('/') || s.link.startsWith('//');
+          /* Кой прозорец решава ПАНЕЛЪТ.
+           * Дотук всичко, което не започва с наклонена черта, се отваряше в нов
+           * прозорец - а в панела за този банер пише „същия". Изборът на
+           * търговеца бие; когато не е казал нищо, външният адрес пак отваря
+           * нов раздел, както се очаква от външна връзка. */
+          const offsite = !s.link.startsWith('/') || s.link.startsWith('//');
+          const wants = String(s.target ?? '').toLowerCase();
+          const external = wants === '_blank' || (wants !== '_self' && offsite);
           return (
             <a
               key={i}
@@ -183,9 +203,22 @@ export function HeroStats() {
   );
 }
 
-export function HeroBannerSlider({rounded = false}: {rounded?: boolean}) {
+/**
+ * Банерите идват от панела; списъкът в кода е само резерва.
+ *
+ * `HERO_SLIDES` остава за случая, в който панелът не върне нито един насрочен
+ * банер - началната не бива да остава без герой заради празна въртележка.
+ */
+export function HeroBannerSlider({
+  rounded = false,
+  slides,
+}: {
+  rounded?: boolean;
+  slides?: Slide[];
+}) {
+  const shown = slides && slides.length ? slides : HERO_SLIDES;
   return (
-    <BannerSlider slides={HERO_SLIDES} rounded={rounded}>
+    <BannerSlider slides={shown} rounded={rounded}>
       <HeroStats />
     </BannerSlider>
   );

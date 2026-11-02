@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {getPageContentOverride} from '~/lib/pages-content';
+import {ScienceManifestoOrb} from '~/components/pages/ScienceManifestoOrb';
 
 /**
  * The designed pages, addressable from inside the page builder.
@@ -45,6 +46,25 @@ export function renderPageSection(handle: string): ReactNode {
 
 export function knownPageSection(handle: string): boolean {
   return KNOWN.has(handle);
+}
+
+/**
+ * Кодови ВИЗИИ, поставяеми от конструктора - анимации, които не могат да са
+ * панелен блок. За разлика от `bb:page:<handle>` (цялата кодирана страница),
+ * такъв маркер носи само една украса, а текстът около нея остава на търговеца.
+ *
+ * Нарочно НЕ са в регистъра на началната (`SectionRegistry`): негов маркер
+ * прави страницата „композиция на началната" (`designComposesHome`) и ѝ маха
+ * обвивката с трохите.
+ */
+const PAGE_VISUALS: Record<string, () => ReactNode> = {
+  'sci-manifesto': () => <ScienceManifestoOrb />,
+};
+
+/** `bb:sci-manifesto` → анимацията, или null при непознато име. */
+export function renderVisualMarker(marker: string): ReactNode {
+  const render = PAGE_VISUALS[marker];
+  return render ? render() : null;
 }
 
 /**

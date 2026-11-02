@@ -1,5 +1,6 @@
 import type {QuantityTier} from './quantity-packages';
 import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server';
+import {fetchConfigBundle} from './config-bundle.server';
 
 /**
  * Reads the merchant's quantity discounts from the CloudCart Admin API, so the
@@ -16,7 +17,18 @@ import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server'
  * SERVER ONLY: the `.server.ts` suffix keeps the PAT out of the client bundle.
  */
 
-const CACHE_TTL_MS = 30 * 1000;
+/* 15 минути, не 30 секунди.
+ *
+ * Този кеш живее в паметта на ЕДИН изолат, а Cloudflare пуска нов при всеки
+ * снопче трафик - тоест на 30 секунди почти всяка заявка тръгваше пак към
+ * админа. При единайсет такива извиквания на страница живият магазин изяде
+ * ограничението на магазина и повали и админ панела с 429 (17.08.2026).
+ * Промяна от панела се вижда до петнайсет минути; при спешност - едно
+ * преразгръщане вдига нови изолати с празен кеш. */
+/* Минута в паметта на изолата. Общият кеш (`shared-cache.server.ts`) поема
+ * товара между изолатите, затова тук не е нужен дълъг срок - и промяна от
+ * панела се вижда до около три минути, вместо до петнайсет. */
+const CACHE_TTL_MS = 60 * 1000;
 
 /**
  * Rules only; the tiers are fetched one level down. Обхожда се докрай, не само
@@ -59,14 +71,18 @@ export async function fetchQuantityPackages(
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
 
   try {
-    const rules = (
-      await adminListAll<RawRule>(origin, pat, {
+    /* Същият списък, който чете и `live-discounts`. Полетата тук са негово
+     * подмножество, тоест общият пакет храни и двата модула с едно обхождане. */
+    const bundled = await fetchConfigBundle(env);
+    const all: RawRule[] =
+      (bundled?.discounts as RawRule[] | undefined) ??
+      (await adminListAll<RawRule>(origin, pat, {
         root: 'discounts',
         args: 'active: yes',
         nodeFields: LIST_FIELDS,
         label: 'quantity-packages',
-      })
-    ).filter(isRunningQuantityRule);
+      }));
+    const rules = all.filter(isRunningQuantityRule);
 
     if (!rules.length) {
       cache = {at: Date.now(), data: {}};

@@ -1,3 +1,4 @@
+import {envValue} from './env.server';
 /**
  * Is a CMS page switched on in the admin panel?
  *
@@ -11,7 +12,18 @@
  * `true`, i.e. the page is trusted — the same behaviour as before this existed.
  */
 
-const CACHE_TTL_MS = 30 * 1000;
+/* 15 минути, не 30 секунди.
+ *
+ * Този кеш живее в паметта на ЕДИН изолат, а Cloudflare пуска нов при всеки
+ * снопче трафик - тоест на 30 секунди почти всяка заявка тръгваше пак към
+ * админа. При единайсет такива извиквания на страница живият магазин изяде
+ * ограничението на магазина и повали и админ панела с 429 (17.08.2026).
+ * Промяна от панела се вижда до петнайсет минути; при спешност - едно
+ * преразгръщане вдига нови изолати с празен кеш. */
+/* Минута в паметта на изолата. Общият кеш (`shared-cache.server.ts`) поема
+ * товара между изолатите, затова тук не е нужен дълъг срок - и промяна от
+ * панела се вижда до около три минути, вместо до петнайсет. */
+const CACHE_TTL_MS = 60 * 1000;
 const REQUEST_TIMEOUT_MS = 6000;
 
 let cache: {
@@ -25,7 +37,7 @@ export async function pageIsActive(
   env: Record<string, string | undefined>,
   handle: string,
 ): Promise<boolean> {
-  const pat = env.CLOUDCART_ADMIN_PAT || env.CLOUDCARTADMINPAT;
+  const pat = envValue(env, 'CLOUDCART_ADMIN_PAT') || envValue(env, 'CLOUDCARTADMINPAT');
   const origin = adminOrigin(env);
   if (!pat || !origin) return true;
 
@@ -84,7 +96,10 @@ export async function homePageHandle(
 }
 
 function adminOrigin(env: Record<string, string | undefined>): string | null {
-  const origin = env.PUBLIC_API_ORIGIN || env.PUBLIC_STORE_DOMAIN;
+  // През `envValue`: локално `ctx.env` няма тези ключове и заявката отиваше
+  // на домейна на витрината - началната страница не се намираше и героят
+  // оставаше без банери само локално.
+  const origin = envValue(env, 'PUBLIC_API_ORIGIN') || envValue(env, 'PUBLIC_STORE_DOMAIN');
   if (!origin) return null;
   return origin.startsWith('http') ? origin.replace(/\/$/, '') : `https://${origin}`;
 }

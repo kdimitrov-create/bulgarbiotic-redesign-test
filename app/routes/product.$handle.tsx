@@ -5,7 +5,7 @@ import {bestDiscountFor, displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing} from '~/lib/product-marks';
 import {getSeoMeta, generateProductJsonLd} from '@cloudcart/nitro';
 import {enhanceProductImages, enhanceProducts} from '~/lib/product-images';
-import {useCcPage, useEcommerceEvent, numericId, setProductIds} from '~/lib/analytics';
+import {useCcPage, useEcommerceEvent, numericId, setProductIds, money2} from '~/lib/analytics';
 import {videoTitle} from '~/lib/product-video-titles';
 import {withIngredientsAnchor} from '~/lib/ingredients-anchor';
 import {Image, useOptimisticVariant, Money} from '@cloudcart/nitro-react';
@@ -13,11 +13,13 @@ import {ProductForm} from '~/components/ProductForm';
 import {ProductImageGallery} from '~/components/ProductImageGallery';
 import {ProductMarks, ProductMarkTags} from '~/components/ProductMarks';
 import {Breadcrumbs} from '~/components/Breadcrumbs';
+import {KIDS_CAMPAIGN} from '~/components/MegaMenu';
+import {DYSON_CAMPAIGN} from '~/lib/dyson-campaign';
 import {StarRating} from '~/components/StarRating';
 import {ReviewList} from '~/components/ReviewList';
+import {fetchReviewPolicy} from '~/lib/reviews.server';
 import {CertificationsStrip} from '~/components/CertificationsStrip';
 import {ProductTrustRow} from '~/components/ProductTrustRow';
-import {ProductSubscription} from '~/components/ProductSubscription';
 import {ProductTabs} from '~/components/ProductTabs';
 import {MobileStickyCart} from '~/components/MobileStickyCart';
 import {PdpAwardBadge} from '~/components/pdp/PdpAwardBadge';
@@ -32,7 +34,8 @@ import {getProductComparison} from '~/lib/pdp-comparison';
 import {ProductFaq} from '~/components/pdp/ProductFaq';
 import {ProductDescription} from '~/components/pdp/ProductDescription';
 import {Marquee} from '~/components/home/Marquee';
-import {EUR_TO_BGN} from '~/lib/currency';
+import {isAvailable, isProductAvailable} from '~/lib/availability';
+import {getSellingPlansByVariant, type SellingPlan} from '~/lib/selling-plans.server';
 
 
 export const meta: Route.MetaFunction = ({data: d}) => {
@@ -62,24 +65,52 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   // is never mutated — only URLs are remapped). See app/lib/product-images.ts.
   const product = enhanceProductImages(productRaw)!;
   const linkedRaw = (productRaw as any).linkedProducts?.nodes ?? [];
+  // Абонаментните планове („Абонаменти" в панела). Като отзивите по-долу и
+  // те са допълнение: при каквато и да е грешка страницата се рисува без тях.
+  const sellingPlans = Promise.resolve()
+    .then(() =>
+      getSellingPlansByVariant(
+        ctx,
+        productRaw.handle,
+        ((productRaw as any).variants?.nodes ?? []).map((v: any) => v.id),
+      ),
+    )
+    .catch(() => ({}));
 
   return {
     product,
+    sellingPlansByVariant: await sellingPlans,
     linkedProducts: enhanceProducts(linkedRaw),
     collections: (productRaw as any).collections?.nodes ?? [],
+    // Кой може да остави отзив се решава от приложението „Отзиви" в панела и
+    // се чете на всяко зареждане (с минута кеш), за да важи промяната веднага.
+    //
+    // ⚠️ И двете минават през `Promise.resolve(...)`, не през `.catch()` върху
+    // самото извикване. `isLoggedIn()` НЕ връща обещание (виж
+    // `account_.login.tsx`, където се ползва направо в `if`), тоест `.catch`
+    // върху него е undefined и хвърля. Точно това свали ВСИЧКИ продуктови
+    // страници на живо на 20.08.2026.
+    //
+    // Отзивите са допълнение към страницата: каквото и да им се случи, тя
+    // трябва да се нарисува.
+    reviewPolicy: await Promise.resolve(
+      fetchReviewPolicy(ctx.env as Record<string, string | undefined>),
+    ).catch(() => null),
+    canReview: await Promise.resolve(ctx.customerAccount.isLoggedIn())
+      .then(Boolean)
+      .catch(() => false),
   };
 }
 
 export default function ProductPage() {
-  const {product, linkedProducts, collections} = useLoaderData<typeof loader>();
+  const {product, linkedProducts, collections, reviewPolicy, canReview, sellingPlansByVariant} =
+    useLoaderData<typeof loader>();
   const firstVariant = product.variants.nodes[0];
   const {selectedVariant} = useOptimisticVariant(product, firstVariant);
   const variant = selectedVariant ?? firstVariant;
 
-  // Compute basePriceEur for subscription widget
   const priceAmount = parseFloat(variant?.price?.amount ?? '0');
   const priceCurrency = (variant?.price?.currencyCode ?? 'EUR') as 'EUR' | 'BGN';
-  const basePriceEur = priceCurrency === 'EUR' ? priceAmount : priceAmount / EUR_TO_BGN;
 
   /* Измерване: продуктова страница.
    *
@@ -102,15 +133,23 @@ export default function ProductPage() {
     currency: priceCurrency,
     url: `/product/${product.handle}`,
   });
+  /* `price` е ОСНОВНАТА цена, `discount` е свалената, `value` е платената.
+   *
+   * Дотук трите бяха едно и също число и маркетолозите нямаше откъде да видят
+   * отстъпката (обратна връзка 18.08.2026). Така иска и самият GA4: `price` е
+   * цената на артикула, `discount` е намалението, `value` е стойността на
+   * събитието. */
+  const viewBase = parseFloat(variant?.compareAtPrice?.amount ?? '0') || priceAmount;
   useEcommerceEvent('view_item', {
     currency: priceCurrency,
-    value: priceAmount,
+    value: money2(priceAmount),
     items: [
       {
         item_id: trackedId,
         item_name: product.title,
         item_category: product.productType ?? undefined,
-        price: priceAmount,
+        price: money2(viewBase),
+        discount: money2(Math.max(0, viewBase - priceAmount)),
         quantity: 1,
       },
     ],
@@ -122,9 +161,8 @@ export default function ProductPage() {
 
   // Key benefits extracted from the CMS description — rendered high on the page
   // (client: "Ключови ползи" raised up as focus, before scrolling past the hero).
-  const keyBenefits = product.descriptionHtml
-    ? parseProductDescription(product.descriptionHtml).benefits
-    : [];
+  // A plain-text block (`bb-key-text`) takes the card's place instead of the checklist.
+  const {benefits: keyBenefits, keyText} = parseProductDescription(product.descriptionHtml ?? '');
 
   return (
     <div className="max-w-[1380px] mx-auto px-5 md:px-9 py-6 md:py-10">
@@ -161,7 +199,13 @@ export default function ProductPage() {
           <ProductMedia product={product} variant={variant} />
         </div>
         <div className="self-start">
-          <ProductDetails product={product} variant={variant} basePriceEur={basePriceEur} keyBenefits={keyBenefits} />
+          <ProductDetails
+            product={product}
+            variant={variant}
+            keyBenefits={keyBenefits}
+            keyText={keyText}
+            sellingPlans={(variant && sellingPlansByVariant[variant.id]) || []}
+          />
         </div>
       </div>
 
@@ -179,7 +223,38 @@ export default function ProductPage() {
 
       {/* Product description at the top (client reorder: "описанието най-горе") -
           extracted from the old tabs; still collapses with "прочети повече". */}
-      <ProductDescription descriptionHtml={describedHtml} />
+      {/* Back to school: бележката за подаръка застава между видеото и текста
+          на описанието (клиентът посочи точно това място, 24.08). Членството
+          се чете от collections; пада с KIDS_CAMPAIGN.active = false. */}
+      <ProductDescription
+        descriptionHtml={describedHtml}
+        afterVideo={
+          <>
+            {KIDS_CAMPAIGN.active && KIDS_CAMPAIGN.pdpGiftActive &&
+            collections.some((c: any) => c?.handle === KIDS_CAMPAIGN.categoryHandle) ? (
+              <div className="bb-kids-gift" aria-label="Подарък от кампанията Back to school">
+                <div className="bb-kids-gift-box">
+                  <span className="bb-kids-gift-icon" aria-hidden="true">🎒</span>
+                  <p className="bb-kids-gift-text">{KIDS_CAMPAIGN.blurb}</p>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Кампанията „1+1 + томбола Dyson": същото място и същата рамка.
+                По изричен списък с handle-и, а не по категория - „Пробиотици
+                за жени" държи и Femin, а клиентът посочи точно три страници. */}
+            {DYSON_CAMPAIGN.active &&
+            DYSON_CAMPAIGN.blurbHandles.includes(product.handle) ? (
+              <div className="bb-campaign-gift" aria-label="Промоция 1+1 подарък">
+                <div className="bb-campaign-gift-box">
+                  <span className="bb-campaign-gift-icon" aria-hidden="true">🎁</span>
+                  <p className="bb-campaign-gift-text">{DYSON_CAMPAIGN.blurb}</p>
+                </div>
+              </div>
+            ) : null}
+          </>
+        }
+      />
 
       {/* FAQ accordion moved up (client 2026-07): now sits directly above the
           "Как работи пробиотикът" video section. Per-product questions. */}
@@ -228,14 +303,18 @@ export default function ProductPage() {
           page, not on a product page — same store-wide numbers on every SKU. */}
 
       {/* Real customer reviews with verified badges (Slice 2 upgrade) */}
+      {/* Секцията се рисува и при нула отзива: иначе нов продукт няма къде да
+          получи първия си, а формата за оставяне живее вътре в нея. */}
       <section id="reviews">
-        {(product as any).reviewSummary && (
-          <ReviewList
-            reviews={(product as any).reviews?.nodes ?? []}
-            summary={(product as any).reviewSummary}
-            totalCount={(product as any).reviews?.totalCount ?? (product as any).reviewSummary?.totalCount ?? 0}
-          />
-        )}
+        <ReviewList
+          reviews={(product as any).reviews?.nodes ?? []}
+          summary={(product as any).reviewSummary ?? null}
+          totalCount={(product as any).reviews?.totalCount ?? (product as any).reviewSummary?.totalCount ?? 0}
+          productId={product.id}
+          productHandle={product.handle}
+          reviewPolicy={reviewPolicy}
+          loggedIn={canReview}
+        />
       </section>
 
       {linkedProducts.length > 0 && (
@@ -276,7 +355,11 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
         <ProductMarkTags
           product={product}
           discountPct={isOnSale ? discountPct : 0}
-          soldOut={product.availableForSale === false}
+          /* Наличността се чете от ВАРИАНТА, не от продукта: само там идва
+             `quantityAvailable`, което различава истинско изчерпване от
+             изключено проследяване. Иначе значката тук казваше „Изчерпан",
+             докато бутонът отдясно канеше да купиш. */
+          soldOut={variant ? !isAvailable(variant) : !isProductAvailable(product)}
           size="lg"
         />
         <ProductImageGallery
@@ -291,7 +374,19 @@ function ProductMedia({product, variant}: {product: any; variant: any}) {
 
 /* --- Product Details (Right Column) --- */
 
-function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product: any; variant: any; basePriceEur: number; keyBenefits: string[]}) {
+function ProductDetails({
+  product,
+  variant,
+  keyBenefits,
+  keyText,
+  sellingPlans,
+}: {
+  product: any;
+  variant: any;
+  keyBenefits: string[];
+  keyText: string[];
+  sellingPlans: SellingPlan[];
+}) {
   const properties: Array<{name: string; values: string[]}> = product.properties ?? [];
   const files: Array<{id: string; name: string; filename: string; url: string; fileSize: number}> =
     product.files?.nodes ?? [];
@@ -308,47 +403,67 @@ function ProductDetails({product, variant, basePriceEur, keyBenefits}: {product:
       {/* Title — large, confident, and balanced. Mobile sits at ~26px
        * so even long names read as a strong headline (not a label),
        * desktop scales up to 32px. */}
-      {/* Заглавието държи ЦЕЛИЯ ред, а звездите застават под него.
+      {/* Заглавието и отзивите делят един ред (клиент, 13.08).
         *
-        * От 13.08 двете деляха един ред, за да е „Купи" по-нагоре. Но звездите
-        * са `shrink-0` и заемат 259 пиксела, тоест на заглавието оставаше
-        * половината колона и по-дългото име се разливаше на четири-пет реда -
-        * повече височина, отколкото спестява подредбата. С цяла ширина същото
-        * име се събира на два реда, значи блокът излиза по-нисък, не по-висок.
+        * Дотук отзивите заемаха свой ред под заглавието и бутаха всичко
+        * надолу - целта на клиента е „Купи" да се вижда без превъртане.
+        * Затова звездите отиват вдясно, на височината на последния ред от
+        * заглавието. На тесен екран се пренасят отдолу, както си беше.
         *
-        * Отзивите вече са свой ред отдолу: една линия, която не се свива и не
-        * се бие със заглавието за място. */}
-      <h1 className="text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)] [overflow-wrap:anywhere]">
-        {product.title}
-      </h1>
+        * ⚠️ `min-w-0` на заглавието не е излишно: без него дълго име не се
+        * свива под съдържанието си и избутва звездите извън кутията.
+        *
+        * 🛑 Заглавието взима ЦЕЛИЯ ред на ВСЯКА ширина, а звездите слизат под
+        * него. Дотук двете деляха реда и звездите печелеха: те са `shrink-0`
+        * и заемат 263px, а заглавието е `flex-1`, тоест взима каквото остане.
+        * Мерено на живо върху „Пробиотици за Плоско Коремче - Femin + Gastro
+        * Balance - ПРОМОЦИЯ":
+        *
+        *   1920px екран → на заглавието остават 239px от 518 → 7 реда
+        *   1280px екран → остават 185px               → 7 реда
+        *   390px екран  → остават 75px                → по една дума на ред
+        *
+        * Тоест не е проблем на телефона, а на всяка ширина: кутията за
+        * купуване е тясна, а звездите не се свиват. `basis-full` без изключения
+        * пренася звездите на свой ред и заглавието получава цялата кутия. */}
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+        <h1 className="min-w-0 basis-full text-[1.65rem] md:text-[2rem] font-extrabold tracking-tight leading-[1.1] md:leading-tight text-[var(--color-ink)]">
+          {product.title}
+        </h1>
 
-      {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
-        <div className="mt-3.5 mb-4 md:mt-4 md:mb-5 flex flex-wrap items-center gap-x-3 gap-y-1">
-          <StarRating
-            rating={product.reviewSummary.averageRating}
-            count={product.reviewSummary.totalCount}
-            size="md"
-          />
-          <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
-            Виж отзивите →
-          </a>
-        </div>
-      )}
+        {product.reviewSummary && product.reviewSummary.totalCount > 0 && (
+          <div className="flex shrink-0 items-center gap-2.5">
+            <StarRating
+              rating={product.reviewSummary.averageRating}
+              count={product.reviewSummary.totalCount}
+              size="md"
+            />
+            <a href="#reviews" className="text-xs font-semibold text-[var(--color-brand-pink)] hover:underline">
+              Виж отзивите →
+            </a>
+          </div>
+        )}
+      </div>
 
       {/* BGolden Awards 2025 — small inline badge for instant authority */}
       <PdpAwardBadge />
 
       {/* Price + variants + qty + add-to-cart */}
-      <ProductForm product={product} selectedVariant={variant} />
+      <ProductForm
+        product={product}
+        selectedVariant={variant}
+        sellingPlans={sellingPlans}
+      />
 
       {/* Trust pills under the CTA removed per client (2026-07). */}
 
       {/* "Ключови ползи" moved up into the buy-box column (client): fills the
           slot the trust pills + (hidden) subscription widget used to hold. */}
-      {keyBenefits.length >= 3 && <ProductBenefits benefits={keyBenefits} compact />}
-
-      {/* Subscription savings widget — recurring orders -10% (hidden for now) */}
-      {basePriceEur > 0 && <ProductSubscription basePriceEur={basePriceEur} />}
+      {keyText.length > 0 ? (
+        <ProductBenefits benefits={keyText} compact plain />
+      ) : (
+        keyBenefits.length >= 3 && <ProductBenefits benefits={keyBenefits} compact />
+      )}
 
       {/* SKU + EAN — meta line, small + muted */}
       {(variant?.sku || variant?.barcode) && (
@@ -435,7 +550,7 @@ function LinkedProducts({products}: {products: any[]}) {
               )}
               <ProductMarks
                 product={p}
-                soldOut={p.availableForSale === false}
+                soldOut={!isProductAvailable(p)}
                 discountPct={relPct}
                 size="sm"
               />

@@ -1,7 +1,8 @@
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {useNavigate, useFetcher} from 'react-router';
 import {CART_ACTION} from '~/lib/cart-action';
 import {useOpenCartOnAdd} from '~/lib/use-open-cart-on-add';
+import {useTrackAddToCart} from '~/lib/use-track-add-to-cart';
 
 /**
  * „Купи" на продуктова карта - витрината на началната и решетките в категориите
@@ -24,21 +25,39 @@ import {useOpenCartOnAdd} from '~/lib/use-open-cart-on-add';
  * Едно нещо остава както си беше: продукт с повече от една разновидност пак
  * води до продуктовата страница. Количката на платформата приема само вариант,
  * а мълчаливият избор вместо клиента е по-лош от едно кликване повече.
+ *
+ * `available` дойде на 01.09.2026: дотук бутонът не знаеше нищо за наличността,
+ * затова картата рисуваше значка „Изчерпан" отгоре и в същото време канеше да
+ * купиш отдолу. Продуктовата страница гаси своя бутон от самото начало - тук
+ * се изравнява с нея.
  */
 export function CardBuyButton({
   merchandiseId,
   handle,
+  available = true,
 }: {
   merchandiseId?: string;
   handle: string;
+  available?: boolean;
 }) {
   const fetcher = useFetcher();
   const isAdding = fetcher.state !== 'idle';
   const [resolving, setResolving] = useState(false);
   const navigate = useNavigate();
 
+  /* Кой вариант е тръгнал към количката.
+   *
+   * Не може да се вземе от `merchandiseId`: в решетките той идва празен и
+   * истинският се разбира чак при натискането, от `/api/variant`. Събитието
+   * обаче трябва да намери точно неговия ред във върнатата количка. */
+  const addedId = useRef<string | undefined>(undefined);
+
   // Чекмеджето се отваря при всяко успешно добавяне, откъдето и да идва.
   useOpenCartOnAdd(fetcher);
+  /* И се брои. Дотук не се броеше: този бутон никога не е минавал през
+     `AddToCartButton`, значи всяко добавяне от витрина или категория влизаше
+     в количката невидимо за отчетите (клиент, 01.09.2026). */
+  useTrackAddToCart(fetcher, addedId.current, 1);
 
   /**
    * Вариантът на продукта, ако картата не го е получила.
@@ -67,6 +86,7 @@ export function CardBuyButton({
       navigate(`/product/${handle}`);
       return;
     }
+    addedId.current = variant;
     fetcher.submit(
       {action: 'ADD_TO_CART', merchandiseId: variant, quantity: '1'},
       {method: 'post', action: CART_ACTION},
@@ -77,14 +97,16 @@ export function CardBuyButton({
     <button
       type="button"
       className="bb-card-buy"
-      disabled={isAdding || resolving}
+      disabled={!available || isAdding || resolving}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
         void add();
       }}
     >
-      {isAdding || resolving ? (
+      {!available ? (
+        'Изчерпан'
+      ) : isAdding || resolving ? (
         'Добавям…'
       ) : (
         <>

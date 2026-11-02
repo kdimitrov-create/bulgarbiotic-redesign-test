@@ -1,5 +1,7 @@
 import type {AutoDiscount} from './active-discounts';
 import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server';
+import {fetchConfigBundle} from './config-bundle.server';
+import {ANNOUNCED_CODES, sameCode} from './longevity-promo';
 
 /**
  * Действащите автоматични отстъпки, прочетени от Admin API-то, за да може
@@ -21,7 +23,18 @@ import {adminGql, adminListAll, adminOrigin, adminPat} from './admin-api.server'
 // saving calls. It cannot go to zero: the fetch is awaited in the root loader, so a
 // miss adds three admin round-trips to that page render. If pages ever feel slow,
 // the fix is serve-stale-then-refresh, not a longer window.
-const CACHE_TTL_MS = 30 * 1000;
+/* 15 минути, не 30 секунди.
+ *
+ * Този кеш живее в паметта на ЕДИН изолат, а Cloudflare пуска нов при всеки
+ * снопче трафик - тоест на 30 секунди почти всяка заявка тръгваше пак към
+ * админа. При единайсет такива извиквания на страница живият магазин изяде
+ * ограничението на магазина и повали и админ панела с 429 (17.08.2026).
+ * Промяна от панела се вижда до петнайсет минути; при спешност - едно
+ * преразгръщане вдига нови изолати с празен кеш. */
+/* Минута в паметта на изолата. Общият кеш (`shared-cache.server.ts`) поема
+ * товара между изолатите, затова тук не е нужен дълъг срок - и промяна от
+ * панела се вижда до около три минути, вместо до петнайсет. */
+const CACHE_TTL_MS = 60 * 1000;
 
 export interface LiveDiscounts {
   discounts: AutoDiscount[];
@@ -33,6 +46,12 @@ export interface LiveDiscounts {
    * че такова правило няма и важи настройката на BumpCart.
    */
   freeShippingOver: number | null;
+  /**
+   * Кои от `ANNOUNCED_CODES` действат в момента - за попъпа с кода на
+   * Longevity. Само този списък, не всички кодове: останалите не са за
+   * показване, а `live` отива в браузъра.
+   */
+  announcedCodes: string[];
 }
 
 let cache: {at: number; data: LiveDiscounts} | null = null;
@@ -91,23 +110,31 @@ export async function fetchAutoDiscounts(
   if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.data;
 
   try {
-    const listed = (
-      await adminListAll<RawDiscount>(origin, pat, {
+    /* Списъкът идва от общия пакет с настройките: `quantity-packages` чете
+     * СЪЩИЯ `discounts(active: yes)`, само с по-малко полета, тоест дотук
+     * магазинът обхождаше два пъти един и същ списък. Падне ли пакетът, всеки
+     * се връща към собственото си обхождане. */
+    const bundled = await fetchConfigBundle(env);
+    const listed: RawDiscount[] =
+      (bundled?.discounts as RawDiscount[] | undefined) ??
+      (await adminListAll<RawDiscount>(origin, pat, {
         root: 'discounts',
         args: 'active: yes',
         nodeFields: LIST_FIELDS,
         label: 'live-discounts',
-      })
-    );
+      }));
 
     // Правилата за доставка не се отнасят до продукт, затова се вадят отделно,
     // преди филтъра за продуктовите отстъпки.
     const freeShippingOver = shippingThreshold(listed);
+    const announcedCodes = listed
+      .filter((d) => d.code && ANNOUNCED_CODES.some((c) => sameCode(c, d.code as string)) && isRunning(d))
+      .map((d) => d.code as string);
 
     const productRules = listed.filter(isLiveOnStorefront);
 
     if (productRules.length === 0) {
-      cache = {at: Date.now(), data: {discounts: [], handles: {}, freeShippingOver}};
+      cache = {at: Date.now(), data: {discounts: [], handles: {}, freeShippingOver, announcedCodes}};
       return cache.data;
     }
 
@@ -135,7 +162,7 @@ export async function fetchAutoDiscounts(
       if (row?.urlHandle) handles[id] = row.urlHandle;
     }
 
-    cache = {at: Date.now(), data: {discounts: mapped, handles, freeShippingOver}};
+    cache = {at: Date.now(), data: {discounts: mapped, handles, freeShippingOver, announcedCodes}};
     return cache.data;
   } catch (error) {
     console.error('live-discounts: falling back to the static mirror —', (error as Error).message);

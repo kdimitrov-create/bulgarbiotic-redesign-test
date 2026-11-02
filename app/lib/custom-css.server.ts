@@ -16,8 +16,20 @@
  * the old theme's rules into the redesign and run other people's JavaScript, so
  * everything outside the markers is ignored on purpose.
  */
+import {fetchConfigBundle} from './config-bundle.server';
 
-const CACHE_TTL_MS = 30 * 1000;
+/* 15 минути, не 30 секунди.
+ *
+ * Този кеш живее в паметта на ЕДИН изолат, а Cloudflare пуска нов при всеки
+ * снопче трафик - тоест на 30 секунди почти всяка заявка тръгваше пак към
+ * админа. При единайсет такива извиквания на страница живият магазин изяде
+ * ограничението на магазина и повали и админ панела с 429 (17.08.2026).
+ * Промяна от панела се вижда до петнайсет минути; при спешност - едно
+ * преразгръщане вдига нови изолати с празен кеш. */
+/* Минута в паметта на изолата. Общият кеш (`shared-cache.server.ts`) поема
+ * товара между изолатите, затова тук не е нужен дълъг срок - и промяна от
+ * панела се вижда до около три минути, вместо до петнайсет. */
+const CACHE_TTL_MS = 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 /** A runaway paste must not become a megabyte in every page. */
 const MAX_CSS_CHARS = 60_000;
@@ -36,17 +48,27 @@ export async function fetchCustomCss(
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    const res = await fetch(`${origin}/api/gql`, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
-      body: JSON.stringify({query: '{ customCssJs }'}),
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`admin api ${res.status}`);
-    const json = (await res.json()) as {data?: {customCssJs?: string}; errors?: Array<{message: string}>};
-    if (json.errors?.length) throw new Error(json.errors[0].message);
+    /* CSS-ът идва от общия пакет с настройките. Падне ли той, се пита сам. */
+    const bundled = await fetchConfigBundle(env);
+    const raw = bundled
+      ? bundled.customCssJs ?? ''
+      : await (async () => {
+          const res = await fetch(`${origin}/api/gql`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', Authorization: `Bearer ${pat}`},
+            body: JSON.stringify({query: '{ customCssJs }'}),
+            signal: controller.signal,
+          });
+          if (!res.ok) throw new Error(`admin api ${res.status}`);
+          const json = (await res.json()) as {
+            data?: {customCssJs?: string};
+            errors?: Array<{message: string}>;
+          };
+          if (json.errors?.length) throw new Error(json.errors[0].message);
+          return json.data?.customCssJs ?? '';
+        })();
 
-    const css = extractMarked(json.data?.customCssJs ?? '');
+    const css = extractMarked(raw);
     cache = {at: Date.now(), css};
     return css;
   } catch (error) {

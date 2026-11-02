@@ -120,6 +120,29 @@ Last updated: 2026-05-21.
 - **Acceptance**: Clicking a Stories tile plays the actual Reel inline.
 - **ETA**: 4–8 hours for API integration, 2–3 hours for self-hosted.
 
+### 10. Storefront API no longer serves Page-Builder pages (workaround live)
+
+- **Files**: `app/routes/page.$handle.tsx`, `app/lib/builder-page.server.ts`,
+  `app/routes/_index.tsx` (`fetchHomePage`)
+- **Problem**: Found 2026-10-07. CloudCart's Storefront API returns
+  `page: null` for every page of `type: builder` (17 pages) — by handle, by
+  id and in the `pages` list, on every API version — while the admin shows
+  them active. The page route 404'd them. Now: code-authored pages render
+  from their JSX, and every other active, visible, published builder page
+  (`detox-boost`, `longevity-bactology`, …) is read from the Admin API.
+  Still open:
+  - The homepage (`probiotik-ot-bactology`) is a builder page read through
+    `getPage`, so panel edits to it probably don't reach the site; it runs on
+    its retries / last-good / shared-cache fallbacks. Not verified.
+  - A panel design can't take over a code-authored page (`bb:page:<handle>`
+    marker) while the Storefront body is null.
+- **Fix**: Ask CloudCart support why the Storefront API stopped exposing
+  builder pages. Until then, point `fetchHomePage` at
+  `fetchBuilderPage` (watch the admin 429 limits from 2026-08-17).
+- **Acceptance**: A banner changed in the panel shows on `/` within the cache
+  window; or CloudCart serves builder pages again and the fallback goes unused.
+- **ETA**: ~1 hour for the homepage; the platform fix is out of our hands.
+
 ---
 
 ## 🟢 Tier 3 — Tracked separately

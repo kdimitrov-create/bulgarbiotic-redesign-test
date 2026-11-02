@@ -13,11 +13,23 @@
  * SERVER ONLY — the `.server.ts` suffix keeps the PAT out of the client bundle.
  */
 import type {NavMenu, NavNode} from './navigation';
+import {fetchConfigBundle} from './config-bundle.server';
 
 // 30 s, same as the discount cache: the merchant edits the menu in the panel and
 // expects to see it on the next refresh, not in five minutes. Still not zero —
 // every page render reads this.
-const CACHE_TTL_MS = 30 * 1000;
+/* 15 минути, не 30 секунди.
+ *
+ * Този кеш живее в паметта на ЕДИН изолат, а Cloudflare пуска нов при всеки
+ * снопче трафик - тоест на 30 секунди почти всяка заявка тръгваше пак към
+ * админа. При единайсет такива извиквания на страница живият магазин изяде
+ * ограничението на магазина и повали и админ панела с 429 (17.08.2026).
+ * Промяна от панела се вижда до петнайсет минути; при спешност - едно
+ * преразгръщане вдига нови изолати с празен кеш. */
+/* Минута в паметта на изолата. Общият кеш (`shared-cache.server.ts`) поема
+ * товара между изолатите, затова тук не е нужен дълъг срок - и промяна от
+ * панела се вижда до около три минути, вместо до петнайсет. */
+const CACHE_TTL_MS = 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 
 const FIELDS = 'id name type linkType linkId url blank class widgetText order';
@@ -39,7 +51,9 @@ const RESOLVERS: Record<string, {alias: string; query: string; path: (handle: st
   category: {alias: 'c', query: 'category', path: (h) => `/category/${h}`},
   product: {alias: 'p', query: 'product', path: (h) => `/product/${h}`},
   page: {alias: 'g', query: 'page', path: (h) => `/page/${h}`},
-  blog: {alias: 'b', query: 'blogCategory', path: (h) => `/blog/${h}`},
+  // Трети сегмент „category" - точно както е на класическата тема, за да не
+  // произвежда менюто адреси, различни от индексираните.
+  blog: {alias: 'b', query: 'blogCategory', path: (h) => `/blog/category/${h}`},
   selection: {alias: 's', query: 'smartCollection', path: (h) => `/selection/${h}`},
 };
 
@@ -73,7 +87,14 @@ export async function fetchNavMenu(
   if (cached && Date.now() - cached.at < CACHE_TTL_MS) return cached.data;
 
   try {
-    const tree = await gql(origin, pat, treeQuery(group), {});
+    /* Дървото идва от общия пакет с настройките, тоест без своя заявка. Падне ли
+     * пакетът, менюто се пита само - страницата не бива да зависи от него. */
+    const bundled = await fetchConfigBundle(env);
+    const fromBundle =
+      group === 'main' ? bundled?.mainMenu : group === 'footer' ? bundled?.footerMenu : null;
+    const tree = fromBundle
+      ? ({navigation: fromBundle} as any)
+      : await gql(origin, pat, treeQuery(group), {});
     const roots: RawItem[] = tree?.navigation?.items ?? [];
     if (!roots.length) return cached?.data ?? null;
 

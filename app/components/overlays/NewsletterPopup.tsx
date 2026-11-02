@@ -1,9 +1,41 @@
 import {useEffect, useState, useRef} from 'react';
 import {NewsletterConsent} from '~/components/NewsletterConsent';
+import {useRouteLoaderData} from 'react-router';
 import {useNewsletter} from '~/lib/use-newsletter';
+import {isNewsletterPopupLive} from '~/lib/newsletter-popup-schedule';
 
 const POPUP_KEY = 'bactology-npopup-v1';
-const WELCOME_CODE = 'WELCOME10';
+
+/**
+ * Кога излиза попъпът - 30 секунди, откакто човекът е отворил МАГАЗИНА.
+ *
+ * Беше 8 секунди и се засичаше с банера за бисквитки: той идва по веригата
+ * GTM → uc.js → cc.js, тоест на бавна мрежа доста късно (мерено 42 s на
+ * Fast 3G), и лягаше върху попъпа. Кой ще е отгоре беше лотария.
+ */
+const DELAY_MS = 30_000;
+
+/**
+ * Мигът на влизане в магазина, а не в тази страница.
+ *
+ * Попъпът живее само на началната. Без този запис часовникът тръгваше отначало
+ * при всяко връщане там, тоест човек, който обикаля из сайта, не го виждаше
+ * никога. Записът е за сесията - нов раздел значи ново посещение.
+ */
+const ARRIVED_KEY = 'bactology-npopup-arrived';
+
+function arrivedAt(): number {
+  try {
+    const saved = Number(sessionStorage.getItem(ARRIVED_KEY));
+    if (saved > 0) return saved;
+    const now = Date.now();
+    sessionStorage.setItem(ARRIVED_KEY, String(now));
+    return now;
+  } catch {
+    // Частен режим без storage: часовникът тръгва оттук и толкова.
+    return Date.now();
+  }
+}
 
 /**
  * Показва ли се попъпът само с `?popup=1` в адреса.
@@ -16,38 +48,54 @@ const WELCOME_CODE = 'WELCOME10';
 const PREVIEW_ONLY = false;
 
 /**
- * First-visit newsletter popup — appears after 8s OR 30% scroll, whichever first.
+ * Попъп за бюлетина при първо посещение: излиза 30 s след влизане в магазина.
  *
  * Три състояния:
  *   1. Capture: имейл + съгласие. Праща към `/api/subscribe`, което първо
  *      проверява дали такъв абонат вече съществува.
- *   2. Reveal: истинският код WELCOME10 (кампания id=440 в CloudCart) с чип за
- *      копиране. Показва се САМО при новозаписан абонат - иначе един и същ
- *      имейл вадеше код колкото пъти го напишеш.
- *   3. Exists: казваме, че вече има абонат с този имейл, и не даваме код.
+ *   2. Reveal: потвърждение, че кодът пътува по имейл.
+ *   3. Exists: казваме, че вече има абонат с този имейл.
+ *
+ * ⚠️ Кодът WELCOME10 НЕ се показва тук (промяна 20.08.2026). Раздава се с
+ * welcome кампания по имейл, за да мине всеки записал се през етикета
+ * `popup-nl`: върху него се строи потребителският сегмент, а върху сегмента -
+ * кампанията. Покажем ли кода на екрана, човек го взима и си тръгва, без
+ * писмото да е нужно, и сегментът губи смисъла си.
  */
 export function NewsletterPopup() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [stage, setStage] = useState<'capture' | 'reveal' | 'exists'>('capture');
-  const [copied, setCopied] = useState(false);
   const triggered = useRef(false);
-  const news = useNewsletter();
+  // „popup" → абонатът получава етикет `popup-nl` (виж `api.subscribe`).
+  const news = useNewsletter('popup');
+  /* Графикът е в `newsletter-popup-schedule`. Решава сървърът (root loader-ът);
+     часовникът на браузъра само спира попъпа и в раздел, отворен преди срока. */
+  const rootData = useRouteLoaderData<{newsletterPopupLive?: boolean}>('root');
+  const live = rootData?.newsletterPopupLive !== false;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (!live) return;
     if (PREVIEW_ONLY && !new URLSearchParams(window.location.search).has('popup')) return;
     if (sessionStorage.getItem(POPUP_KEY)) return;
     setMounted(true);
 
     const trigger = () => {
       if (triggered.current) return;
+      if (!isNewsletterPopupLive()) return;
       triggered.current = true;
       setOpen(true);
     };
 
-    const t = window.setTimeout(trigger, 8000);
+    // Остатъкът от тридесетте секунди, а не самите тридесет: човек, който вече
+    // е обикалял из магазина, не чака отначало, щом се върне на началната.
+    const left = Math.max(0, DELAY_MS - (Date.now() - arrivedAt()));
+    const t = window.setTimeout(trigger, left);
     const onScroll = () => {
+      // Скролът само ускорява, но НЕ преди срока. Иначе бърз скрол вдига
+      // попъпа на петата секунда и той пак се засича с банера за бисквитки.
+      if (Date.now() - arrivedAt() < DELAY_MS) return;
       const docH = document.documentElement.scrollHeight - window.innerHeight;
       if (window.scrollY / Math.max(docH, 1) > 0.3) trigger();
     };
@@ -57,7 +105,7 @@ export function NewsletterPopup() {
       window.clearTimeout(t);
       window.removeEventListener('scroll', onScroll);
     };
-  }, []);
+  }, [live]);
 
   useEffect(() => {
     if (!open) return;
@@ -79,7 +127,6 @@ export function NewsletterPopup() {
       setMounted(false);
       // Reset for next session
       setStage('capture');
-      setCopied(false);
     }, 600);
   }
 
@@ -87,28 +134,10 @@ export function NewsletterPopup() {
     const status = await news.submit(e);
     // `updated` е абонат, който го е имало, но не е приемал маркетинг и тъкмо
     // е дал съгласие. За бюлетина това е записване като всяко друго, затова
-    // получава кода - иначе човекът дава съгласие и остава с празни ръце.
+    // минава по същия път - иначе човекът дава съгласие и остава с празни ръце.
     if (status === 'created' || status === 'updated') setStage('reveal');
     else if (status === 'exists') setStage('exists');
     // При отказ оставаме на формата - `news.problem` казва защо.
-  }
-
-  async function copyCode() {
-    try {
-      await navigator.clipboard.writeText(WELCOME_CODE);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    } catch {
-      // Clipboard API blocked — select the chip text instead
-      const el = document.getElementById('bb-welcome-code-chip');
-      if (el) {
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        const sel = window.getSelection();
-        sel?.removeAllRanges();
-        sel?.addRange(range);
-      }
-    }
   }
 
   if (!mounted) return null;
@@ -192,39 +221,12 @@ export function NewsletterPopup() {
           ) : (
             <>
               <h2 id="bb-npopup-title">
-                Готово! Ето твоя <em>код.</em>
+                Готово! Кодът пътува към <em>имейла ти.</em>
               </h2>
               <p>
-                Приложи го на финалната стъпка от поръчката си, за да получиш <strong>10% намаление</strong>.
-                Записахме те и за бюлетина.
+                Изпращаме ти код за <strong>10% намаление</strong> на първата поръчка с първото
+                писмо. Провери пощата си след няколко минути.
               </p>
-              <button
-                id="bb-welcome-code-chip"
-                type="button"
-                className={`bb-welcome-chip${copied ? ' copied' : ''}`}
-                onClick={copyCode}
-                aria-label={`Копирай код ${WELCOME_CODE}`}
-              >
-                <span className="bb-welcome-code">{WELCOME_CODE}</span>
-                <span className="bb-welcome-cta">
-                  {copied ? (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      Копирано
-                    </>
-                  ) : (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="9" y="9" width="11" height="11" rx="2" />
-                        <path d="M5 15V5a2 2 0 012-2h10" />
-                      </svg>
-                      Копирай
-                    </>
-                  )}
-                </span>
-              </button>
               <a href="/category/all-products" className="bb-welcome-shop" onClick={close}>
                 Пазарувай сега
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -256,57 +258,11 @@ export function NewsletterPopup() {
           .bb-npopup-form input:disabled,
           .bb-npopup-form button:disabled { opacity: 0.6; cursor: default; }
 
-          /* WELCOME10 reveal chip + ctas */
-          .bb-welcome-chip {
-            display: flex;
-            align-items: stretch;
-            width: 100%;
-            margin: 18px 0 12px;
-            background: white;
-            border: 2px dashed var(--color-brand-pink);
-            border-radius: 14px;
-            padding: 0;
-            cursor: pointer;
-            font-family: inherit;
-            overflow: hidden;
-            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-          }
-          .bb-welcome-chip:hover {
-            border-style: solid;
-            transform: translateY(-1px);
-            box-shadow: 0 8px 24px -8px rgba(227, 22, 108, 0.35);
-          }
-          .bb-welcome-chip.copied {
-            border-color: #16a34a;
-            border-style: solid;
-          }
-          .bb-welcome-code {
-            flex: 1;
-            padding: 14px 18px;
-            font-family: var(--font-sans), monospace;
-            font-size: 22px;
-            font-weight: 800;
-            letter-spacing: 2.2px;
-            color: var(--color-brand-pink);
-            text-align: center;
-            display: flex; align-items: center; justify-content: center;
-          }
-          .bb-welcome-cta {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--color-brand-pink);
-            color: white;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 10px 16px;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-            transition: background 0.2s;
-          }
-          .bb-welcome-cta svg { width: 14px; height: 14px; }
-          .bb-welcome-chip.copied .bb-welcome-cta { background: #16a34a; }
-
+          /* Кодът вече НЕ се показва тук: праща се с welcome кампанията по
+             имейл, за да минат всички през етикета popup-nl и сегмента.
+             Стиловете на талона с кода паднаха заедно с него.
+             (Без обратни апострофи в този коментар - блокът е template literal
+             и първият от тях го затваря по средата.) */
           .bb-welcome-shop {
             display: inline-flex;
             align-items: center;

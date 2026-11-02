@@ -1,3 +1,5 @@
+import {DYSON_CAMPAIGN} from '~/lib/dyson-campaign';
+
 /**
  * ONE source for every product marking on the storefront: the text labels
  * ("Ново", "Бестселър", merchant-authored ones) and the image banners
@@ -82,6 +84,17 @@ export interface ProductMark {
   compareAtPrice: MarkMoney | null;
   /** Настройките за вид на действащата отстъпка, ако има такава. */
   discount: MarkDiscount | null;
+  /**
+   * Наличността на варианта, ТРИ състояния - разликата е съществена:
+   *   `number` - проследяването работи и това е количеството;
+   *   `null`   - проследяването е изключено, няма какво да се брои;
+   *   `undefined` - снимката не знае (не е стигнала, заявката е паднала).
+   *
+   * Само `null` значи „продава се въпреки `availableForSale: false`".
+   * `undefined` НЕ значи това - при неизвестна наличност се пази текущото
+   * предпазливо поведение и продуктът остава „Изчерпан".
+   */
+  stock?: number | null;
 }
 
 /** A text badge, already translated and coloured, ready to render. */
@@ -102,6 +115,8 @@ const EMPTY: ProductMark = {
   price: null,
   compareAtPrice: null,
   discount: null,
+  // Нарочно `undefined`, не `null`: празната снимка не твърди наличност.
+  stock: undefined,
 };
 
 /**
@@ -171,6 +186,20 @@ export function marksFor(product: any): ProductMark {
  * се извежда от самите цени, които картата печата (`displayDiscountPercent`),
  * за да не си противоречат числото и цените под него.
  */
+/**
+ * Наличността на продукта от каталожната снимка, в трите ѝ състояния.
+ *
+ * Съществува, защото `quantityAvailable` го няма на тип `Product` в схемата на
+ * Storefront API-то - само на вариант - а листинговата заявка на клиента иска
+ * единствено `id handle title availableForSale`. Оттам и цялата разлика между
+ * това, което показва продуктовата страница, и това, което показва списъкът.
+ */
+export function stockFor(product: any): number | null | undefined {
+  const id = markProductId(product?.id);
+  if (!id) return undefined;
+  return current[id]?.stock;
+}
+
 export function toMarkDiscount(raw: any): MarkDiscount | null {
   if (!raw) return null;
   return {
@@ -363,10 +392,28 @@ const HIDDEN_BANNERS = new Set(['forbes']);
 /** The image banners grouped by the corner the merchant picked. */
 export function markBanners(product: any): Record<MarkCorner, ProductBanner[]> {
   const out: Record<MarkCorner, ProductBanner[]> = {tl: [], tr: [], bl: [], br: []};
+  const seen = new Set<string>();
   for (const banner of marksFor(product).banners) {
     if (HIDDEN_BANNERS.has((banner.name ?? '').trim().toLowerCase())) continue;
+    seen.add(String(banner.id).split('/').pop() ?? '');
     const corner = (String(banner.position || 'bl').toLowerCase() as MarkCorner);
     (out[corner] ?? out.bl).push(banner);
+  }
+  const handle = String(product?.handle ?? marksFor(product).handle ?? '');
+  /* Знакът „1+1 подарък" (кампанията с томболата за Dyson). Същият похват:
+     панелът не може да го раздаде програмно, а продуктът е един - един ред тук
+     е по-евтин от ръчно качване, което после никой не помни да свали. */
+  if (
+    DYSON_CAMPAIGN.active &&
+    DYSON_CAMPAIGN.badgeHandles.includes(handle) &&
+    !seen.has(DYSON_CAMPAIGN.badgeBannerId)
+  ) {
+    out[DYSON_CAMPAIGN.badgePosition].push({
+      id: DYSON_CAMPAIGN.badgeBannerId,
+      name: DYSON_CAMPAIGN.cartTitle,
+      imageUrl: DYSON_CAMPAIGN.badgeImage,
+      position: DYSON_CAMPAIGN.badgePosition,
+    });
   }
   return out;
 }
@@ -384,7 +431,9 @@ export function bannerImageUrl(url: string, cssSize: number): string {
   try {
     const parsed = new URL(url);
     parsed.searchParams.set('width', String(target));
-    parsed.searchParams.set('height', String(target));
+    // Само ширина: с височина широкият файл идва вписан в квадрат с полета,
+    // а банерите вече се рисуват в естествената си форма.
+    parsed.searchParams.delete('height');
     return parsed.toString();
   } catch {
     return url;

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="1 + 1 подарък">
+  <!-- ВРЕМЕНЕН знак за кампанията „1+1 + томбола Dyson" (01.09.2026).
+       Сменя се с файла на клиента: един ред в app/lib/dyson-campaign.ts.
+       Рисува се в квадрат 1:1, за да ляга и по картите, и на продуктовата
+       страница без отделна геометрия. -->
+  <defs>
+    <linearGradient id="d11" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E3166C"/>
+      <stop offset="1" stop-color="#B81258"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="92" fill="url(#d11)"/>
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="3"/>
+  <text x="100" y="96" text-anchor="middle" font-family="Manrope, Arial, Helvetica, sans-serif"
+        font-size="62" font-weight="800" fill="#ffffff" letter-spacing="-2">1+1</text>
+  <text x="100" y="132" text-anchor="middle" font-family="Manrope, Arial, Helvetica, sans-serif"
+        font-size="24" font-weight="700" fill="#ffffff" letter-spacing="1.5">ПОДАРЪК</text>
+  <text x="100" y="158" text-anchor="middle" font-family="Manrope, Arial, Helvetica, sans-serif"
+        font-size="14" font-weight="600" fill="#ffffff" fill-opacity="0.85" letter-spacing="0.5">+ ТОМБОЛА</text>
+</svg>

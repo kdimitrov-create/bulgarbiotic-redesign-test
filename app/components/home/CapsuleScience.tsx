@@ -9,11 +9,11 @@ const COPY = [
 ];
 
 const FRAMES = [
-  '/images/capsule/cap-frame-0.png',
-  '/images/capsule/cap-frame-1.png',
-  '/images/capsule/cap-frame-2.png',
-  '/images/capsule/cap-frame-3.png',
-  '/images/capsule/cap-frame-4.png',
+  '/images/capsule/cap-frame-0.webp',
+  '/images/capsule/cap-frame-1.webp',
+  '/images/capsule/cap-frame-2.webp',
+  '/images/capsule/cap-frame-3.webp',
+  '/images/capsule/cap-frame-4.webp',
 ];
 
 export function CapsuleScience() {
@@ -158,7 +158,7 @@ export function CapsuleScience() {
         }
         .bb-scroll-cap-bg {
           position: absolute; inset: 0;
-          background-image: url('/images/capsule/capsule-bacteria-bg.png');
+          background-image: url('/images/capsule/capsule-bacteria-bg.webp');
           background-size: cover; background-position: center;
           opacity: 0.45; pointer-events: none;
         }

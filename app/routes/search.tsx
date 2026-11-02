@@ -4,7 +4,7 @@ import {useEffect, useRef, useState, useCallback} from 'react';
 import type {Route} from './+types/search';
 import {getContext} from '~/lib/context';
 import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
-import {ListingBody} from './product._index';
+import {ListingBody} from '~/components/ListingBody';
 import {MagnifyingGlassIcon, XMarkIcon} from '@heroicons/react/24/outline';
 import {buildFiltersFromParams, buildSortFromParams} from '~/lib/filters';
 import {enhanceProducts} from '~/lib/product-images';
@@ -18,7 +18,12 @@ export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Търсене
 export async function loader({request, context}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const url = new URL(request.url);
-  const q = url.searchParams.get('q') ?? '';
+  // Формата на класическата тема праща `?query=…` (проверено в HTML-а на живия
+  // сайт: `<input name="query">`, action `/search`). Редизайнът работи с `?q=`.
+  // Приемат се и двете, вместо старият адрес да се пренасочва - иначе всеки
+  // стар bookmark и всяка реклама, сочеща към търсене, минаваше през прескачане
+  // или показваше празна страница.
+  const q = url.searchParams.get('q') ?? url.searchParams.get('query') ?? '';
 
   if (!q) {
     const collections = await ctx.storefront.getCollections(8).catch(() => []);

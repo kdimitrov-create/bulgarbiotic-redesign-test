@@ -33,6 +33,14 @@ export type ThemeModules = Record<string, ThemeModule>;
  */
 export const CLIENT_MODULES = new Set<string>([
   'htmlLine', // promo bar
+  // Долният ред рисува мрежите оттук. Ако този модул не стигне до браузъра,
+  // сървърът рисува две иконки, а хидратацията - нула, и React се оплаква от
+  // разминаване. Настройката е няколко реда, не цяла страница.
+  'social',
+  // Телефоните и имейлът във футъра (`footer-contacts.ts`). Няколко реда HTML.
+  'footerText',
+  // Банерът „Купи повече, спести повече" в количката (`CheckoutTextBanner`).
+  'checkoutText',
 ]);
 
 /** Trim the set down to what the browser needs before it is serialised. */

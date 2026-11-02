@@ -20,7 +20,7 @@ export function TrustStrip() {
       ),
     },
     {
-      title: 'Безплатна доставка над 50 €',
+      title: 'Безплатна доставка над 51 €',
       accent: 'blue',
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">

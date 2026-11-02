@@ -2,6 +2,53 @@ import {Link} from 'react-router';
 import type {Shop, Menu} from '@cloudcart/nitro';
 import type {NavMenu, NavNode} from '~/lib/navigation';
 import {NewsletterInlineForm} from '~/components/NewsletterInlineForm';
+import {socialLinks, type SocialKey} from '~/lib/social-links';
+import {footerContacts} from '~/lib/footer-contacts';
+
+/** По една иконка на мрежа; рисува се само включената в панела. */
+const SOCIAL_ICON: Record<SocialKey, JSX.Element> = {
+  instagram: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17" cy="7" r="0.9" fill="currentColor" />
+    </svg>
+  ),
+  facebook: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.5 21v-7.5h2.5l.5-3h-3V8.5c0-.9.4-1.5 1.6-1.5h1.4V4.3c-.3 0-1.4-.2-2.6-.2-2.6 0-4.4 1.6-4.4 4.4v2.5h-3v3h3V21" />
+    </svg>
+  ),
+  youtube: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2.5" y="6" width="19" height="12" rx="3" />
+      <path d="M10.5 9.5L14.5 12L10.5 14.5z" fill="currentColor" />
+    </svg>
+  ),
+  tiktok: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 4v11.5a3 3 0 11-3-3" />
+      <path d="M14 4c.5 2.5 2.5 4 5 4" />
+    </svg>
+  ),
+  x: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+      <path d="M4 4l16 16M20 4L4 20" />
+    </svg>
+  ),
+  linkedin: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="3.5" width="17" height="17" rx="3" />
+      <path d="M8 10.5V17M8 7.5v.01M12 17v-3.5a2 2 0 014 0V17" />
+    </svg>
+  ),
+  pinterest: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 7.5c-2 0-3 1.3-3 2.7 0 .8.4 1.6 1 1.9l.3-1.1c-.2-.3-.3-.6-.3-1 0-1 .8-2 2-2 1.1 0 1.8.7 1.8 1.7 0 1.3-.6 2.4-1.4 2.4-.5 0-.8-.4-.7-.9l.4-1.6c.1-.4-.1-.8-.5-.8-.5 0-.9.5-.9 1.2 0 .4.1.7.1.7l-.9 3.6c-.2.8 0 1.8.1 1.9l.6-1c.1-.2.5-1.9.5-1.9.2.4.8.7 1.4.7 1.8 0 3-1.7 3-3.9 0-1.7-1.4-3.2-3.5-3.2z" fill="currentColor" stroke="none" />
+    </svg>
+  ),
+};
 
 interface FooterProps {
   shop: Shop;
@@ -41,6 +88,9 @@ function FooterLink({item}: {item: NavNode}) {
 }
 
 export function Footer({shop, adminFooter}: FooterProps) {
+  const socials = socialLinks();
+  // Телефоните и имейлът се пишат в панела, в уиджета „Footer Text".
+  const contacts = footerContacts();
   const groups = (adminFooter?.items ?? []).filter((g) => columnLinks(g).length);
   const columns = groups.filter((g) => g.title.trim().toLowerCase() !== BOTTOM_BAR);
   const bottom = groups.find((g) => g.title.trim().toLowerCase() === BOTTOM_BAR);
@@ -105,7 +155,7 @@ export function Footer({shop, adminFooter}: FooterProps) {
                   <Link to="/page/mediite-za-nas">Медиите за нас</Link>
                   <Link to="/page/naukata-zad-bulgar-biotic">Науката</Link>
                   <Link to="/blog">Блог</Link>
-                  <Link to="/page/about-us#contact">Контакти</Link>
+                  <Link to="/contacts">Контакти</Link>
                 </div>
                 <div className="bb-ft-col">
                   <h4>Помощ</h4>
@@ -126,8 +176,10 @@ export function Footer({shop, adminFooter}: FooterProps) {
                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
               </svg>
               <div>
-                <div className="bb-ft-label">Телефон</div>
-                <a className="bb-ft-val" href="tel:+359882754163">+359 88 275 4163</a>
+                <div className="bb-ft-label">{contacts.phones.length > 1 ? 'Телефони' : 'Телефон'}</div>
+                {contacts.phones.map((p) => (
+                  <a key={p.tel} className="bb-ft-val" href={`tel:${p.tel}`}>{p.label}</a>
+                ))}
               </div>
             </div>
             <div className="bb-ft-row">
@@ -137,7 +189,9 @@ export function Footer({shop, adminFooter}: FooterProps) {
               </svg>
               <div>
                 <div className="bb-ft-label">Имейл</div>
-                <a className="bb-ft-val" href="mailto:bulgarbiotic.eu@gmail.com">bulgarbiotic.eu@gmail.com</a>
+                {contacts.emails.map((e) => (
+                  <a key={e} className="bb-ft-val" href={`mailto:${e}`}>{e}</a>
+                ))}
               </div>
             </div>
             <div className="bb-ft-row">
@@ -220,32 +274,18 @@ export function Footer({shop, adminFooter}: FooterProps) {
             )}
           </div>
           <div className="bb-ft-stamp"><span className="bb-ft-stamp-dot"></span>Произведено в България · от 2019</div>
-          <div className="bb-ft-socials">
-            <a href="https://instagram.com/bulgarbiotic" aria-label="Instagram">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
-                <rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle cx="17" cy="7" r="0.9" fill="currentColor" />
-              </svg>
-            </a>
-            <a href="#" aria-label="Facebook">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14.5 21v-7.5h2.5l.5-3h-3V8.5c0-.9.4-1.5 1.6-1.5h1.4V4.3c-.3 0-1.4-.2-2.6-.2-2.6 0-4.4 1.6-4.4 4.4v2.5h-3v3h3V21" />
-              </svg>
-            </a>
-            <a href="#" aria-label="YouTube">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2.5" y="6" width="19" height="12" rx="3" />
-                <path d="M10.5 9.5L14.5 12L10.5 14.5z" fill="currentColor" />
-              </svg>
-            </a>
-            <a href="#" aria-label="TikTok">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 4v11.5a3 3 0 11-3-3" />
-                <path d="M14 4c.5 2.5 2.5 4 5 4" />
-              </svg>
-            </a>
-          </div>
+          {/* Мрежите идват от панела (виж `socialLinks`): показва се само това,
+              което търговецът е включил и е дал адрес на профил. Дотук три от
+              четирите иконки сочеха `#`. */}
+          {socials.length > 0 && (
+            <div className="bb-ft-socials">
+              {socials.map((s) => (
+                <a key={s.key} href={s.href} aria-label={s.label} target="_blank" rel="noopener noreferrer">
+                  {SOCIAL_ICON[s.key]}
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,5 +1,7 @@
 import {useLoaderData, data, Link} from 'react-router';
 import type {Route} from './+types/category.$handle';
+import {notFoundOrRedirect} from '~/lib/redirects';
+import {makeSoft} from '~/lib/soft.server';
 import {getContext} from '~/lib/context';
 import {getSeoMeta, getPaginationVariables} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
@@ -16,7 +18,10 @@ import {
   orderByRealSales,
   pageSlice,
 } from '~/lib/best-sellers.server';
-import {ListingBody} from './product._index';
+import {ListingBody} from '~/components/ListingBody';
+import {KIDS_CAMPAIGN} from '~/components/MegaMenu';
+import {DYSON_CAMPAIGN} from '~/lib/dyson-campaign';
+import {categoryBannersFor} from '~/lib/category-banners';
 import {getCollectionIntro} from '~/lib/collections-content';
 import {enhanceProducts} from '~/lib/product-images';
 import {markPricing} from '~/lib/product-marks';
@@ -47,25 +52,11 @@ export const meta: Route.MetaFunction = ({data: d}) => {
 
 const PAGE_SIZE = 12;
 
-export async function loader(args: Route.LoaderArgs) {
-  /* Причината за 500-ците, видяна на живо (14.08): магазинът отговаря
-   * „429 Too Many Requests", когато няколко страници се рисуват наведнъж.
-   * Записва се в конзолата с истинското си име - в производство React Router
-   * подменя съобщението с „Unexpected Server Error" и иначе не се разбира
-   * какво се е счупило. */
-  try {
-    return await categoryLoader(args);
-  } catch (error) {
-    console.error(
-      'category loader: %s - %s',
-      (error as Error)?.name ?? 'Error',
-      (error as Error)?.message ?? String(error),
-    );
-    throw error;
-  }
-}
+/** Резервната стойност на четенето на продуктите: „не отговори", което е нещо
+ * различно и от „няма такава категория" (null), и от „празна категория". */
+const UNAVAILABLE = Symbol('category-unavailable');
 
-async function categoryLoader({params, context, request}: Route.LoaderArgs) {
+export async function loader({params, context, request}: Route.LoaderArgs) {
   const ctx = await getContext(context, request);
   const url = new URL(request.url);
   const paginationVariables = getPaginationVariables(request, {pageBy: PAGE_SIZE});
@@ -86,7 +77,20 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
   // Default order = units actually sold. Needs the whole category in one call,
   // because the ranking is ours and the API cannot paginate by it.
   const salesOrder = isRealSalesOrder(url.searchParams);
-  const pageVars = salesOrder ? {first: 100} : paginationVariables;
+
+  // Подредбата по цена е НАША.
+  //
+  // Storefront API-то не изпълнява `sortKey: PRICE` за колекции: „възходящо" и
+  // „низходящо" връщат ЕДИН И СЪЩ ред, и той не е по цена (мерено на живо
+  // 17.08.2026 - `TITLE` и `CREATED_AT` в същото време работят, значи не е от
+  // подаването). Тоест две от седемте подредби в падащото меню не правеха нищо.
+  //
+  // Освен това клиентът подрежда по цената, която ВИЖДА, а тя тук е с приспадната
+  // автоматична отстъпка и се смята при нас - API-то не я знае. Затова цялата
+  // категория идва наведнъж и се подрежда тук, както става и при „най-продавани".
+  const priceSort = url.searchParams.get('sort');
+  const ownPriceOrder = priceSort === 'price-asc' || priceSort === 'price-desc';
+  const pageVars = salesOrder || ownPriceOrder ? {first: 100} : paginationVariables;
 
   // Try with filters; if the Storefront API rejects an unknown tag/option
   // value (returns 500), gracefully retry without filters so the user lands
@@ -111,12 +115,44 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
           reverse,
         });
       }
-      throw err;
+      // Без филтри дотук се хвърляше нагоре, тоест посетителят получаваше
+      // страница с грешка вместо категорията. Мерено 17.08 на четирима
+      // едновременни посетители по двайсет адреса: една от 80 заявки падна
+      // точно тук, на празен isolate. Един повторен опит след кратко изчакване
+      // струва по-малко от една счупена категория - и се вижда в дневника,
+      // за да не мине незабелязано.
+      console.warn('[category loader] заявката се отказа, един повторен опит:', err);
+      await new Promise((r) => setTimeout(r, 400));
+      return ctx.storefront.getCollectionProductsPaginated(params.handle, {
+        ...pageVars,
+        sortKey,
+        reverse,
+        filters,
+      });
     }
   };
 
+  /* Останалите четения минават през `soft` - резервна стойност И краен срок.
+   *
+   * Подредбата по продажби е ПОДРАЗБИРАЩАТА се, тоест на всяко отваряне на
+   * категория тръгват още две неща: цялата категория на страници
+   * (`collectAllNodes`) и класацията от админското API. До 27.08.2026 нито
+   * едното имаше защита - откажеше ли магазинът за миг, посетителят получаваше
+   * „500 · Нещо се обърка" вместо категорията. Сега най-лошото е категория в
+   * реда на API-то. */
+  const soft = makeSoft('категория');
+
+  /* ⚠️ Дотук ТОВА беше единственото четене на страницата без краен срок.
+   *
+   * Повторен опит имаше, но повторният опит лекува ОТКАЗ, не ВИСЕНЕ. Заспеше ли
+   * заявката, `Promise.all` не се разрешаваше, SSR-ът не връщаше нищо и
+   * Cloudflare убиваше зареждането - „500 · Нещо се обърка" или празно чакане,
+   * докато всяка друга подредба на същия адрес отваряше за половин секунда
+   * (мерено 02.09.2026). Причината беше в общия кеш и е поправена там, но
+   * правилото важи само по себе си: НИТО ЕДНО четене не бива да може да свали
+   * страница. Останалите на този loader отдавна минават през `soft`. */
   const [result, allCollections] = await Promise.all([
-    fetchProducts(),
+    soft('продуктите на категорията', fetchProducts(), UNAVAILABLE as any),
     ctx.storefront.getCollections(8).catch(() => []),
   ]);
 
@@ -138,7 +174,19 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
     productsCount: c.productsCount,
   }));
 
-  if (!result) throw data('Категорията не е намерена', {status: 404});
+  /* Просрочване НЕ е „няма такава категория".
+   *
+   * Ако просроченото четене падне в същото `if`, посетителят и Google получават
+   * 404 за страница, която съществува - а 404 се помни. Затова отделен, кратък
+   * отказ с покана да се опита пак. */
+  if ((result as unknown) === UNAVAILABLE) {
+    throw data('Категорията не отговори навреме, опитайте пак', {
+      status: 503,
+      headers: {'Retry-After': '5'},
+    });
+  }
+
+  if (!result) notFoundOrRedirect(request, 'Категорията не е намерена');
 
   // Redesign-only supplement: inject hand-picked extra products into specific
   // categories without editing the live store's collections. Only on the
@@ -162,13 +210,18 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
   // uses the same brand-consistent imagery as the homepage / sale page.
   // In sales order the whole category is ranked, so every page of it is needed
   // up front — the API caps a single request well below `first: 100`.
-  const categoryNodes = salesOrder
-    ? await collectAllNodes(result.products as any, (after) =>
-        ctx.storefront
-          .getCollectionProductsPaginated(params.handle, {first: 100, after, filters})
-          .then((r: any) => r?.products ?? null),
+  const firstPageNodes = (result.products as any).nodes ?? [];
+  const categoryNodes = salesOrder || ownPriceOrder
+    ? await soft(
+        'всички страници на категорията',
+        collectAllNodes(result.products as any, (after) =>
+          ctx.storefront
+            .getCollectionProductsPaginated(params.handle, {first: 100, after, filters})
+            .then((r: any) => r?.products ?? null),
+        ),
+        firstPageNodes,
       )
-    : ((result.products as any).nodes ?? []);
+    : firstPageNodes;
 
   const everyNode = enhanceProducts([...categoryNodes, ...extraNodes]).filter((p: any) => {
     if (!onSaleOnly) return true;
@@ -184,12 +237,30 @@ async function categoryLoader({params, context, request}: Route.LoaderArgs) {
   // products; the packages that contain them follow. Applied BEFORE paging so
   // the singles are on page one, not scattered across pages.
   const packageHandles = SINGLES_FIRST_CATEGORIES.has(params.handle)
-    ? await fetchPackageHandles(ctx.storefront)
+    ? await soft('пакетите', fetchPackageHandles(ctx.storefront), null as Set<string> | null)
     : null;
 
   if (salesOrder) {
-    const sales = await fetchBestSellers(ctx.env as Record<string, string | undefined>);
+    // Без класацията подредбата е тази на API-то - `orderByRealSales` приема null.
+    const sales = await soft(
+      'класация по продажби',
+      fetchBestSellers(ctx.env as Record<string, string | undefined>),
+      null,
+    );
     let ordered = orderByRealSales(everyNode, sales);
+    if (packageHandles) ordered = singlesFirst(ordered, packageHandles);
+    const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
+    nodes = slice.nodes;
+    pageInfo = {...(pageInfo ?? {}), hasNextPage: slice.hasNextPage, hasPreviousPage: slice.hasPreviousPage};
+  } else if (ownPriceOrder) {
+    const shown = (p: any) => {
+      const {price} = markPricing(p);
+      const n = price ? parseFloat(price.amount) : NaN;
+      return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+    };
+    let ordered = [...everyNode].sort((a, b) =>
+      priceSort === 'price-desc' ? shown(b) - shown(a) : shown(a) - shown(b),
+    );
     if (packageHandles) ordered = singlesFirst(ordered, packageHandles);
     const slice = pageSlice(ordered, currentPage(url), PAGE_SIZE);
     nodes = slice.nodes;
@@ -326,17 +397,126 @@ export default function CollectionPage() {
         </div>
       )}
 
-      <ListingBody products={products} collections={collections as any[]} />
+      {/* Back to school: кампанийният банер влиза В колоната с продуктите -
+          подравнен с картите, не с целия контейнер (клиент, 24.08). Пада сам
+          с KIDS_CAMPAIGN.active = false. */}
+      <ListingBody
+        products={products}
+        collections={collections as any[]}
+        footer={
+          <>
+          {KIDS_CAMPAIGN.active && KIDS_CAMPAIGN.categoryBannerActive && col.handle === KIDS_CAMPAIGN.categoryHandle ? (
+            <section className="bb-kids-banner" aria-label="Кампания Back to school">
+              {/* Под 640px - портретният мобилен файл; иначе широкият. Размерите
+                  са на източника и на img, за да не подскача решетката. */}
+              <picture>
+                <source
+                  media="(max-width: 640px)"
+                  srcSet={`${KIDS_CAMPAIGN.categoryBannerMobile}?format=webp`}
+                  width={400}
+                  height={550}
+                />
+                <img
+                  src={`${KIDS_CAMPAIGN.categoryBanner}?format=webp&width=1600`}
+                  width={1900}
+                  height={800}
+                  alt="Back to school - подарък раница при покупка на три детски продукта и томбола за детско колело"
+                  loading="lazy"
+                  onError={(e) => {
+                    // Правилото за CDN-а: при 404 на вариант с размери - голият адрес
+                    // (и без <source>, за да не се върти пак към счупения вариант).
+                    const img = e.currentTarget as HTMLImageElement;
+                    img.parentElement?.querySelectorAll('source').forEach((s) => s.remove());
+                    img.src = window.innerWidth <= 640 ? KIDS_CAMPAIGN.categoryBannerMobile : KIDS_CAMPAIGN.categoryBanner;
+                  }}
+                />
+              </picture>
+            </section>
+          ) : null}
 
-      {/* Editable category text from the CloudCart "описание" field (client #2). */}
-      {categoryCopy && (
-        <section className="max-w-3xl mx-auto px-5 py-10 md:py-14">
-          <div
-            className="prose prose-sm prose-gray max-w-none [&_p]:my-3 [&_ul]:my-3 [&_li]:my-1 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:mt-4"
-            dangerouslySetInnerHTML={{__html: categoryCopy}}
-          />
-        </section>
-      )}
+          {/* Кампанията „1+1 + томбола Dyson": същото място и същата рамка
+              под продуктите на „Пробиотици за жени" - клиентът поиска изрично
+              „по подобие на Back to school". Пада с DYSON_CAMPAIGN.active. */}
+          {DYSON_CAMPAIGN.active && DYSON_CAMPAIGN.showCategoryBanner && col.handle === DYSON_CAMPAIGN.categoryHandle ? (
+            <section className="bb-campaign-banner" aria-label="Кампания 1+1 подарък">
+              <picture>
+                {/* Отделен портретен файл за телефон има само ако дизайнерът е
+                    дал такъв; иначе широкият се ползва навсякъде. */}
+                {DYSON_CAMPAIGN.categoryBannerMobile ? (
+                  <source
+                    media="(max-width: 640px)"
+                    srcSet={DYSON_CAMPAIGN.categoryBannerMobile}
+                  />
+                ) : null}
+                <img
+                  src={`${DYSON_CAMPAIGN.categoryBanner}?format=webp&width=1640`}
+                  width={DYSON_CAMPAIGN.bannerWidth}
+                  height={DYSON_CAMPAIGN.bannerHeight}
+                  alt={DYSON_CAMPAIGN.bannerAlt}
+                  loading="lazy"
+                  onError={(e) => {
+                    // Правилото за CDN-а: при 404 на вариант с размери - голият
+                    // адрес, и без <source>, за да не се върти пак към счупения.
+                    const img = e.currentTarget as HTMLImageElement;
+                    img.parentElement?.querySelectorAll('source').forEach((el) => el.remove());
+                    img.src = DYSON_CAMPAIGN.categoryBanner;
+                  }}
+                />
+              </picture>
+            </section>
+          ) : null}
+
+          {/* Банерите на категорията (`category-banners.ts`): между „Зареди
+              още продукти" и описанието - мястото, което клиентът посочи
+              (12.10.2026). Под 640px - портретният мобилен файл. */}
+          {categoryBannersFor(col.handle).map((banner) => (
+            <section key={banner.desktop} className="bb-campaign-banner" aria-label={banner.alt}>
+              <picture>
+                <source
+                  media="(max-width: 640px)"
+                  type="image/webp"
+                  srcSet={`${banner.mobile}.webp`}
+                  width={banner.mobileWidth}
+                  height={banner.mobileHeight}
+                />
+                <source
+                  media="(max-width: 640px)"
+                  srcSet={`${banner.mobile}.jpg`}
+                  width={banner.mobileWidth}
+                  height={banner.mobileHeight}
+                />
+                <source type="image/webp" srcSet={`${banner.desktop}.webp`} />
+                <img
+                  src={`${banner.desktop}.jpg`}
+                  width={banner.desktopWidth}
+                  height={banner.desktopHeight}
+                  alt={banner.alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+            </section>
+          ))}
+
+          {/* Описанието на категорията (полето „описание" в панела).
+              Живее ТУК, вътре в колоната с продуктите, а не под решетката.
+              Страничната лента с филтрите е по-висока от четирите карти и
+              опъва реда; описанието под решетката започваше чак след нея и
+              между банера и текста зееха ~430 празни пиксела (клиент, 01.09).
+              Оттук текстът тръгва веднага след банера, а лентата си върви
+              успоредно. */}
+          {categoryCopy ? (
+            <section className="max-w-3xl pt-8 pb-4">
+              <div
+                className="prose prose-sm prose-gray max-w-none [&_p]:my-3 [&_ul]:my-3 [&_li]:my-1 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:mt-4"
+                dangerouslySetInnerHTML={{__html: categoryCopy}}
+              />
+            </section>
+          ) : null}
+          </>
+        }
+      />
+
     </div>
   );
 }

@@ -199,7 +199,7 @@ function UsageTabContent() {
   return (
     <div className="bb-tab-editorial">
       <EditorialRow
-        image="/images/pdp-lifestyle/usage-dose.png"
+        image="/images/pdp-lifestyle/usage-dose.jpg"
         alt="Капсула в дланта до чаша вода - препоръчителна дневна доза"
         eyebrow="Дневна доза"
         title="1-2 капсули с чаша вода"
@@ -209,7 +209,7 @@ function UsageTabContent() {
 
       <EditorialRow
         reverse
-        image="/images/pdp-lifestyle/usage-timing.png"
+        image="/images/pdp-lifestyle/usage-timing.jpg"
         alt="Утринна сцена с агенда, кафе и капсула - кога да приемаш"
         eyebrow="Най-доброто време"
         title="Сутрин, с първото хранене"
@@ -218,7 +218,7 @@ function UsageTabContent() {
       </EditorialRow>
 
       <EditorialRow
-        image="/images/pdp-lifestyle/usage-duration.png"
+        image="/images/pdp-lifestyle/usage-duration.jpg"
         alt="Седмичен трекер с отметки - продължителност на приема"
         eyebrow="Продължителност"
         title="Минимум 4 седмици"

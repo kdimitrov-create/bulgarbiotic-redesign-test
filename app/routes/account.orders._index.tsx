@@ -36,7 +36,7 @@ export default function Orders() {
           <ShoppingBagIcon className="size-12 mx-auto mb-4 text-gray-200" />
           <p className="text-gray-500 mb-1 font-medium">Още няма поръчки</p>
           <p className="text-sm text-gray-400 mb-4">Щом направиш поръчка, тя ще се появи тук.</p>
-          <Link to="/collections" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
+          <Link to="/category/all-products" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
             Start shopping →
           </Link>
         </div>

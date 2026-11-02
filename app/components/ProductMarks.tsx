@@ -7,6 +7,8 @@ import {
   type MarkCorner,
 } from '~/lib/product-marks';
 import {discountColors} from '~/lib/active-discounts';
+import {KIDS_CAMPAIGN} from '~/lib/kids-campaign';
+import {DYSON_CAMPAIGN} from '~/lib/dyson-campaign';
 
 /**
  * The ONE renderer for product badges. Every surface — category grid, home
@@ -34,11 +36,22 @@ import {discountColors} from '~/lib/active-discounts';
  * in the home carousel, for one — and those blocks are emitted after app.css, so
  * a class rule of equal specificity loses and the marks get stretched to the
  * full height of the card. Inline wins against all of them without !important.
+ *
+ * Банерът се рисува в РАЗМЕРА НА ФАЙЛА, но не по-голям от рамката (`box*`).
+ * Дотук всеки банер беше натикан в квадрат от 88px и широк етикет 300×120
+ * излизаше 88×35 - каквото и да качи търговецът (клиент, 12.10.2026).
+ *
+ *   • lg (продуктова страница): рамката е точно знакът „Back to school" -
+ *     46% от снимката, между 182 и 277px, 2:1. Това е таванът по искане на
+ *     клиента: колкото и голям файл да качат, по-голям от него не става.
+ *   • sm / md (карти): същите 46% ширина, а височината остава колкото беше
+ *     квадратът досега (27% / 30%, 62 / 74px най-много). Кръглите значки по
+ *     картите не се променят, а широките етикети получават място встрани.
  */
 const SIZES = {
-  sm: {inset: 12, width: '27%', maxWidth: 62, minWidth: 34, cdn: 62},
-  md: {inset: 10, width: '30%', maxWidth: 74, minWidth: 38, cdn: 74},
-  lg: {inset: 12, width: '17%', maxWidth: 88, minWidth: 58, cdn: 88},
+  sm: {inset: 12, boxWidth: '46%', boxMax: 106, boxMin: 58, boxRatio: '46 / 27', cdn: 106},
+  md: {inset: 10, boxWidth: '46%', boxMax: 113, boxMin: 58, boxRatio: '46 / 30', cdn: 113},
+  lg: {inset: 12, boxWidth: '46%', boxMax: 277, boxMin: 182, boxRatio: '2 / 1', cdn: 277},
 } as const;
 
 type Size = keyof typeof SIZES;
@@ -115,45 +128,112 @@ export function ProductMarkBanners({
   tagRows?: number;
 }) {
   const banners = markBanners(product);
-  const {inset, width, maxWidth, minWidth, cdn} = SIZES[size];
+  const {inset, boxWidth, boxMax, boxMin, boxRatio, cdn} = SIZES[size];
 
   return (
     <>
       {(Object.keys(banners) as MarkCorner[]).map((corner) =>
-        banners[corner].map((banner) => (
-          <img
-            key={`${corner}-${banner.id}`}
-            src={bannerImageUrl(banner.imageUrl, cdn)}
-            alt=""
-            aria-hidden="true"
-            loading="lazy"
-            className="pm-banner"
-            style={{
-              position: 'absolute',
-              zIndex: 2,
-              width,
-              maxWidth,
-              minWidth,
-              height: 'auto',
-              aspectRatio: '1 / 1',
-              objectFit: 'contain',
-              borderRadius: 0,
-              background: 'transparent',
-              pointerEvents: 'none',
-              // Both top corners are usually taken — "tl" by the tag stack and
-              // "tr" by the wishlist heart — so a banner there starts below them.
-              ...(corner === 'tl' || corner === 'tr'
-                ? {top: inset + (corner === 'tr' ? 40 : rows * 30)}
-                : {bottom: inset}),
-              ...(corner === 'tl' || corner === 'bl' ? {left: inset} : {right: inset}),
-            }}
-            onError={(e) => {
-              // Arbitrary CDN sizes can 404 — fall back to the original file.
-              const base = bannerFallbackUrl(banner.imageUrl);
-              if (e.currentTarget.src !== base) e.currentTarget.src = base;
-            }}
-          />
-        )),
+        banners[corner].map((banner) => {
+          /* Знакът Back to school е кампаниен и клиентът го иска отчетлив:
+             на продуктовата страница (lg) стои НАЙ-ГОРЕ в ъгъла и е три пъти
+             по-голям от обичайния банер. По картите остава с нормалния
+             размер - три пъти там би затиснало снимката. */
+          const isCampaignBadge =
+            KIDS_CAMPAIGN.active &&
+            (String(banner.id).split('/').pop() ?? '') === KIDS_CAMPAIGN.badgeBannerId;
+          /* По картите знакът е нечетлива лентичка (цяло изречение в ~60px) -
+             клиентът го отчете като грозен. Там не се рисува изобщо: за
+             кампанията по листинга говорят промо лентата и банерът на
+             категорията, а знакът остава едър на продуктовата страница. */
+          if (isCampaignBadge && size !== 'lg') return null;
+          const big = isCampaignBadge && size === 'lg';
+          /* Знакът „1+1" стои В САМИЯ горен десен ъгъл (клиент, 01.09), не с
+             обичайния отстъп надолу. Отстъпът от 40px пази място за сърцето на
+             любимите, а то вече не се рисува никъде - проверено, `WishlistButton`
+             няма нито един вносител. Смяната е само за този знак, за да не
+             мръднат банерите на търговеца. */
+          const isDysonBadge =
+            DYSON_CAMPAIGN.active &&
+            String(banner.id) === DYSON_CAMPAIGN.badgeBannerId;
+          /* Само ширина към CDN-а, без височина: квадратна заявка слага широк
+             файл в квадрат с празни полета. CDN-ът не уголемява малки файлове,
+             тоест значка 100×100 си идва 100×100 и се рисува в своя размер. */
+          const src = bannerImageUrl(banner.imageUrl, cdn);
+          const right = corner === 'tr' || corner === 'br';
+          const bottom = corner === 'bl' || corner === 'br';
+          return (
+            /* Рамката е таванът; картинката вътре е в своя размер, смалена
+               само ако не се побира, и прилепена към ъгъла на търговеца. */
+            <span
+              key={`${corner}-${banner.id}`}
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                zIndex: 2,
+                display: 'flex',
+                justifyContent: right ? 'flex-end' : 'flex-start',
+                alignItems: bottom ? 'flex-end' : 'flex-start',
+                width: boxWidth,
+                maxWidth: boxMax,
+                minWidth: boxMin,
+                aspectRatio: boxRatio,
+                pointerEvents: 'none',
+                // Both top corners are usually taken — "tl" by the tag stack and
+                // "tr" by the wishlist heart — so a banner there starts below
+                // them. The campaign badge is the exception: straight at the
+                // top, с отрицателен отстъп, който изяжда 21-те процента
+                // прозрачно поле В САМАТА картинка (измерено: видимото почва
+                // от пиксел 106 на 500) - иначе знакът виси под мястото си.
+                // -17: видимият ръб на знака ляга на равнината на „-25%" пила
+                // (12px inset), след като се извади прозрачното поле на файла.
+                ...(corner === 'tl' || corner === 'tr'
+                  ? {
+                      /* „tr" стои на равнината на етикетите вляво (клиент,
+                         12.10.2026): отстъпът от 40px пазеше място за сърцето
+                         на любимите, а то не се рисува никъде. */
+                      top: big
+                        ? -17
+                        : isDysonBadge || corner === 'tr'
+                          ? inset
+                          : inset + rows * 30,
+                    }
+                  : {bottom: inset}),
+                ...(corner === 'tl' || corner === 'bl' ? {left: inset} : {right: inset}),
+              }}
+            >
+              <img
+                src={src}
+                alt=""
+                /* Не `lazy`: размерът е `auto`, тоест преди зареждане картинката
+                   е 0×0, и Chrome по картите така и не я тегли. Банерните файлове
+                   са няколко и се свалят веднъж за цялата страница. */
+                decoding="async"
+                className="pm-banner"
+                style={{
+                  display: 'block',
+                  // Размерът на файла, но не повече от рамката. Галерията на
+                  // продукта слага на всяка картинка `w-full aspect-square
+                  // object-cover` - затова всичко тук е изрично и inline.
+                  width: 'auto',
+                  height: 'auto',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  minWidth: 0,
+                  minHeight: 0,
+                  aspectRatio: 'auto',
+                  objectFit: 'contain',
+                  borderRadius: 0,
+                  background: 'transparent',
+                }}
+                onError={(e) => {
+                  // Arbitrary CDN sizes can 404 — fall back to the original file.
+                  const base = bannerFallbackUrl(banner.imageUrl);
+                  if (e.currentTarget.src !== base) e.currentTarget.src = base;
+                }}
+              />
+            </span>
+          );
+        }),
       )}
     </>
   );

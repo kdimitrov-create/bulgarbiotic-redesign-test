@@ -94,7 +94,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
       reason: 'Безопасна формула за бебета и малки деца - нежна към чувствителния микробиом.',
       handle: 'probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids',
       badge: 'Идеално за първите 3 г.',
-      image: '/images/generated-v2/p-babies.png',
+      image: '/images/generated-v2/p-babies.webp',
     };
   }
   if (who === 'kid') {
@@ -103,7 +103,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
       reason: 'Пробиотични перли с шоколад + имуностимулатор - за силен имунитет и щастливо коремче.',
       handle: 'smart-start-paket-za-silen-imunitet',
       badge: 'Любим вкус на децата',
-      image: '/images/generated-v2/p-smart-start.png',
+      image: '/images/generated-v2/p-smart-start.webp',
     };
   }
   if (who === 'pet') {
@@ -112,7 +112,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
       reason: 'За кучета и котки - поддържа здрав микробиом, козина и имунитет.',
       handle: 'bactology-pets',
       badge: 'Ветеринарно одобрен',
-      image: '/images/generated-v2/p-pets.png',
+      image: '/images/generated-v2/p-pets.webp',
     };
   }
   switch (goal) {
@@ -122,7 +122,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
         reason: 'Целево решение за газове, подуване и нередовно храносмилане - 50 млрд активни бактерии.',
         handle: 'bactology-probiotik-za-podut-korem-i-gazove-gastro-balance',
         badge: 'Бестселър №1',
-        image: '/images/generated-v2/p-gastro.png',
+        image: '/images/generated-v2/p-gastro.webp',
       };
     case 'immunity':
       return {
@@ -130,7 +130,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
         reason: 'Пробиотик за дебелото черво - над 70% от имунната система живее там.',
         handle: 'bactology-colongic-probiotik-za-debeloto-chervo',
         badge: 'За цяла година защита',
-        image: '/images/generated-v2/p-colongic.png',
+        image: '/images/generated-v2/p-colongic.webp',
       };
     case 'stress':
       return {
@@ -138,7 +138,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
         reason: 'Подкрепя оста черва-мозък - за по-добър сън и по-малко тревожност.',
         handle: 'bactology-anti-stress',
         badge: 'Калмиращ ефект',
-        image: '/images/generated-v2/p-anti-stress.png',
+        image: '/images/generated-v2/p-anti-stress.webp',
       };
     case 'beauty':
       return {
@@ -165,7 +165,7 @@ function recommend(who: Who, goal: Goal): Recommendation {
         reason: 'Специализирана формула за женско интимно здраве и хормонален баланс.',
         handle: 'bactology-probiotik-za-jeni-femin',
         badge: 'Препоръчван от гинеколози',
-        image: '/images/generated-v2/p-femin.png',
+        image: '/images/generated-v2/p-femin.webp',
       };
   }
 }

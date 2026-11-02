@@ -17,7 +17,18 @@ import {toMarkDiscount, type ProductMark} from './product-marks';
 
 // Matches the discount cache: the merchant changes a banner and expects to see
 // it, and this is one small request for the whole shop.
-const CACHE_TTL_MS = 30 * 1000;
+/* 15 минути, не 30 секунди.
+ *
+ * Този кеш живее в паметта на ЕДИН изолат, а Cloudflare пуска нов при всеки
+ * снопче трафик - тоест на 30 секунди почти всяка заявка тръгваше пак към
+ * админа. При единайсет такива извиквания на страница живият магазин изяде
+ * ограничението на магазина и повали и админ панела с 429 (17.08.2026).
+ * Промяна от панела се вижда до петнайсет минути; при спешност - едно
+ * преразгръщане вдига нови изолати с празен кеш. */
+/* Минута в паметта на изолата. Общият кеш (`shared-cache.server.ts`) поема
+ * товара между изолатите, затова тук не е нужен дълъг срок - и промяна от
+ * панела се вижда до около три минути, вместо до петнайсет. */
+const CACHE_TTL_MS = 60 * 1000;
 const REQUEST_TIMEOUT_MS = 8000;
 const PAGE_SIZE = 100;
 /** 5 pages = 500 products. Above that the marks map stops growing — see the warn below. */
@@ -34,6 +45,7 @@ const QUERY = `query ProductMarks($first: Int!, $after: String) {
       banners { id name imageUrl position }
       priceRange { minVariantPrice { amount currencyCode } }
       compareAtPriceRange { minVariantPrice { amount currencyCode } }
+      variants(first: 1) { nodes { quantityAvailable } }
       discount {
         name
         typeValueFormatted
@@ -61,6 +73,7 @@ interface RawNode {
   banners: Array<{id: string; name: string | null; imageUrl: string; position: string}> | null;
   priceRange: {minVariantPrice: RawMoney | null} | null;
   compareAtPriceRange: {minVariantPrice: RawMoney | null} | null;
+  variants: {nodes: Array<{quantityAvailable: number | null}> | null} | null;
   discount: {
     name: string | null;
     typeValueFormatted: string | null;
@@ -125,6 +138,11 @@ export async function fetchProductMarks(
           // го връща (проверено 2026-08-12), значи картата в категорията може да
           // спазва същите настройки като продуктовата страница.
           discount: toMarkDiscount(node.discount),
+          // Наличността на варианта - единственото, по което се различава
+          // „изключено проследяване" от „свършила наличност". Виж `stockFor`.
+          stock: node.variants?.nodes?.[0]
+            ? (node.variants.nodes[0].quantityAvailable ?? null)
+            : undefined,
         };
       }
 

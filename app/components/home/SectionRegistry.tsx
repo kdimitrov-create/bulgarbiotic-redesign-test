@@ -16,7 +16,6 @@ import {Reviews} from '~/components/home/Reviews';
 import {Award} from '~/components/home/Award';
 import {PressStrip} from '~/components/home/PressStrip';
 import {BrandStory} from '~/components/home/BrandStory';
-import {Stories} from '~/components/home/Stories';
 import {BlogHighlights} from '~/components/home/BlogHighlights';
 import {FAQ} from '~/components/home/FAQ';
 import {BottomCTAs} from '~/components/home/BottomCTAs';
@@ -102,7 +101,6 @@ export const HOME_SECTIONS: Section[] = [
   {marker: 'awards', label: 'Награди (слайдер)', render: () => <Award />},
   {marker: 'press', label: 'Медиите за нас', render: () => <PressStrip />},
   {marker: 'brand', label: 'Българска традиция', render: () => <BrandStory />},
-  {marker: 'stories', label: 'Истории на клиенти', render: () => <Stories />},
   {
     marker: 'blog',
     label: 'Статии от блога',

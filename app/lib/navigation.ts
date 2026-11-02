@@ -39,6 +39,23 @@ export const NAV_ROLE = {
   footer: 'footer',
 } as const;
 
+/**
+ * Групата с бутоните под панела - по клас, а ако го няма, по име.
+ *
+ * Ролята се дава с клас, изписан в панела. На истинския магазин в навигацията
+ * НЯМА нито един клас (проверено 17.08.2026: всички items с `class: null`),
+ * затова групата „Долен ред" се рисуваше като още една колона в мегаменюто и
+ * буташе „Препоръчано" на нов ред. Името ѝ обаче казва точно каква е, затова се
+ * приема и то - магазинът не бива да чака някой да впише клас, за да изглежда
+ * менюто както е нарисувано.
+ */
+const FOOTER_GROUP_TITLES = /^(долен ред|долна лента|footer|bottom(\s*row)?)$/i;
+
+export function isFooterGroup(node: NavNode | null | undefined): boolean {
+  if (hasRole(node, NAV_ROLE.footer)) return true;
+  return FOOTER_GROUP_TITLES.test((node?.title ?? '').trim());
+}
+
 /** Does this item carry the given role class? */
 export function hasRole(node: NavNode | null | undefined, role: string): boolean {
   return (node?.className ?? '')

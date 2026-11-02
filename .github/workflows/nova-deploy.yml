@@ -37,6 +37,11 @@ jobs:
 
       - name: Build
         if: steps.check.outputs.skip != 'true'
+        # Комитът влиза в билда, за да се вижда отвън КОЯ версия е жива.
+        # Сървърните промени не менят имената на клиентските чънкове, тоест
+        # дотук нямаше как да се разбере дали деплойът е минал.
+        env:
+          VITE_BUILD_SHA: ${{ github.sha }}
         run: npx react-router build
 
       - name: Deploy to Nova
@@ -133,6 +138,30 @@ jobs:
             exit 1
           fi
           echo "Deployed to Nova"
+
+      # Панелът чака да му се каже, че е готово.
+      #
+      # Този поток съобщаваше само при провал, затова витрината си оставаше
+      # „разгръща се" завинаги, макар сайтът вече да се отдава. Старият поток
+      # (през Cloudflare) пращаше и двата изхода - това връща липсващия.
+      - name: Report success
+        if: success() && steps.check.outputs.skip != 'true'
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_SHA: ${{ github.sha }}
+          BRANCH_NAME: ${{ github.ref_name }}
+        run: |
+          BODY=$(jq -n \
+            --arg status "live" \
+            --arg commit_sha "$COMMIT_SHA" \
+            --arg commit_message "$COMMIT_MESSAGE" \
+            --arg branch "$BRANCH_NAME" \
+            '{status: $status, commit_sha: $commit_sha, commit_message: $commit_message, branch: $branch, environment: "production"}')
+          curl -s -X POST "${{ vars.NOVA_DEPLOY_URL }}/deploy/report" \
+            -H "X-Nova-Deploy-Token: ${{ secrets.NOVA_DEPLOY_TOKEN }}" \
+            -H "User-Agent: CloudCart-Nova-Deploy/1.0" \
+            -H "Content-Type: application/json" \
+            -d "$BODY" || true
 
       - name: Report failure
         if: failure() && steps.check.outputs.skip != 'true'

@@ -40,34 +40,6 @@ export function PromoCode({
 
   return (
     <div className={`bb-cart-promo bb-cart-promo--${variant}`}>
-      {active.length > 0 && (
-        <ul className="bb-cart-promo-list">
-          {active.map((d) => (
-            <li key={d.code}>
-              <span className="bb-cart-promo-tag">{d.code}</span>
-              {/* Праща се ЦЕЛИЯТ останал списък, а не празно поле.
-                  `updateDiscountCodes` заменя масива, тоест празното поле триеше
-                  всички кодове наведнъж, при все че бутонът стои на един ред. */}
-              <fetcher.Form method="post" action={CART_ACTION}>
-                <input type="hidden" name="action" value="APPLY_DISCOUNT" />
-                {active
-                  .filter((other) => other.code !== d.code)
-                  .map((other) => (
-                    <input key={other.code} type="hidden" name="code" value={other.code} />
-                  ))}
-                <button
-                  type="submit"
-                  className="bb-cart-promo-remove"
-                  disabled={busy}
-                  aria-label={`Премахни кода ${d.code}`}
-                >
-                  Премахни
-                </button>
-              </fetcher.Form>
-            </li>
-          ))}
-        </ul>
-      )}
 
       <fetcher.Form method="post" action={CART_ACTION} className="bb-cart-promo-form">
         <input type="hidden" name="action" value="APPLY_DISCOUNT" />
@@ -96,6 +68,37 @@ export function PromoCode({
           </button>
         </div>
       </fetcher.Form>
+
+      {/* Приложените кодове стоят ПОД полето, не над него: потвърждението
+          се чака там, където току-що е писано. */}
+      {active.length > 0 && (
+        <ul className="bb-cart-promo-list">
+          {active.map((d) => (
+            <li key={d.code}>
+              <span className="bb-cart-promo-tag">{d.code}</span>
+              {/* Праща се ЦЕЛИЯТ останал списък, а не празно поле.
+                  `updateDiscountCodes` заменя масива, тоест празното поле триеше
+                  всички кодове наведнъж, при все че бутонът стои на един ред. */}
+              <fetcher.Form method="post" action={CART_ACTION}>
+                <input type="hidden" name="action" value="APPLY_DISCOUNT" />
+                {active
+                  .filter((other) => other.code !== d.code)
+                  .map((other) => (
+                    <input key={other.code} type="hidden" name="code" value={other.code} />
+                  ))}
+                <button
+                  type="submit"
+                  className="bb-cart-promo-remove"
+                  disabled={busy}
+                  aria-label={`Премахни кода ${d.code}`}
+                >
+                  Премахни
+                </button>
+              </fetcher.Form>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {rejected.map((d) => (
         <p key={d.code} className="bb-cart-promo-error">

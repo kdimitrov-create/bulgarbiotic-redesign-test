@@ -1,7 +1,7 @@
 import {data, redirect} from 'react-router';
 import type {Route} from './+types/api.subscribe';
 import {getContext} from '~/lib/context';
-import {isValidEmail, subscribeEmail} from '~/lib/subscribers.server';
+import {isValidEmail, subscribeEmail, tagExistingSubscriber} from '~/lib/subscribers.server';
 
 /**
  * Записване за бюлетина - обслужва попъпа, футъра и страницата „Абонирай се".
@@ -16,6 +16,17 @@ export type SubscribeStatus =
   | 'invalid' // имейлът не е имейл
   | 'consent' // няма съгласие за обработване на лични данни
   | 'error'; // администраторското API не отговори
+
+/**
+ * Откъде е дошъл записът → какъв етикет получава абонатът.
+ *
+ * ⚠️ Етикетът НЕ идва от браузъра, а се избира тук по познат източник. Иначе
+ * адресът е отворен и всеки може да пише каквото си иска в списъка на клиента.
+ * Непознат източник просто не слага етикет.
+ */
+const TAG_BY_SOURCE: Record<string, string> = {
+  popup: 'popup-nl',
+};
 
 /** Заявката е само POST. GET го връщаме на началната, вместо да гърми. */
 export async function loader() {
@@ -56,15 +67,22 @@ export async function action({request, context}: Route.ActionArgs) {
 
   let email = '';
   let consent = false;
+  let source = '';
+  /** Втори ход от страницата: само етикетира, нищо не създава. */
+  let tagOnly = false;
   const type = request.headers.get('content-type') ?? '';
   if (type.includes('application/json')) {
     const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
     email = typeof body.email === 'string' ? body.email : '';
     consent = body.consent === true || body.consent === 'true';
+    source = typeof body.source === 'string' ? body.source : '';
+    tagOnly = body.tagOnly === true || body.tagOnly === 'true';
   } else {
     const form = await request.formData();
     email = form.get('email')?.toString() ?? '';
     consent = ['true', 'on', '1'].includes((form.get('consent')?.toString() ?? '').toLowerCase());
+    source = form.get('source')?.toString() ?? '';
+    tagOnly = ['true', 'on', '1'].includes((form.get('tagOnly')?.toString() ?? '').toLowerCase());
   }
 
   const noStore = {headers: {'Cache-Control': 'no-store'}};
@@ -81,6 +99,18 @@ export async function action({request, context}: Route.ActionArgs) {
     return data({status: 'error' as SubscribeStatus}, {status: 429, ...noStore});
   }
 
-  const status = await subscribeEmail(env, email);
+  const tag = TAG_BY_SOURCE[source.trim().toLowerCase()];
+
+  /* Догонващият ход слага само етикет.
+   * Абонатът се създава при първата заявка; тук единствената работа е да се
+   * намери и етикетира, щом търсачката го поеме. Никакво записване - иначе
+   * закъсняла търсачка би направила втори запис със същия имейл. */
+  if (tagOnly) {
+    if (!tag) return data({status: 'exists' as SubscribeStatus}, noStore);
+    const tagged = await tagExistingSubscriber(env, email, [tag]);
+    return data({status: (tagged ? 'exists' : 'error') as SubscribeStatus}, noStore);
+  }
+
+  const status = await subscribeEmail(env, email, tag ? [tag] : []);
   return data({status}, {status: status === 'error' ? 502 : 200, ...noStore});
 }

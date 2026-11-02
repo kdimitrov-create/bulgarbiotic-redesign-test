@@ -1,6 +1,6 @@
 import {useRouteLoaderData} from 'react-router';
 import type {CartData} from '@cloudcart/nitro';
-import {pushEcommerce, idForHandle} from '~/lib/analytics';
+import {pushEcommerce, idForHandle, money2} from '~/lib/analytics';
 
 /**
  * "Към плащане" — hands the Nitrogen cart over to CloudCart's hosted checkout.
@@ -23,7 +23,16 @@ import {pushEcommerce, idForHandle} from '~/lib/analytics';
  * classic theme (the `*.cloudcart.net` service domain); it must NOT be the
  * domain routed to this storefront, or the POST lands back on this worker.
  */
-export function CheckoutButton({cart, className}: {cart: CartData | null; className: string}) {
+export function CheckoutButton({
+  cart,
+  className,
+  trackValue,
+}: {
+  cart: CartData | null;
+  className: string;
+  /** Сумата, която количката РЕАЛНО показва. Виж защо в `trackBeginCheckout`. */
+  trackValue?: number | null;
+}) {
   const root = useRouteLoaderData('root') as {classicOrigin?: string | null} | undefined;
   const classicOrigin = root?.classicOrigin ?? null;
   const lines = (cart?.lines?.nodes ?? []) as any[];
@@ -31,17 +40,50 @@ export function CheckoutButton({cart, className}: {cart: CartData | null; classN
   // Последното събитие, което storefront-ът може да отчете: оттук нататък
   // клиентът е в checkout-а на платформата и GTM там си пали purchase сам.
   function trackBeginCheckout() {
+    /* 🛑 Сумата НЕ идва от `cost.totalAmount`.
+     *
+     * Това поле лъже на този магазин. Мерено на живо 18.08.2026 с количка от
+     * 2 бр. Pets и действащо правило „Поръчай 2, плати 1":
+     *
+     *   количката показва      21,47 лв  ← вярното
+     *   Meta на касата праща   21,47     ← вярното
+     *   `cost.totalAmount`     21,73     ← оттук се пълнеше събитието
+     *
+     * (По-рано, 13.08, същото поле връщаше ТОЧНО половината от сбора на
+     * редовете - 73,67 срещу 147,34. Виж и коментара в `CartDrawer`.)
+     *
+     * Затова сумата се подава отвън: количката вече я е сметнала веднъж, от
+     * обобщението на търговеца, и точно нея вижда клиентът. Резервният вариант
+     * остава сборът на редовете - пак по-близо до истината от `cost`. */
+    const fallback = lines.reduce(
+      (sum: number, line: any) => sum + parseFloat(line.cost?.totalAmount?.amount ?? '0'),
+      0,
+    );
     pushEcommerce('begin_checkout', {
       currency: (cart as any)?.cost?.totalAmount?.currencyCode ?? 'EUR',
-      value: parseFloat((cart as any)?.cost?.totalAmount?.amount ?? '0'),
-      items: lines.map((line: any) => ({
-        item_id: idForHandle(line.merchandise?.product?.handle),
-        item_name: line.merchandise?.product?.title ?? '',
-        price: parseFloat(
+      value: money2(typeof trackValue === 'number' && trackValue > 0 ? trackValue : fallback),
+      items: lines.map((line: any) => {
+        // Същата сметка като в `AddToCartButton` - виж коментара там.
+        const qty = line.quantity ?? 1;
+        const lineTotal = parseFloat(line.cost?.totalAmount?.amount ?? '0');
+        const perQty = parseFloat(
           line.cost?.amountPerQuantity?.amount ?? line.merchandise?.price?.amount ?? '0',
-        ),
-        quantity: line.quantity ?? 1,
-      })),
+        );
+        const paidPerUnit = lineTotal > 0 && qty > 0 ? lineTotal / qty : perQty;
+        const basePerUnit =
+          parseFloat(
+            line.cost?.compareAtAmountPerQuantity?.amount ??
+              line.merchandise?.compareAtPrice?.amount ??
+              '0',
+          ) || Math.max(perQty, paidPerUnit);
+        return {
+          item_id: idForHandle(line.merchandise?.product?.handle),
+          item_name: line.merchandise?.product?.title ?? '',
+          price: money2(basePerUnit),
+          discount: money2(Math.max(0, basePerUnit - paidPerUnit)),
+          quantity: qty,
+        };
+      }),
     });
   }
 
@@ -58,10 +100,16 @@ export function CheckoutButton({cart, className}: {cart: CartData | null; classN
     return <button type="button" className={className} disabled>{label}</button>;
   }
 
-  // Редът е нарочен: първо адресът, който самата платформа връща
+  // Редът е нарочен: първо собственият механизъм на платформата
   // (`/checkout/adopt/<jwt>`). Проверено 2026-08-09, че той стига до касата
   // дори когато домейнът вече сочи към storefront-а, защото CloudCart обслужва
   // `/checkout*` сам.
+  //
+  // ⚠️ Адресът НЕ се вгражда тук, а се иска наново при натискането, през
+  // `/checkout-start`. Талонът в него живее 10 минути (`exp = iat + 600`,
+  // измерено 14.08.2026), а вграден в HTML-а часовникът му тръгва при
+  // зареждането на страницата. `cart.checkoutUrl` остава като признак, че
+  // платформата приема тази количка - няма ли го, падаме на ръчното подаване.
   //
   // Ръчното подаване към класическия хост остава само за случая, в който
   // количката няма такъв адрес. То е и по-крехкото: служебният домейн 301-ва
@@ -69,7 +117,7 @@ export function CheckoutButton({cart, className}: {cart: CartData | null; classN
   // `/cart/add` е 404.
   if (cart.checkoutUrl) {
     return (
-      <a href={cart.checkoutUrl} className={className} onClick={trackBeginCheckout}>{label}</a>
+      <a href="/checkout-start" className={className} onClick={trackBeginCheckout}>{label}</a>
     );
   }
 

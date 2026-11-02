@@ -1,6 +1,7 @@
 import {Form, Link, redirect, useActionData, useNavigation} from 'react-router';
 import type {Route} from './+types/account_.register';
 import {getContext} from '~/lib/context';
+import {assignRegisteredCustomerGroup} from '~/lib/register-group.server';
 import {getSeoMeta} from '@cloudcart/nitro';
 
 export const meta: Route.MetaFunction = () => getSeoMeta({title: 'Регистрация | Bactology'});
@@ -40,6 +41,8 @@ export async function action({request, context}: Route.ActionArgs) {
       values: {email, firstName, lastName},
     } as ActionData;
   }
+
+  assignRegisteredCustomerGroup(ctx.env as Record<string, string | undefined>, email);
 
   throw redirect(`/account/login?sent=1&email=${encodeURIComponent(email)}`);
 }

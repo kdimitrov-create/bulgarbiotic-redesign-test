@@ -1,8 +1,10 @@
 import {Link} from 'react-router';
 import {Image} from '@cloudcart/nitro-react';
+import {cdnResize} from '~/lib/product-images';
 import type {Product} from '@cloudcart/nitro';
 
 import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
+import {isProductAvailable} from '~/lib/availability';
 interface Props {
   /** Real Family Pack product from CloudCart (null → component hides). */
   product: Product | null;
@@ -37,7 +39,7 @@ export function BundlePrice({product}: {product: Product}) {
       <div className="bb-bundle-pricerow">
         <span className="bb-price-now">{fmt(eur, 'EUR')}</span>
         {SHOW_BGN && <span className="bb-price-bgn">{fmt(bgn, 'BGN')}</span>}
-        {product.availableForSale === false && (
+        {!isProductAvailable(product) && (
           <span className="bb-out">Изчерпан временно</span>
         )}
       </div>
@@ -46,7 +48,7 @@ export function BundlePrice({product}: {product: Product}) {
         className="btn-primary magnetic"
         prefetch="intent"
       >
-        {product.availableForSale === false ? 'Виж продукта' : 'Поръчай пакета'}
+        {isProductAvailable(product) ? 'Поръчай пакета' : 'Виж продукта'}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12" />
           <polyline points="12 5 19 12 12 19" />
@@ -109,9 +111,13 @@ export function BundleFeature({product}: Props) {
         </div>
         <div className="bb-bundle-image">
           {product.featuredImage?.url ? (
-            <Image data={product.featuredImage} alt={product.title} />
+            /* Рисува се ~600px - без cdnResize сваляше 1.8 MB PNG на 1920. */
+            <Image
+              data={{...product.featuredImage, url: cdnResize(product.featuredImage.url, 700)}}
+              alt={product.title}
+            />
           ) : (
-            <img src="/images/generated-v2/bundle-family-feature.png" alt={product.title} />
+            <img src="/images/generated-v2/bundle-family-feature.webp" alt={product.title} loading="lazy" decoding="async" />
           )}
         </div>
       </div>

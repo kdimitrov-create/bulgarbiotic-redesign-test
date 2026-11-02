@@ -1,8 +1,11 @@
 import {Link} from 'react-router';
 import type {Product} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
+import {cdnResize} from '~/lib/product-images';
 import {StarRating} from './StarRating';
 import {CardBuyButton} from './CardBuyButton';
+import {isProductAvailable} from '~/lib/availability';
+import {numericId, setProductIds} from '~/lib/analytics';
 import {ProductMarks} from './ProductMarks';
 import {displayDiscountPercent} from '~/lib/active-discounts';
 import {markPricing, markDiscount} from '~/lib/product-marks';
@@ -32,6 +35,13 @@ const fmt = (n: number, currency: 'EUR' | 'BGN') =>
 export function ProductCard({product, loading}: {product: Product; loading?: 'eager' | 'lazy'}) {
   const p = product as any;
   const reviewSummary = p.reviewSummary;
+
+  /* Числото на продукта се вписва в картата на аналитиката ОТ САМАТА КАРТА.
+     Дотук това ставаше по маршрути (категория, търсене, продуктова страница),
+     затова решетките извън тях - разпродажбите, свързаните продукти, витрините
+     от конструктора - пращаха `add_to_cart` с handle вместо с id и събитието
+     не се връзваше с нито един продукт в каталога на Meta. */
+  setProductIds({[p.handle]: String(numericId(p.id))});
 
   // Both prices come straight from CloudCart — the one the shopper pays and the
   // one it was before. Nothing here multiplies a price by a percentage; the
@@ -67,7 +77,8 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
       <div className="relative overflow-hidden rounded-2xl bg-gray-50">
         {product.featuredImage?.url ? (
           <Image
-            data={product.featuredImage}
+            /* Картата рисува ~240 px; иска се 2× за плътни екрани, не 1920. */
+            data={{...product.featuredImage, url: cdnResize(product.featuredImage.url, 600)}}
             alt={product.title}
             loading={loading}
             className="aspect-square object-cover w-full transition-transform duration-500 group-hover:scale-[1.04]"
@@ -90,7 +101,7 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
         <ProductMarks
           product={p}
           discountPct={isOnSale ? discountPct : 0}
-          soldOut={product.availableForSale === false}
+          soldOut={!isProductAvailable(product)}
           size="md"
         />
       </div>
@@ -139,7 +150,11 @@ export function ProductCard({product, loading}: {product: Product; loading?: 'ea
         <DiscountCountdown product={p} surface="listing" className="mt-1.5" />
 
         {/* "Купи" - same button as the home carousel (client request). */}
-        <CardBuyButton merchandiseId={p.variants?.nodes?.[0]?.id} handle={product.handle} />
+        <CardBuyButton
+          merchandiseId={p.variants?.nodes?.[0]?.id}
+          handle={product.handle}
+          available={isProductAvailable(product)}
+        />
       </div>
     </Link>
   );

@@ -41,7 +41,7 @@ type Slide = {
  * което на екрана се размазваше (клиент, 2026-08-10). Сега е локален файл
  * 600x600, изрязан от оригинала, който клиентът прати.
  */
-const FORBES_BADGE = '/images/awards/forbes-2026.png';
+const FORBES_BADGE = '/images/awards/forbes-2026.webp';
 
 const SLIDES: Slide[] = [
   {

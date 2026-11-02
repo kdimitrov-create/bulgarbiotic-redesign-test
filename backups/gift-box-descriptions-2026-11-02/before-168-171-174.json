@@ -1,0 +1,46 @@
+{
+  "data": {
+    "a": {
+      "id": "168",
+      "name": "Подаръчна кутия BACTOLOGY LONGEVITY CELLULAR",
+      "urlHandle": "podarachna-kutiya-bactology-longevity-cellular",
+      "shortDescription": null,
+      "description": null,
+      "flags": {
+        "active": "no",
+        "hidden": "yes"
+      },
+      "timestamps": {
+        "modified": "2026-10-29 10:53:03"
+      }
+    },
+    "b": {
+      "id": "171",
+      "name": "Подаръчна кутия BACTOLOGY HEPATO CARE",
+      "urlHandle": "podarachna-kutiya-bactology-hepato-care",
+      "shortDescription": null,
+      "description": null,
+      "flags": {
+        "active": "no",
+        "hidden": "yes"
+      },
+      "timestamps": {
+        "modified": "2026-10-29 10:54:36"
+      }
+    },
+    "c": {
+      "id": "174",
+      "name": "Подаръчна кутия BACTOLOGY MENOPAUSE BALANCE",
+      "urlHandle": "podarachna-kutiya-bactology-menopause-balance",
+      "shortDescription": null,
+      "description": null,
+      "flags": {
+        "active": "no",
+        "hidden": "yes"
+      },
+      "timestamps": {
+        "modified": "2026-10-29 10:55:25"
+      }
+    }
+  }
+}

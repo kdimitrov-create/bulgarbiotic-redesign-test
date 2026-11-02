@@ -1,7 +1,7 @@
 import {Link} from 'react-router';
 import type {ReactNode} from 'react';
 import type {NavNode} from '~/lib/navigation';
-import {NAV_ROLE, hasRole} from '~/lib/navigation';
+import {NAV_ROLE, hasRole, isFooterGroup} from '~/lib/navigation';
 import {openProbioticFinder} from './ProbioticFinderModal';
 
 /**
@@ -48,7 +48,13 @@ const COLUMN_GOAL: ColumnSpec = {
     {label: 'Женско здраве', to: '/category/probiotik-za-jeni', hint: 'Интимно здраве'},
     {label: 'Стрес и сън', to: '/product/bactology-anti-stress', hint: 'Anti Stress'},
     {label: 'За отслабване', to: '/category/probiotik-za-otslabvane', hint: 'Микробиом и метаболизъм'},
-    {/* „Отслабване" беше дубликат на „За отслабване" (същата категория) - махнат 2026-08-04. */}
+    // „Отслабване" беше дубликат на „За отслабване" (същата категория) - махнат 2026-08-04.
+    /* 🛑 Тук стоеше `{/* … *​/}`. В JSX това е коментар, но ТУК е обикновен
+     * масив - тоест беше ПРАЗЕН ОБЕКТ, шести „линк" без `to`. Долу в `Column`
+     * се вика `l.to.endsWith(…)` и това хвърляше при рисуването, тоест 500 на
+     * ВСЯКА страница - но само когато менюто от панела го няма и се падне на
+     * тези колони. Оттам и „периодично": витрината минава на закованите
+     * колони точно когато админското API откаже за миг. */
   ],
 };
 
@@ -81,8 +87,16 @@ const FEATURED_PRODUCT = {
   title: 'Bactology Femin',
   tag: 'Бестселър №1',
   blurb: 'Пробиотик за женско интимно здраве - препоръчван от гинеколози.',
-  image: '/images/generated-v2/p-femin.png',
+  image: '/images/generated-v2/p-femin.webp',
 };
+
+/**
+ * Кампания „Back to school": конфигурацията се премести в
+ * `~/lib/kids-campaign` (чете я и product-marks). Преизнасяме я оттук,
+ * за да не се пипат старите вносители.
+ */
+export {KIDS_CAMPAIGN} from '~/lib/kids-campaign';
+import {KIDS_CAMPAIGN} from '~/lib/kids-campaign';
 
 interface Props {
   open: boolean;
@@ -106,7 +120,7 @@ export function MegaMenu({open, onNav, node}: Props) {
   // the row of buttons underneath. Everything else is a column.
   const roleChildren = node?.children ?? [];
   const featuredNode = roleChildren.find((c) => hasRole(c, NAV_ROLE.featured)) ?? null;
-  const footerNode = roleChildren.find((c) => hasRole(c, NAV_ROLE.footer)) ?? null;
+  const footerNode = roleChildren.find(isFooterGroup) ?? null;
   const columnNode = node
     ? {...node, children: roleChildren.filter((c) => c !== featuredNode && c !== footerNode)}
     : node;
@@ -197,6 +211,11 @@ function Foot({onNav, node}: {onNav?: () => void; node: NavNode | null}) {
     );
   }
 
+  /* Тестът „Не знаеш кой?" стои в реда и когато търговецът не го е сложил в
+     панела: в макета редът е с четири бутона, а групата тук носи три. Котвата
+     не е връзка към страница, затова панелът и няма как да я съдържа. */
+  const hasFinder = links.some((l) => l.url === '#bb-finder-fab');
+
   return (
     <div className="bb-megamenu-foot">
       {links.map((link, i) => {
@@ -237,6 +256,19 @@ function Foot({onNav, node}: {onNav?: () => void; node: NavNode | null}) {
           </Link>
         );
       })}
+      {!hasFinder && (
+        <button
+          type="button"
+          className="bb-megamenu-foot-link bb-megamenu-foot-link--ghost"
+          onClick={() => {
+            onNav?.();
+            openProbioticFinder();
+          }}
+        >
+          ✦ Не знаеш кой? Намери за 30 сек
+          <Arrow />
+        </button>
+      )}
     </div>
   );
 }
@@ -306,18 +338,34 @@ function buildColumns(node?: NavNode | null): {columns: AdminColumn[]; hasHtml: 
 }
 
 function Column({spec, onNav, accent}: {spec: ColumnSpec; onNav?: () => void; accent: 'pink' | 'blue' | 'cream'}) {
+  // Колона с капсула се свива до най-дългия си ред, за да свърши капсулата
+  // там, а не при ръба на колоната (клиент, 24.08).
+  // Рисуват се само редовете с адрес: празен ред не бива да сваля страницата.
+  const links = spec.links.filter((l) => typeof l?.to === 'string' && l.to);
+  const hasSpotlight =
+    KIDS_CAMPAIGN.active && links.some((l) => l.to.endsWith(KIDS_CAMPAIGN.to));
   return (
     <div className={`bb-megamenu-col bb-megamenu-col--${accent}`}>
       <h3 className="bb-megamenu-col-h">{spec.heading}</h3>
-      <ul className="bb-megamenu-col-list">
-        {spec.links.map((l) => (
-          <li key={l.to + l.label}>
-            <Link to={l.to} onClick={onNav} prefetch="intent" className="bb-megamenu-link">
-              <span className="bb-megamenu-link-label">{l.label}</span>
-              {l.hint && <span className="bb-megamenu-link-hint">{l.hint}</span>}
-            </Link>
-          </li>
-        ))}
+      <ul className={`bb-megamenu-col-list${hasSpotlight ? ' bb-megamenu-col-list--fit' : ''}`}>
+        {links.map((l) => {
+          // Кампанията свети връзката към детската категория, откъдето и да
+          // идва - панелът дава адреса, не класа.
+          const spotlight = KIDS_CAMPAIGN.active && l.to.endsWith(KIDS_CAMPAIGN.to);
+          return (
+            <li key={l.to + l.label}>
+              <Link
+                to={l.to}
+                onClick={onNav}
+                prefetch="intent"
+                className={`bb-megamenu-link${spotlight ? ' bb-megamenu-link--spotlight' : ''}`}
+              >
+                <span className="bb-megamenu-link-label">{l.label}</span>
+                {l.hint && <span className="bb-megamenu-link-hint">{l.hint}</span>}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
@@ -332,7 +380,76 @@ function Column({spec, onNav, accent}: {spec: ColumnSpec; onNav?: () => void; ac
  * own `imageUrl` and short description (client chose this over inventing extra
  * fields, 2026-08-06). Without such a child the curated card stays.
  */
+/**
+ * Картата „Buy More, Save More" в „Препоръчано" (от 09.10.2026, по клиент).
+ *
+ * Сменя само картата на Back to school в менюто: банерът на детската
+ * категория, розовото поле на детските PDP-та и знакът върху снимките
+ * остават на `KIDS_CAMPAIGN`. Отстъпката идва от правило №15 в панела, не
+ * оттук. Изтече ли промоцията: `active: false` връща картата на кампанията.
+ */
+const MENU_PROMO = {
+  active: true,
+  to: '/category/all-products',
+  image: '/images/banners/buy-more-save-more-menu.jpg',
+  alt: 'Комбинирай повече, спести повече: 2 продукта -10%, 3 продукта -15%, 4+ продукта -20%',
+  intro:
+    'Само сега можеш да избереш любимите си продукти от Bactology и да получиш допълнителна отстъпка:',
+  tiers: ['за 2 продукта → -10% допълнително;', 'за 3 продукта → -15%;', 'за 4+ продукта → –20%.'],
+  cta: 'Виж продуктите',
+};
+
 function Featured({onNav, node}: {onNav?: () => void; node?: NavNode | null}) {
+  if (MENU_PROMO.active) {
+    return (
+      <div className="bb-megamenu-col bb-megamenu-feat">
+        <h3 className="bb-megamenu-col-h">Препоръчано</h3>
+        <Link to={MENU_PROMO.to} onClick={onNav} prefetch="intent" className="bb-megamenu-feat-card">
+          <div className="bb-megamenu-feat-img bb-megamenu-feat-img--banner bb-megamenu-feat-img--portrait">
+            <img src={MENU_PROMO.image} alt={MENU_PROMO.alt} loading="lazy" />
+          </div>
+          <div className="bb-megamenu-feat-body">
+            <p className="bb-megamenu-feat-blurb">
+              {MENU_PROMO.intro}
+              {MENU_PROMO.tiers.map((t) => (
+                <span key={t}>
+                  <br />
+                  {t}
+                </span>
+              ))}
+            </p>
+            <span className="bb-megamenu-feat-cta">
+              {MENU_PROMO.cta}
+              <Arrow />
+            </span>
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
+  // Кампанийният банер измества и панелния избор, и Femin - нарочно: той е
+  // временен и си отива с една смяна на флага, без да пипа другите два пътя.
+  if (KIDS_CAMPAIGN.active) {
+    return (
+      <div className="bb-megamenu-col bb-megamenu-feat">
+        <h3 className="bb-megamenu-col-h">Препоръчано</h3>
+        <Link to={KIDS_CAMPAIGN.to} onClick={onNav} prefetch="intent" className="bb-megamenu-feat-card">
+          <div className="bb-megamenu-feat-img bb-megamenu-feat-img--banner">
+            <img src={KIDS_CAMPAIGN.image} alt="Back to school - пробиотиците за деца" loading="lazy" />
+          </div>
+          <div className="bb-megamenu-feat-body">
+            <p className="bb-megamenu-feat-blurb">{KIDS_CAMPAIGN.blurb}</p>
+            <span className="bb-megamenu-feat-cta">
+              {KIDS_CAMPAIGN.cta}
+              <Arrow />
+            </span>
+          </div>
+        </Link>
+      </div>
+    );
+  }
+
   const heading = node?.title || 'Препоръчано';
   const to = node?.url ?? `/product/${FEATURED_PRODUCT.handle}`;
   const image = node?.image ?? FEATURED_PRODUCT.image;

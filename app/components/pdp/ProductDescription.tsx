@@ -36,7 +36,15 @@ function stripVideoHtml(html: string): string {
   );
 }
 
-export function ProductDescription({descriptionHtml}: {descriptionHtml?: string}) {
+export function ProductDescription({
+  descriptionHtml,
+  afterVideo,
+}: {
+  descriptionHtml?: string;
+  /** Съдържание между видеото и текста на описанието - бележката за подаръка
+   *  от Back to school кампанията. При продукт без видео застава най-отгоре. */
+  afterVideo?: ReactNode;
+}) {
   // The text comes from the product's own description in the panel — including
   // any HTML written there. Until 2026-08-07 twenty-four products had their
   // copy hard-coded here instead, so editing the description in the panel
@@ -55,6 +63,7 @@ export function ProductDescription({descriptionHtml}: {descriptionHtml?: string}
     <section id="description" className="bb-pdp-tabs-wrap">
       <div className="bb-pdp-tabs">
         {video && <div dangerouslySetInnerHTML={{__html: video}} />}
+        {afterVideo}
         {parsed.before && (
           <CollapsibleDescription>
             <RichText data={parsed.before} className={proseClass} />

@@ -5,7 +5,7 @@ export function BottomCTAs() {
     <section className="bb-ctas">
       <div className="bb-container bb-ctas-row reveal">
         <Link to="/page/naukata-zad-bulgar-biotic" className="bb-cta-block bb-cta-labs">
-          <img src="/images/generated-v2/cta-labs.png" alt="Bactology Лаборатория" />
+          <img src="/images/generated-v2/cta-labs.webp" alt="Bactology Лаборатория" loading="lazy" decoding="async" />
           <div className="bb-cta-content">
             <span className="bb-cta-tag">BACTOLOGY · Лаборатория</span>
             <h3>Науката зад<br /><span className="accent">Bactology.</span></h3>
@@ -14,7 +14,7 @@ export function BottomCTAs() {
           </div>
         </Link>
         <Link to="/#bb-finder" className="bb-cta-block bb-cta-quiz">
-          <img src="/images/generated-v2/cta-quiz.png" alt="Quiz" />
+          <img src="/images/generated-v2/cta-quiz.webp" alt="Quiz" loading="lazy" decoding="async" />
           <div className="bb-cta-content">
             <span className="bb-cta-tag">3 МИНУТИ · ПЕРСОНАЛИЗАЦИЯ</span>
             <h3>Започни с правилния<br /><span className="accent">пробиотик за теб.</span></h3>

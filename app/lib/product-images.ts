@@ -33,28 +33,28 @@ const USE_ENHANCED_IMAGES = false;
 export const ENHANCED_PRODUCT_IMAGES: Record<string, string[]> = {
   // ── Single SKU products ──
   'bactology-probiotik-za-jeni-femin': [
-    '/images/generated-v2/p-femin.png',
-    '/images/generated-v2/c-women.png',
+    '/images/generated-v2/p-femin.webp',
+    '/images/generated-v2/c-women.webp',
   ],
   'bactology-colongic-probiotik-za-debeloto-chervo': [
-    '/images/generated-v2/p-colongic.png',
+    '/images/generated-v2/p-colongic.webp',
   ],
   'bactology-anti-stress': [
-    '/images/generated-v2/p-anti-stress.png',
+    '/images/generated-v2/p-anti-stress.webp',
   ],
   'probiotik-za-bebe-deca-i-podrastvashti-babies-and-kids': [
-    '/images/generated-v2/p-babies.png',
-    '/images/generated-v2/c-kids.png',
+    '/images/generated-v2/p-babies.webp',
+    '/images/generated-v2/c-kids.webp',
   ],
   'bactology-probiotik-za-podut-korem-i-gazove-gastro-balance': [
-    '/images/generated-v2/p-gastro.png',
+    '/images/generated-v2/p-gastro.webp',
   ],
   'bactology-probiotik-za-podut-korem-i-gazove-gastro-balance-copy': [
     '/images/generated-v2/p-gastro-copy.png',
   ],
   'bactology-pets': [
-    '/images/generated-v2/p-pets.png',
-    '/images/generated-v2/c-pets.png',
+    '/images/generated-v2/p-pets.webp',
+    '/images/generated-v2/c-pets.webp',
   ],
   'aktivna-formula-za-zdrava-i-blestyashta-kosa-i-nokti-bactology': [
     '/images/generated-v2/p-hair-nails.png',
@@ -67,11 +67,11 @@ export const ENHANCED_PRODUCT_IMAGES: Record<string, string[]> = {
   ],
   'dietary-probiotic-pearls-with-natural-chocolate-coating-without-added-sugar-copy': [
     '/images/generated-v2/p-pearls-keto.png',
-    '/images/generated-v2/c-pearls.png',
+    '/images/generated-v2/c-pearls.webp',
   ],
   'probiotic-pearls-with-milk-chocolate-coating-suitable-for-kids-copy': [
     '/images/generated-v2/p-pearls-milk-kids.png',
-    '/images/generated-v2/c-pearls.png',
+    '/images/generated-v2/c-pearls.webp',
   ],
   'probiotik-za-zdravi-zabi-i-venci-mini': [
     '/images/generated-v2/p-teeth-mini.png',
@@ -79,8 +79,8 @@ export const ENHANCED_PRODUCT_IMAGES: Record<string, string[]> = {
 
   // ── Bundles + multi-SKU packs ──
   'smart-start-paket-za-silen-imunitet': [
-    '/images/generated-v2/p-smart-start.png',
-    '/images/generated-v2/c-kids.png',
+    '/images/generated-v2/p-smart-start.webp',
+    '/images/generated-v2/c-kids.webp',
   ],
   'family-pack': [
     '/images/generated-v2/p-family-pack.png',
@@ -108,7 +108,7 @@ export const ENHANCED_PRODUCT_IMAGES: Record<string, string[]> = {
   ],
   'dvoyno-udovolstvie': [
     '/images/generated-v2/p-pearls-double.png',
-    '/images/generated-v2/c-pearls.png',
+    '/images/generated-v2/c-pearls.webp',
   ],
 
   // ── Promo bundles (auto-discounted SKUs) ──
@@ -187,3 +187,45 @@ export function enhanceProductImages<T extends Product>(p: T | null | undefined)
 export function enhanceProducts<T extends Product>(products: T[]): T[] {
   return products.map((p) => enhanceProductImages(p)).filter((p): p is T => p !== null);
 }
+
+/**
+ * Свива адрес от CDN на CloudCart до размера на показване И го иска като WebP.
+ *
+ * ⭐ `format=webp` е далеч по-голямата печалба от ширината. Мерено на живо
+ * 18.08.2026 върху един и същи продуктов адрес:
+ *
+ *   ?width=600                 431 KB  (PNG)
+ *   ?width=600&format=webp      21 KB  ← 95% по-малко
+ *
+ * И върху банер от панела (1640×624):
+ *   без нищо                   740 KB  (PNG)
+ *   ?format=webp                57 KB  ← 92% по-малко
+ *
+ * ⛔ Договарянето по заглавка `Accept: image/webp` НЕ работи както трябва -
+ * връща 588 KB. Параметърът трябва да е изричен.
+ *
+ * ⚠️ Ширината НЕ бива да е над естествената: за банера `width=1800` върху
+ * източник от 1640 px УВЕЛИЧАВА файла (827 KB срещу 740). Подава се ширината
+ * на ПОКАЗВАНЕ по 2×, но никога „за всеки случай по-голямо".
+ *
+ * Storefront API-то връща адресите подпечатани с `?width=1920&height=1920`, а
+ * картите ги рисуват на ~240 px - оттам идва разликата.
+ *
+ * ⛔ Пипа само адресите на CloudCart (`/cdn/img/` и `cdncloudcart.com`).
+ * Нашите файлове в `/images/` вече са WebP и не минават през преоразмерител.
+ */
+export function cdnResize(url: string | null | undefined, width?: number): string {
+  const u = String(url ?? '');
+  if (!u) return u;
+  const isCloudCart = u.includes('/cdn/img/') || u.includes('cdncloudcart.com');
+  if (!isCloudCart) return u;
+  const [base, query = ''] = u.split('?');
+  const q = new URLSearchParams(query);
+  if (width) {
+    q.set('width', String(width));
+    if (q.has('height')) q.set('height', String(width));
+  }
+  q.set('format', 'webp');
+  return `${base}?${q.toString()}`;
+}
+

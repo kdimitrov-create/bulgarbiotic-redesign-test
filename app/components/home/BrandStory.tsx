@@ -3,7 +3,7 @@ import {Link} from 'react-router';
 export function BrandStory() {
   return (
     <section className="bb-brand-story">
-      <img className="bb-brand-bg" src="/images/generated-v2/brand-story.png" alt="Bulgarian mountain landscape" />
+      <img className="bb-brand-bg" src="/images/generated-v2/brand-story.webp" alt="Bulgarian mountain landscape" loading="lazy" decoding="async" />
       <div className="bb-brand-content reveal">
         <div className="section-tag" style={{justifyContent: 'center'}}>Българска традиция</div>
         <h3 className="bb-brand-h3">От киселото мляко<br /><span className="accent">до грижата за микробиома.</span></h3>

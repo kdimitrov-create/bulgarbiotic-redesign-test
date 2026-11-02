@@ -85,6 +85,68 @@ const IMPORT = `mutation AddSubscriber($subscribers: [BatchSubscriberInput!]) {
   subscribersBulkImport(subscribers: $subscribers) { queuedCount failedCount }
 }`;
 
+/**
+ * Само етикетира вече съществуващ абонат. Нищо не създава.
+ *
+ * Ползва се за втория ход от страницата: ако абонатът още не се е появил в
+ * търсачката, връща `false` и толкова - по-добре без етикет, отколкото втори
+ * запис със същия имейл.
+ */
+export async function tagExistingSubscriber(
+  env: Record<string, string | undefined>,
+  email: string,
+  tags: string[],
+): Promise<boolean> {
+  const pat = adminToken(env);
+  const origin = adminOrigin(env);
+  if (!pat || !origin || !tags.length) return false;
+  try {
+    const match = await findByEmail(origin, pat, email.trim());
+    if (!match) return false;
+    await gql(origin, pat, TAG, {ids: [match.id], tags});
+    return true;
+  } catch (error) {
+    console.error('абонати: етикетът не се сложи -', (error as Error).message);
+    return false;
+  }
+}
+
+/**
+ * Изчаква опашката да създаде абоната и чак тогава го етикетира.
+ *
+ * Записването е опашка, не директен ред - новият абонат се появява до няколко
+ * секунди (веднъж мерено над минута). Затова не се чака в самата заявка:
+ * подава се на работника чрез `waitUntil` и посетителят получава отговор
+ * веднага. Няма ли такъв (местна среда), чака се кратко и толкова.
+ */
+function tagWhenReady(
+  env: Record<string, string | undefined>,
+  origin: string,
+  pat: string,
+  email: string,
+  tags: string[],
+): void {
+  const work = (async () => {
+    for (let attempt = 0; attempt < 8; attempt++) {
+      const match = await findByEmail(origin, pat, email).catch(() => null);
+      if (match) {
+        await gql(origin, pat, TAG, {ids: [match.id], tags});
+        return;
+      }
+      await new Promise((r) => setTimeout(r, 2000));
+    }
+    console.error('абонати: етикетът не се сложи - абонатът не се появи навреме:', email);
+  })().catch((error) => console.error('абонати: етикетът не се сложи -', (error as Error).message));
+
+  const waitUntil = (env as any).__waitUntil;
+  if (typeof waitUntil === 'function') waitUntil(work);
+}
+
+/** Слага етикети на вече съществуващ абонат. */
+const TAG = `mutation TagSubscriber($ids: [ID!]!, $tags: [String!]!) {
+  tagSubscribers(ids: $ids, tags: $tags)
+}`;
+
 /** Вдига съгласието за маркетинг на вече съществуващ абонат. */
 const ALLOW = `mutation AllowMarketing($ids: [ID!]!) {
   setSubscribersMarketing(ids: $ids, allow: true)
@@ -168,9 +230,17 @@ async function findByEmail(origin: string, pat: string, email: string): Promise<
  * `marketing: true` се подава само защото извикващият вече е взел изричното
  * съгласие - маршрутът отказва заявка без него.
  */
+/**
+ * Записва имейл за бюлетина и по желание го етикетира.
+ *
+ * Етикетът казва ОТКЪДЕ е дошъл абонатът - попъпът пише „popup-nl". Слага се и
+ * на нов, и на вече съществуващ абонат: човек, който се записва втори път от
+ * попъпа, също е дошъл оттам и клиентът иска да го вижда в същия списък.
+ */
 export async function subscribeEmail(
   env: Record<string, string | undefined>,
   email: string,
+  tags: string[] = [],
 ): Promise<SubscribeOutcome> {
   const pat = adminToken(env);
   const origin = adminOrigin(env);
@@ -181,6 +251,13 @@ export async function subscribeEmail(
     const match = await findByEmail(origin, pat, clean);
 
     if (match) {
+      // Етикетът е самостоятелен: слага се и когато абонатът вече приема
+      // маркетинг, иначе вторият запис от попъпа не оставя следа.
+      if (tags.length) {
+        await gql(origin, pat, TAG, {ids: [match.id], tags}).catch((error) =>
+          console.error('абонати: етикетът не се сложи -', (error as Error).message),
+        );
+      }
       if (match.marketing) return 'exists';
       const allowed = await gql<{setSubscribersMarketing: boolean}>(origin, pat, ALLOW, {
         ids: [match.id],
@@ -198,9 +275,56 @@ export async function subscribeEmail(
     // Записването е опашка, не директен ред: връща се брой поставени задачи,
     // не самият абонат. Измерено 2026-08-10 - абонатът се появява до 2 секунди.
     if (!out || out.queuedCount < 1 || out.failedCount > 0) return 'error';
+    /* Етикетът се слага СЛЕД създаването.
+     * `subscribersBulkImport` приема поле `tags` и го подминава мълчаливо -
+     * проверено на живо 17.08.2026: заявката минава (`queuedCount: 1`), а
+     * абонатът излиза с `tags: []`. Затова етикетът минава през
+     * `tagSubscribers`, а той иска номера на вече съществуващ абонат. */
+    if (tags.length) tagWhenReady(env, origin, pat, clean, tags);
     return 'created';
   } catch (error) {
     console.error('абонати: записването не мина -', (error as Error).message);
+    return 'error';
+  }
+}
+
+/**
+ * Отписване по имейл, за страницата на `/subscribers/subscriptions/<хеш>`.
+ *
+ * ⚠️ Защо по имейл, а не по хеша от писмото. Линкът в писмото носи шифрован
+ * с ключа на платформата блок (`{"iv":…,"value":…,"mac":…}`), който само тя
+ * може да разчете. След насочването на домейна този адрес е наш и връщаше
+ * 404, тоест отписването изобщо не работеше - виж маршрута за целия разказ.
+ * Оттук нататък човекът потвърждава адреса си и толкова.
+ *
+ * `setSubscribersMarketing(allow: false)` е същото действие, което търговецът
+ * прави от панела: абонатът остава в списъка, но спира да получава кампании.
+ *
+ * Връща `done` и когато такъв абонат няма. Страницата отговаря с едно и също
+ * изречение в двата случая, за да не се превърне адресът в проверка кой имейл
+ * е в списъка на клиента - същото съображение като при входа с код.
+ */
+const UNSUBSCRIBE = `mutation Unsubscribe($ids: [ID!]!) {
+  setSubscribersMarketing(ids: $ids, allow: false)
+}`;
+
+export async function unsubscribeEmail(
+  env: Record<string, string | undefined>,
+  email: string,
+): Promise<'done' | 'error'> {
+  const pat = adminToken(env);
+  const origin = adminOrigin(env);
+  if (!pat || !origin) return 'error';
+
+  try {
+    const match = await findByEmail(origin, pat, email.trim());
+    if (!match) return 'done';
+    const res = await gql<{setSubscribersMarketing: boolean}>(origin, pat, UNSUBSCRIBE, {
+      ids: [match.id],
+    });
+    return res?.setSubscribersMarketing === true ? 'done' : 'error';
+  } catch (error) {
+    console.error('отписване: %s', (error as Error).message);
     return 'error';
   }
 }

@@ -30,22 +30,94 @@ const EVENTS_HTML = `<div class="bb-events">
 
   <!-- DIVIDER -->
   <div class="bb-section">
+    <div class="bb-divider"><div class="bb-divider-line"></div><span class="bb-divider-mark">Октомври 2026</span><div class="bb-divider-line"></div></div>
+  </div>
+
+  <!-- EVENT: Бебемания 2026 (newest) -->
+  <section class="bb-section">
+    <div class="bb-event">
+      <div class="bb-event-media">
+        <span class="bb-tape">23-25 октомври</span>
+        <div class="bb-frame">
+          <img src="/images/events/event-bebemania-2026-banner-714ff58247-fast.jpg" decoding="async" alt="Bactology на Бебемания 2026">
+          <span class="bb-frame-caption">Интер Експо Център, София</span>
+        </div>
+      </div>
+      <div class="bb-event-body">
+        <p class="bb-eyebrow">Изложение · Интер Експо Център</p>
+        <div class="bb-event-number">01 / 10</div>
+        <h2>Bactology на <em>„Бебемания 2026“</em></h2>
+        <p>От 23 до 25 октомври 2026 г. Bactology ще вземе участие със собствен щанд в
+           изложението „Бебемания“ в Интер Експо Център – София. По време на събитието
+           ще представим нашите пробиотични продукти за бебета, деца и родители, ще
+           споделим полезна информация за ролята на микробиома и ще отговорим на въпроси,
+           свързани с ежедневната грижа за цялото семейство. Очакваме ви на нашия щанд,
+           за да се запознаем лично и да поговорим за здравето и баланса отвътре!</p>
+        <div class="bb-event-tags">
+          <span>Пробиотици за бебета</span>
+          <span class="bb-tag-teal">Грижа за цялото семейство</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIVIDER -->
+  <div class="bb-section">
+    <div class="bb-divider"><div class="bb-divider-line"></div><span class="bb-divider-mark">Октомври 2026</span><div class="bb-divider-line"></div></div>
+  </div>
+
+  <!-- EVENT: Свободата да бъдеш 2026 -->
+  <section class="bb-section">
+    <div class="bb-event bb-reverse">
+      <div class="bb-event-media">
+        <span class="bb-tape">24 октомври</span>
+        <div class="bb-frame">
+          <img src="/images/events/event-svobodata-2026-banner-0b49b4d82a-fast.jpg" loading="lazy" decoding="async" alt="Bactology на фестивала Свободата да бъдеш 2026">
+          <span class="bb-frame-caption">Интер Експо Център, София</span>
+        </div>
+      </div>
+      <div class="bb-event-body">
+        <p class="bb-eyebrow">27-мо издание · Интер Експо Център</p>
+        <div class="bb-event-number">02 / 10</div>
+        <h2>Bactology на фестивала <em>„Свободата да бъдеш“</em> 2026</h2>
+        <p>На 24 октомври 2026 г. Bactology ще вземе участие в 27-ото издание на фестивала
+           „Свободата да бъдеш“, който ще се проведе в Интер Експо Център – София.
+           Събитието е посветено на личностното развитие, вдъхновението и хармонията
+           между ума, тялото и духа.</p>
+        <p>По време на фестивала ще представим нашата иновативна серия
+           <a href="/category/longevity-seriya">Bactology Longevity</a>, създадена с фокус
+           върху дълголетието, клетъчното здраве и цялостния баланс на организма.
+           Посетителите ще имат възможност да се запознаят отблизо с продуктите Longevity
+           Cellular, Hepato Care и Menopause Balance, да научат повече за техните формули и
+           да поговорят с нашия екип за ролята на чревния микробиом в грижата за здравето.</p>
+        <p>Очакваме ви на нашия щанд, за да споделим идеи за по-осъзнат и балансиран
+           начин на живот!</p>
+        <div class="bb-event-tags">
+          <span>Bactology Longevity</span>
+          <span class="bb-tag-teal">Ум, тяло и дух</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DIVIDER -->
+  <div class="bb-section">
     <div class="bb-divider"><div class="bb-divider-line"></div><span class="bb-divider-mark">Юни 2026</span><div class="bb-divider-line"></div></div>
   </div>
 
-  <!-- EVENT 01 (newest) -->
+  <!-- EVENT 01 -->
   <section class="bb-section">
     <div class="bb-event">
       <div class="bb-event-media">
         <span class="bb-tape">Юни 2026</span>
         <div class="bb-frame">
-          <img src="/images/events/event-01-35b73837d6.jpg" alt="Bactology и Furisto в Южен парк">
+          <img src="/images/events/event-01-35b73837d6-fast.jpg" loading="lazy" decoding="async" alt="Bactology и Furisto в Южен парк">
           <span class="bb-frame-caption">Южен парк, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Семеен ден · Южен парк, София</p>
-        <div class="bb-event-number">01 / 08</div>
+        <div class="bb-event-number">03 / 10</div>
         <h2>Bactology и <em>Furisto</em> в Южен парк</h2>
         <p>През юни 2026 г. Bactology и Furisto организираха специален семеен ден в
            Южен парк - София. Малките посетители се превърнаха в изследователи на
@@ -71,13 +143,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">28-31 май</span>
         <div class="bb-frame">
-          <img src="/images/events/event-02-8555c771d3.jpg" alt="Bactology на Шестата научна конференция">
+          <img src="/images/events/event-02-8555c771d3-fast.jpg" loading="lazy" decoding="async" alt="Bactology на Шестата научна конференция">
           <span class="bb-frame-caption">Астория Гранд Хотел, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Научна конференция · Астория Гранд Хотел, София</p>
-        <div class="bb-event-number">02 / 08</div>
+        <div class="bb-event-number">04 / 10</div>
         <h2>Bactology на <em>Шестата научна конференция</em></h2>
         <p>През май 2026 г. Bactology участва със собствен щанд в Шестата научна
            конференция „Хронични заболявания, имунитет, възпаление и ваксини“ в
@@ -104,13 +176,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">13-15 май</span>
         <div class="bb-frame">
-          <img src="/images/events/event-03-1df856d0ba.jpg" alt="Bactology на БУЛМЕДИКА 2026">
+          <img src="/images/events/event-03-1df856d0ba-fast.jpg" loading="lazy" decoding="async" alt="Bactology на БУЛМЕДИКА 2026">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Международно изложение · Интер Експо Център</p>
-        <div class="bb-event-number">03 / 08</div>
+        <div class="bb-event-number">05 / 10</div>
         <h2>Bactology на <em>БУЛМЕДИКА 2026</em></h2>
         <p>През май 2026 г. Bactology участва със собствен щанд на международното
            изложение БУЛМЕДИКА в Интер Експо Център - София. Представихме нашите
@@ -137,13 +209,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">25-26 април</span>
         <div class="bb-frame">
-          <img src="/images/events/event-04-9c132dce73.jpg" alt="Bactology на Голямото изложение за малки мечтатели">
+          <img src="/images/events/event-04-9c132dce73-fast.jpg" loading="lazy" decoding="async" alt="Bactology на Голямото изложение за малки мечтатели">
           <span class="bb-frame-caption">Семейно изложение</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Семейно изложение</p>
-        <div class="bb-event-number">04 / 08</div>
+        <div class="bb-event-number">06 / 10</div>
         <h2>Bactology на <em>„Голямото изложение за малки мечтатели“</em></h2>
         <p>През април 2026 г. Bactology участва със собствен щанд в „Голямото изложение
            за малки мечтатели“. Срещнахме се с много семейства, представихме нашите
@@ -169,13 +241,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">24-26 април</span>
         <div class="bb-frame">
-          <img src="/images/events/event-05-6a0cc26330.jpg" alt="Bactology на Arena of Beauty 2026">
+          <img src="/images/events/event-05-6a0cc26330-fast.jpg" loading="lazy" decoding="async" alt="Bactology на Arena of Beauty 2026">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Изложение · Интер Експо Център</p>
-        <div class="bb-event-number">05 / 08</div>
+        <div class="bb-event-number">07 / 10</div>
         <h2>Bactology на <em>Arena of Beauty 2026</em></h2>
         <p>През април 2026 г. Bactology участва със собствен щанд на Arena of Beauty в
            Интер Експо Център - София. Представихме нашите решения за красота и баланс
@@ -201,13 +273,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">12-14 декември</span>
         <div class="bb-frame">
-          <img src="/images/events/event-06-26c7b7f229.jpg" alt="Bactology на Mish Mash Fest - Christmas Edition">
+          <img src="/images/events/event-06-26c7b7f229-fast.jpg" loading="lazy" decoding="async" alt="Bactology на Mish Mash Fest - Christmas Edition">
           <span class="bb-frame-caption">Ларгото, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Фестивал · Ларгото, София</p>
-        <div class="bb-event-number">06 / 08</div>
+        <div class="bb-event-number">08 / 10</div>
         <h2>Bactology на <em>Mish Mash Fest</em> - Christmas Edition</h2>
         <p>През декември Bactology беше част от коледното издание на Mish Mash Fest на
            Ларгото. На нашия щанд представихме подбрани продукти и празнични предложения,
@@ -233,13 +305,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">12-15 ноември</span>
         <div class="bb-frame">
-          <img src="/images/events/event-07-9f138943c8.jpg" alt="Bulgar Biotic на Interfood & Drink 2025">
+          <img src="/images/events/event-07-9f138943c8-fast.jpg" loading="lazy" decoding="async" alt="Bulgar Biotic на Interfood & Drink 2025">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">23-то издание · Пътят на млякото</p>
-        <div class="bb-event-number">07 / 08</div>
+        <div class="bb-event-number">09 / 10</div>
         <h2>Bulgar Biotic на <em>„Interfood &amp; Drink 2025“</em></h2>
         <p>През ноември 2025 г. Bulgar Biotic участва със собствен щанд в 23-тото издание
            на изложението „Пътят на млякото“ в Интер Експо Център - София. По време на
@@ -266,13 +338,13 @@ const EVENTS_HTML = `<div class="bb-events">
       <div class="bb-event-media">
         <span class="bb-tape">24-26 октомври</span>
         <div class="bb-frame">
-          <img src="/images/events/event-08-b13dbed574.jpg" alt="Bulgar Biotic на Бебемания 2025">
+          <img src="/images/events/event-08-b13dbed574-fast.jpg" loading="lazy" decoding="async" alt="Bulgar Biotic на Бебемания 2025">
           <span class="bb-frame-caption">Интер Експо Център, София</span>
         </div>
       </div>
       <div class="bb-event-body">
         <p class="bb-eyebrow">Изложение · Интер Експо Център</p>
-        <div class="bb-event-number">08 / 08</div>
+        <div class="bb-event-number">10 / 10</div>
         <h2>Bulgar Biotic на <em>„Бебемания 2025“</em></h2>
         <p>През октомври 2025 г. Bulgar Biotic взе участие със собствен щанд в изложението
            „Бебемания“ в Интер Експо Център. Представихме нашите пробиотични решения за
@@ -312,7 +384,11 @@ const EVENTS_CSS = `/* ===== Scoped namespace: .bb-events ===== */
     background: var(--bb-cream);
     color: var(--bb-navy);
     box-sizing: border-box;
-    overflow-x: hidden;
+    /* clip вместо hidden (24.08): hidden тихо прави елемента скрол контейнер
+       (overflow-y става auto) и при някои размери на прозореца се появяваше
+       втора вертикална лента вътре в страницата. clip реже същото, без да
+       създава скрол контекст. */
+    overflow-x: clip;
   }
   .bb-events *, .bb-events *::before, .bb-events *::after { box-sizing: inherit; }
 
@@ -542,6 +618,15 @@ const EVENTS_CSS = `/* ===== Scoped namespace: .bb-events ===== */
     color: var(--bb-navy-soft);
     margin: 0 0 22px;
   }
+  .bb-events .bb-event-body p a {
+    color: var(--bb-pink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    transition: color 0.2s ease;
+  }
+  .bb-events .bb-event-body p a:hover { color: var(--bb-navy); }
 
   .bb-events .bb-event-tags {
     display: flex;
@@ -634,6 +719,26 @@ const EVENTS_CSS = `/* ===== Scoped namespace: .bb-events ===== */
       transform: none !important;
       filter: none !important;
     }
+  }
+
+  /* Всичко видимо от първия кадър (клиент, 24.08): „искам цялото съдържание
+     да се зарежда веднага щом отворя страницата". Появяването при скрол
+     отпада - правилата по-долу бият скритите начални състояния по-горе.
+     Остават hover ефектите по снимките. Това реши и капана, при който част
+     от отговорите пристигат без нашите бандъли и наблюдателят никога не
+     показваше съдържанието. */
+  .bb-events .bb-divider,
+  .bb-events .bb-event-media,
+  .bb-events .bb-event-body,
+  .bb-events .bb-closing {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+  }
+  .bb-events .bb-divider-line {
+    transform: scaleX(1) !important;
+    transition: none !important;
   }`;
 
 export function EventsPageContent() {

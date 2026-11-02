@@ -42,7 +42,7 @@ export function PdpAwardBadge() {
             кръг. Файлът е локален и вече е с прозрачни ъгли, тоест кръгът
             стои сам, без подложка. */}
         <img
-          src="/images/awards/forbes-2026.png"
+          src="/images/awards/forbes-2026.webp"
           alt=""
           aria-hidden="true"
           loading="lazy"

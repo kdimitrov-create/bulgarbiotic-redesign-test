@@ -2,6 +2,13 @@ import {useState, useCallback} from 'react';
 import type {Image as ImageType} from '@cloudcart/nitro';
 import {Image} from '@cloudcart/nitro-react';
 import {ProductMarkBanners} from './ProductMarks';
+import {cdnResize} from '~/lib/product-images';
+
+/* Платформата връща адреси с width=1920 (~1.8 MB PNG на снимка), а галерията
+   рисува ~700px, миниатюрите - 64px. Преоразмеряването е по конвенцията на
+   къщата (PDP 700, swatch 160) + format=webp: една снимка 1867 KB → 28 KB. */
+const resized = (img: ImageType, width: number): ImageType =>
+  img?.url ? {...img, url: cdnResize(img.url, width)} : img;
 
 export function ProductImageGallery({images, featuredImage, product}: {
   images: ImageType[];
@@ -26,7 +33,7 @@ export function ProductImageGallery({images, featuredImage, product}: {
   return (
     <div onKeyDown={allImages.length > 1 ? handleKeyDown : undefined}>
       <div className="relative [&_img]:w-full [&_img]:rounded-xl [&_img]:aspect-square [&_img]:object-cover [&_img]:bg-gray-100">
-        <Image data={selectedImage} alt={selectedImage.altText ?? ''} loading="eager" />
+        <Image data={resized(selectedImage, 700)} alt={selectedImage.altText ?? ''} loading="eager" />
         {/* The trust marks ("клинично доказани щамове", the Forbes award) come
             from the admin panel, in the corner the merchant picked there. This
             used to be a hardcoded <img> — one of three copies that had already
@@ -44,7 +51,7 @@ export function ProductImageGallery({images, featuredImage, product}: {
               onClick={() => setSelectedIndex(i)}
               aria-label={img.altText || `Product image ${i + 1}`}
             >
-              <Image data={img} alt={img.altText ?? ''} width={80} height={80} />
+              <Image data={resized(img, 160)} alt={img.altText ?? ''} width={80} height={80} />
             </button>
           ))}
         </div>

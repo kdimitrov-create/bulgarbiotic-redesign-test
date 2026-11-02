@@ -3,7 +3,9 @@ import {AddToCartButton} from './AddToCartButton';
 import {markPricing} from '~/lib/product-marks';
 
 
-import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
+import {SHOW_BGN} from '~/lib/currency';
+import {cdnResize} from '~/lib/product-images';
+import {isAvailable} from '~/lib/availability';
 interface Props {
   product: {
     title: string;
@@ -16,6 +18,7 @@ interface Props {
   variant: {id: string; price: {amount: string; currencyCode?: string}; availableForSale?: boolean};
 }
 
+const EUR_TO_BGN = 1.95583;
 const fmtEur = (n: number) =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) + ' €';
 const fmtBgn = (n: number) =>
@@ -118,7 +121,7 @@ export function MobileStickyCart({product, variant}: Props) {
         {product.featuredImage?.url && (
           <img
             className="bb-pdp-sticky-thumb"
-            src={product.featuredImage.url}
+            src={cdnResize(product.featuredImage.url, 160)}
             alt={product.featuredImage.altText || product.title}
           />
         )}
@@ -135,14 +138,14 @@ export function MobileStickyCart({product, variant}: Props) {
       </div>
       <AddToCartButton
         merchandiseId={variant.id}
-        disabled={variant.availableForSale === false}
+        disabled={!isAvailable(variant)}
         className="bb-pdp-sticky-btn"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M5.5 8h13l-1.2 10.5a1.6 1.6 0 01-1.6 1.5H8.3a1.6 1.6 0 01-1.6-1.5L5.5 8z" />
           <path d="M9 8a3 3 0 016 0" />
         </svg>
-        {variant.availableForSale === false ? 'Изчерпан' : 'Купи'}
+        {isAvailable(variant) ? 'Купи' : 'Изчерпан'}
       </AddToCartButton>
     </div>
   );

@@ -1,7 +1,11 @@
+import {Suspense} from 'react';
+import {Await, useFetcher, useFetchers, useRouteLoaderData} from 'react-router';
 import {monthlyPackages} from '~/lib/quantity-packages';
 import {AddToCartButton} from '~/components/AddToCartButton';
+import {CART_ACTION} from '~/lib/cart-action';
 
 import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
+import {isAvailable} from '~/lib/availability';
 
 const fmt = (n: number, currency: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) +
@@ -14,8 +18,9 @@ const fmt = (n: number, currency: 'EUR' | 'BGN') =>
  * The single item is deliberately NOT one of the cards — that is what the
  * quantity control underneath already is. These are the multi-month options.
  *
- * Each card both selects (sets the buy-box quantity) and can add straight to
- * the cart, so a shopper who has decided does not have to scroll back down.
+ * Всяка карта има ЕДНО действие: бутонът „Добави", който слага своето
+ * количество направо в количката. Клик по самата карта не прави нищо - виж
+ * бележката при мрежата отдолу защо.
  *
  * Renders nothing when the product has no quantity rule in the admin panel.
  */
@@ -23,15 +28,11 @@ export function MonthlyPackages({
   product,
   variant,
   singlePriceEur,
-  quantity,
-  onSelect,
 }: {
   product: any;
   variant: any;
   /** The price of one item as the page already shows it, promotions included. */
   singlePriceEur: number;
-  quantity: number;
-  onSelect: (quantity: number) => void;
 }) {
   const packages = monthlyPackages(product?.id, singlePriceEur).filter((p) => p.months > 1);
   if (!packages.length) return null;
@@ -47,24 +48,30 @@ export function MonthlyPackages({
         <span className="bb-months-hint">Пробиотиците действат при редовен прием</span>
       </div>
 
-      <div className="bb-months-grid" role="radiogroup" aria-label="Продължителност на приема">
+      {/* Картата е само витрина, не превключвател.
+       *
+       * Дотук цялата карта беше `role="radio"` и клик върху нея я маркираше и
+       * сменяше количеството в кутията за покупка. Едновременно с това вътре
+       * стоеше и „Добави", който добавя своето количество направо. Две
+       * припокриващи се действия на едно място объркваха: човек кликва картата,
+       * тя се маркира, но нищо не влиза в количката.
+       *
+       * Клиентът поиска (20.08.2026) кликаем да е САМО „Добави". */}
+      <CartAware variantId={variant?.id}>
+      {(cartQty: number, lineId: string | null) => (
+      <>
+      <div className="bb-months-grid">
         {packages.map((pkg) => {
-          const selected = quantity === pkg.months;
+          /* „Премахни" се показва в картата, чието количество СЪВПАДА с това в
+             количката.
+             Количката не помни кой бутон е натиснат - пакетите са количества от
+             един и същи вариант, тоест „4-месечен" е просто 4 броя. Затова
+             съвпадението е единственият честен признак: 4 в количката значи
+             картата за 4 месеца. Добави ли човек два различни пакета (2+4=6),
+             нито една карта не съвпада и изходът минава през реда отдолу. */
+          const mine = Boolean(lineId) && cartQty === pkg.months;
           return (
-            <div
-              key={pkg.months}
-              role="radio"
-              tabIndex={0}
-              aria-checked={selected}
-              className={`bb-month${selected ? ' is-selected' : ''}`}
-              onClick={() => onSelect(pkg.months)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelect(pkg.months);
-                }
-              }}
-            >
+            <div key={pkg.months} className="bb-month">
               {pkg.savingPct > 0 && pkg.months === best.months && (
                 <span className="bb-month-flag">Най-изгодно</span>
               )}
@@ -110,19 +117,50 @@ export function MonthlyPackages({
                 <AddToCartButton
                   merchandiseId={variant.id}
                   quantity={pkg.months}
-                  disabled={!variant.availableForSale}
+                  disabled={!isAvailable(variant)}
                   className="bb-month-add"
                 >
                   Добави
                 </AddToCartButton>
               )}
+
+              {mine && lineId ? <RemoveLine lineId={lineId} /> : null}
             </div>
           );
         })}
       </div>
 
+      {/* Изход и когато нито една карта не съвпада - например 2+4=6 броя.
+          Без него човекът остава без начин да върне избора си от тази страница. */}
+      {lineId && !packages.some((p) => p.months === cartQty) ? (
+        <MixedLine qty={cartQty} lineId={lineId} />
+      ) : null}
+      </>
+      )}
+      </CartAware>
+
       <style>{`
         .bb-months { margin: 20px 0 8px; }
+        /* „Премахни" стои ПОД „Добави" в самата карта - дискретен текстов
+           бутон, не втори плътен бутон. Две плътни едно под друго се четат
+           като равностойни, а тук едното е основното действие, а другото е
+           връщане назад. */
+        .bb-month-removeform { margin-top: 6px; width: 100%; }
+        .bb-month-remove {
+          background: none; border: none; cursor: pointer; font-family: inherit;
+          font-size: 12px; font-weight: 700;
+          color: rgba(10, 37, 64, 0.55);
+          text-decoration: underline; padding: 2px 4px;
+        }
+        .bb-month-remove:hover { color: var(--color-brand-pink); }
+        /* Резервният ред при смесено количество. Един ред текст, без кутия. */
+        .bb-months-mixed {
+          display: flex; align-items: center; justify-content: flex-end;
+          gap: 10px; flex-wrap: wrap;
+          margin-top: 10px;
+          font-size: 12.5px; color: rgba(10, 37, 64, 0.65);
+        }
+        .bb-months-mixed form { margin: 0; }
         .bb-months-head {
           display: flex; align-items: baseline; justify-content: space-between;
           gap: 10px; flex-wrap: wrap; margin-bottom: 12px;
@@ -146,17 +184,14 @@ export function MonthlyPackages({
           border: 2px solid rgba(10, 37, 64, 0.12);
           border-radius: 18px;
           background: #fff;
-          cursor: pointer;
+          /* БЕЗ cursor: pointer - картата не се кликва, кликва се само бутонът
+             в нея. Стрелка върху нещо, което не реагира, е обещание, което
+             интерфейсът не спазва. */
           text-align: center;
           overflow: hidden;
           transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
         }
         .bb-month:hover { border-color: var(--color-pink-2); transform: translateY(-2px); }
-        .bb-month.is-selected {
-          border-color: var(--color-brand-pink);
-          box-shadow: 0 10px 26px -14px rgba(227, 22, 108, 0.55);
-        }
-
         /* Inside the card now: the photo runs to the edges and the card clips
            its overflow, so a ribbon straddling the top border would be cut in
            half. Top-right, opposite the multiplier. */
@@ -247,4 +282,95 @@ export function MonthlyPackages({
 function resize(url: string, px: number): string {
   const base = url.split('?')[0];
   return `${base}?width=${px}&height=${px}`;
+}
+
+
+/**
+ * Подава на децата си колко бройки от този вариант има в количката и кой е
+ * редът, за да може да се махне.
+ *
+ * Количката идва от два източника, в този ред:
+ *   1. Отговорът на последното действие с количката (`useFetchers`) - той е
+ *      най-пресен. Веднага след „Добави" loader-ът още не е презаредил, а
+ *      човекът трябва да види резултата от клика си в същия миг.
+ *   2. Количката от root loader-а, която е обещание - при първо зареждане.
+ */
+function CartAware({
+  variantId,
+  children,
+}: {
+  variantId?: string;
+  children: (cartQty: number, lineId: string | null) => React.ReactNode;
+}) {
+  const fetchers = useFetchers();
+  const fresh = fetchers
+    .filter((f) => f.formAction === CART_ACTION && (f.data as any)?.cart)
+    .map((f) => (f.data as any).cart)
+    .pop();
+
+  const rootData = useRouteLoaderData('root') as {cart?: Promise<any> | any} | undefined;
+
+  const read = (cart: any) => {
+    const line = variantId
+      ? (cart?.lines?.nodes ?? []).find((l: any) => l?.merchandise?.id === variantId)
+      : null;
+    const qty = line?.quantity ?? 0;
+    return children(qty > 0 ? qty : 0, qty > 0 ? line.id : null);
+  };
+
+  if (fresh) return <>{read(fresh)}</>;
+  // Без количка в loader-а рисуваме както при празна - иначе цялата секция
+  // изчезва заради нещо второстепенно.
+  if (!rootData?.cart) return <>{children(0, null)}</>;
+
+  return (
+    <Suspense fallback={<>{children(0, null)}</>}>
+      <Await resolve={rootData.cart} errorElement={<>{children(0, null)}</>}>
+        {(resolved: any) => <>{read(resolved)}</>}
+      </Await>
+    </Suspense>
+  );
+}
+
+/** „Премахни" под „Добави" в самата карта. */
+function RemoveLine({lineId}: {lineId: string}) {
+  const remove = useFetcher();
+  // Докато махането пътува, бутонът изчезва веднага - иначе човекът натиска и
+  // нищо не се променя, докато отговорът се върне.
+  if (remove.state !== 'idle') return null;
+  return (
+    <remove.Form method="post" action={CART_ACTION} className="bb-month-removeform">
+      <input type="hidden" name="action" value="REMOVE_FROM_CART" />
+      <input type="hidden" name="lineId" value={lineId} />
+      <button type="submit" className="bb-month-remove">
+        Премахни
+      </button>
+    </remove.Form>
+  );
+}
+
+/**
+ * Резервният изход, когато количеството не отговаря на нито един пакет.
+ *
+ * Случва се при два добавени пакета (2+4=6) или когато човекът е менил
+ * бройката от кутията за покупка. Тогава не можем да посочим карта, затова
+ * казваме числото и даваме един ред за изчистване.
+ */
+function MixedLine({qty, lineId}: {qty: number; lineId: string}) {
+  const remove = useFetcher();
+  if (remove.state !== 'idle') return null;
+  return (
+    <div className="bb-months-mixed" role="status">
+      <span>
+        В количката: <strong>{qty}</strong> {qty === 1 ? 'брой' : 'броя'}
+      </span>
+      <remove.Form method="post" action={CART_ACTION}>
+        <input type="hidden" name="action" value="REMOVE_FROM_CART" />
+        <input type="hidden" name="lineId" value={lineId} />
+        <button type="submit" className="bb-month-remove">
+          Премахни
+        </button>
+      </remove.Form>
+    </div>
+  );
 }

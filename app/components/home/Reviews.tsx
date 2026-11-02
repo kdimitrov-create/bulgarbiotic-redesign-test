@@ -28,7 +28,7 @@ const REVIEWS: Review[] = [
     name: 'Емилия Раденкова',
     product: 'Femin + Gastro Balance',
     ago: 'преди 6 седмици',
-    avatar: '/images/people/reviewer-1.png',
+    avatar: '/images/people/reviewer-1.webp',
   },
   {
     quote:
@@ -36,7 +36,7 @@ const REVIEWS: Review[] = [
     name: 'Анет Славкова',
     product: 'Smart Start за деца',
     ago: 'преди 6 седмици',
-    avatar: '/images/people/reviewer-3.png',
+    avatar: '/images/people/reviewer-3.webp',
   },
   {
     quote:
@@ -44,7 +44,7 @@ const REVIEWS: Review[] = [
     name: 'Антония Маноилова',
     product: 'Bactology KETO перли',
     ago: 'преди 3 седмици',
-    avatar: '/images/people/reviewer-2.png',
+    avatar: '/images/people/reviewer-2.webp',
   },
 ];
 

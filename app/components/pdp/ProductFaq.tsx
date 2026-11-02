@@ -31,8 +31,45 @@ const GENERIC_FAQ: Array<{q: string; a: string}> = [
   },
 ];
 
+/**
+ * Въпросът за лактозата при Longevity серията.
+ *
+ * Общият отговор по-горе важи за пробиотиците без млечна съставка и казва, че
+ * формулите не съдържат лактоза. За Longevity серията това е невярно: в състава
+ * ѝ има обезмаслено сухо мляко, тоест лактоза и млечен протеин. Затова петте
+ * артикула от серията показват собствен отговор.
+ *
+ * Замяната стои тук, а не в PRODUCT_FAQS, защото засега нито един от петте няма
+ * свой набор въпроси - всички падат на общите. Така отговорът е верен и ако
+ * някой от тях по-късно получи собствен набор, в който въпросът пак се появи.
+ */
+const LACTOSE_Q = 'Подходящ ли е при непоносимост към лактоза?';
+
+const LONGEVITY_LACTOSE_FAQ = {
+  q: LACTOSE_Q,
+  a: 'Да. Продуктът съдържа лактоза и млечен протеин, тъй като в състава му има обезмаслено сухо мляко.\nДа не се използва при индивидуална непоносимост или алергия към някоя от съставките.',
+};
+
+const LONGEVITY_HANDLES = new Set([
+  'bactology-hepato-care',
+  'bactology-menopause-balance',
+  'bactology-longevity-cellular',
+  'bactology-her-evolution-40',
+  'bactology-vatreshen-restart',
+]);
+
+/** Заменя отговора за лактозата, а ако въпросът липсва - го добавя накрая. */
+function withLongevityLactose(items: Array<{q: string; a: string}>) {
+  const at = items.findIndex((item) => item.q === LACTOSE_Q);
+  if (at === -1) return [...items, LONGEVITY_LACTOSE_FAQ];
+  const next = items.slice();
+  next[at] = LONGEVITY_LACTOSE_FAQ;
+  return next;
+}
+
 export function ProductFaq({handle, productTitle}: {handle?: string; productTitle?: string}) {
-  const items = (handle && PRODUCT_FAQS[handle]) || GENERIC_FAQ;
+  const base = (handle && PRODUCT_FAQS[handle]) || GENERIC_FAQ;
+  const items = handle && LONGEVITY_HANDLES.has(handle) ? withLongevityLactose(base) : base;
   // Only cap the height (show ~5, scroll the rest) when there are more than 5.
   const scrolls = items.length > 5;
 

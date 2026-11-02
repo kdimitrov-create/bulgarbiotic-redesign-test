@@ -3,6 +3,8 @@ dist
 build
 .react-router
 .env
+.env.*
+!.env.example
 *.local
 .DS_Store
 .cloudcart/
@@ -22,3 +24,5 @@ build
 !/favicon.ico
 __pycache__/
 *.pyc
+.env.*
+!.env.example

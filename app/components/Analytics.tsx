@@ -1,13 +1,21 @@
 import {useEffect, useRef} from 'react';
 import {useRouteLoaderData, useLocation} from 'react-router';
 import {
-  CONSENT_EVENT,
-  hasConsent,
   getCcPageData,
   pushCcPageData,
+  pushCcCustomerData,
   pushPageView,
   flushPendingEvents,
+  GUEST_CUSTOMER_DATA,
+  type CcCustomerData,
+  setGa4BridgeId,
 } from '~/lib/analytics';
+import {
+  loadCloudCartAnalytics,
+  flushCloudCartEvents,
+  ccUpdateCustomer,
+  ccPageView,
+} from '~/lib/cc-analytics';
 
 /**
  * Зарежда контейнерите след съгласие (ACTION-PLAN blocker #5).
@@ -18,10 +26,19 @@ import {
  * която реално пуска скриптовете.
  *
  * Какво се зарежда:
- *   GTM  - контейнерът на клиента. ВЪТРЕ в него са GA4 и Google Ads, затова
- *          gtag.js НЕ се зарежда отделно (иначе двойно броене).
+ *   GTM  - ДВА контейнера. Първият е на клиента (GTM-5X5M2HX): ВЪТРЕ в него са
+ *          GA4, Google Ads, Clarity и Cookiebot, затова gtag.js НЕ се зарежда
+ *          отделно (иначе двойно броене). Вторият е на самата CloudCart
+ *          (GTM-KT8R2G) - платформата го слага на всеки магазин с класическа
+ *          тема, а нашата витрина я замества, затова го слагаме ние.
  *   Meta - собствен скрипт: пикселът НЕ е в контейнера.
  *   TikTok - собствен скрипт, по същата причина.
+ *
+ *
+ * ⛔ Clarity НЕ се зарежда оттук. `vjuooarrx2` на клиента е вътре в контейнера
+ * GTM-5X5M2HX (tag 72) и записва на всяка страница. Втори проект от кода ГО
+ * ИЗБИВА - Clarity записва един проект на страница, първият качил се печели,
+ * вторият праща само `dup.<projectId>`. Пробвано и върнато на 18.08.2026.
  *
  * Без съгласие не тръгва нищо. Събитията, натрупани в `dataLayer` преди
  * съгласието, не се губят: контейнерът изпива опашката, щом се зареди.
@@ -31,30 +48,108 @@ export function Analytics() {
     | {
         tracking?: {
           gtmId?: string | null;
-          consentGtmId?: string | null;
+          platformGtmId?: string | null;
           metaPixelId?: string | null;
           tiktokPixelId?: string | null;
           gaId?: string | null;
+          ccStoreId?: string | null;
+          ga4BridgeId?: string | null;
+        } | null;
+        customer?: {
+          id?: number | string | null;
+          first_name?: string | null;
+          last_name?: string | null;
+          email?: string | null;
         } | null;
       }
     | undefined;
 
   const gtmId = data?.tracking?.gtmId ?? null;
-  const consentGtmId = data?.tracking?.consentGtmId ?? null;
+  const platformGtmId = data?.tracking?.platformGtmId ?? null;
   const metaPixelId = data?.tracking?.metaPixelId ?? null;
   const tiktokPixelId = data?.tracking?.tiktokPixelId ?? null;
   const gaId = data?.tracking?.gaId ?? null;
+  const ccStoreId = data?.tracking?.ccStoreId ?? null;
+  const viewer = data?.customer ?? null;
+  const ga4BridgeId = data?.tracking?.ga4BridgeId ?? null;
 
   const {pathname} = useLocation();
+
+  /* ---------------------------------------------------------------- */
+  /* GA4 мостът - id-то отива в analytics.ts и опашката се изпива      */
+  /* ---------------------------------------------------------------- */
+  useEffect(() => {
+    setGa4BridgeId(ga4BridgeId);
+  }, [ga4BridgeId]);
 
   /* ---------------------------------------------------------------- */
   /* Данните за страницата - преди контейнера, както в класическата тема */
   /* ---------------------------------------------------------------- */
   useEffect(() => {
-    // `locale` е единственото поле от cc_page_data, което контейнерът чете
-    // извън касата (проверено: другите пет са за Enhanced Conversions).
-    pushCcPageData({locale: 'bg_BG', ...getCcPageData(pathname)});
-  }, [pathname]);
+    const page = getCcPageData(pathname);
+    /* Контейнерът чете седем полета от `cc_page_data`. Дотук пълнехме едно
+     * (`locale`) и трите за клиента стояха празни - тоест Enhanced Conversions
+     * на Google Ads вървяха без подобрените данни. Двете за касата
+     * (`chosen_shipping.*`) не са наши: `/checkout` го рисува платформата. */
+    pushCcPageData({
+      locale: 'bg_BG',
+      ...page,
+      customer: {
+        first_name: viewer?.first_name ?? null,
+        last_name: viewer?.last_name ?? null,
+        email: viewer?.email ?? null,
+      },
+    });
+
+    /* Вторият обект, който платформата подава през `/datalayer.js` - път,
+     * който при нас е 404, защото домейнът е насочен към витрината. */
+    const customerData: CcCustomerData = viewer
+      ? {
+          ...GUEST_CUSTOMER_DATA,
+          id: viewer.id ?? null,
+          group_id: null,
+          group_name: null,
+          first_name: viewer.first_name ?? null,
+          last_name: viewer.last_name ?? null,
+          full_name:
+            [viewer.first_name, viewer.last_name].filter(Boolean).join(' ') || null,
+          email: viewer.email ?? null,
+          type: 'customer',
+        }
+      : GUEST_CUSTOMER_DATA;
+    pushCcCustomerData(customerData);
+  }, [pathname, viewer]);
+
+  /* ---------------------------------------------------------------- */
+  /* Собствената аналитика на CloudCart - таблото в админ панела       */
+  /* ---------------------------------------------------------------- */
+  useEffect(() => {
+    if (!ccStoreId) return;
+    let alive = true;
+    loadCloudCartAnalytics(ccStoreId).then(() => {
+      if (!alive) return;
+      flushCloudCartEvents();
+    });
+    return () => {
+      alive = false;
+    };
+  }, [ccStoreId]);
+
+  /* Едно посещение на страница при всяка смяна на маршрута.
+   *
+   * ⭐ Класическата тема праща по едно на зареждане; в SPA зарежданията ги
+   * няма, значи без този ефект цялата сесия щеше да се брои като една
+   * страница - точно както се случва днес и на GA4 (виж `docs/ANALYTICS-
+   * ASSESSMENT-2026-08-20.md`, точка A1).
+   *
+   * Събитията, изпреварили скрипта, чакат в опашка и се пращат от ефекта горе. */
+  useEffect(() => {
+    if (!ccStoreId) return;
+    ccUpdateCustomer(
+      viewer ? {subscriber_id: viewer.id ?? null, type: 'customer'} : null,
+    );
+    ccPageView(getCcPageData(pathname));
+  }, [ccStoreId, pathname, viewer]);
 
   /* ---------------------------------------------------------------- */
   /* Преглед на страница при смяна на маршрут (SPA)                    */
@@ -74,28 +169,48 @@ export function Analytics() {
   /* ---------------------------------------------------------------- */
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    if (!gtmId && !consentGtmId && !metaPixelId && !tiktokPixelId && !gaId) return;
+    if (!gtmId && !platformGtmId && !metaPixelId && !tiktokPixelId && !gaId) return;
 
-    function load() {
-      // Съгласието се чете през `hasConsent()`, а не директно от storage:
-      // банерът пише в localStorage, а старите записи стоят в sessionStorage.
-      if (!hasConsent()) return false;
-
+    /* Съгласието вече е на Cookiebot, не наше.
+     *
+     * Собственият банер отпадна (клиент, 17.08.2026): Cookiebot идва вътре в
+     * контейнера GTM-5X5M2HX и посетителят получаваше ДВА банера един след
+     * друг - нашия, а щом го приеме и контейнерът се вдигне, и този на
+     * Cookiebot. Мерено на живо същия ден.
+     *
+     * ⚠️ Затова контейнерът вече се вдига БЕЗУСЛОВНО. Останеше ли старата
+     * проверка без банер, който да я изпълни, GTM никога не тръгва - а с него
+     * не тръгва и Cookiebot, тоест сайтът остава изобщо без управление на
+     * съгласието.
+     *
+     * Какво пуска какво:
+     *   • GA4, Google Ads, Clarity - в контейнера, Cookiebot ги пуска и спира
+     *     през Consent Mode;
+     *   • Meta и TikTok - наши, извън контейнера, затова чакат маркетинговото
+     *     съгласие на Cookiebot тук долу. Пуснати безусловно, те биха се
+     *     задействали и при отказ.
+     */
+    function loadContainers() {
       const w = window as any;
-      if (w.__analyticsLoaded) return true;
-      w.__analyticsLoaded = true;
+      /* Обикновено вече е свършено от реда в `<head>` (виж `root.tsx`): той
+         тръгва на `DOMContentLoaded`, тоест доста преди хидратацията. Тогава
+         тук остава само да се изпие опашката - затова `flushPendingEvents`
+         НЕ е вътре в проверката. Дотук беше и провалът се маскираше: ранният
+         изход прескачаше и изпиването. */
+      if (!w.__analyticsLoaded) {
+        w.__analyticsLoaded = true;
 
-      // Живият магазин зарежда ДВА контейнера: този с tag-овете и този със
-      // съгласието. Редът е същият - първо се вдига dataLayer-ът, после и двата.
-      const containers = [gtmId, consentGtmId].filter(Boolean) as string[];
-      if (containers.length) {
-        w.dataLayer = w.dataLayer || [];
-        w.dataLayer.push({'gtm.start': Date.now(), event: 'gtm.js'});
-        for (const id of containers) {
-          const s = document.createElement('script');
-          s.async = true;
-          s.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(id);
-          document.head.appendChild(s);
+        // Резервен път: ако редът в `<head>` не се е изпълнил.
+        const containers = [gtmId, platformGtmId].filter(Boolean) as string[];
+        if (containers.length) {
+          w.dataLayer = w.dataLayer || [];
+          w.dataLayer.push({'gtm.start': Date.now(), event: 'gtm.js'});
+          for (const id of containers) {
+            const s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(id);
+            document.head.appendChild(s);
+          }
         }
       }
 
@@ -112,6 +227,16 @@ export function Analytics() {
         w.gtag('js', new Date());
         w.gtag('config', gaId);
       }
+
+      flushPendingEvents();
+      return true;
+    }
+
+    /** Пикселите извън контейнера - само при маркетингово съгласие. */
+    function loadPixels() {
+      const w = window as any;
+      if (w.__pixelsLoaded) return true;
+      w.__pixelsLoaded = true;
 
       if (metaPixelId) {
         const n: any = (w.fbq = function () {
@@ -185,16 +310,37 @@ export function Analytics() {
       return true;
     }
 
-    if (load()) return;
+    // Контейнерът тръгва веднага - с него идва и самият Cookiebot.
+    loadContainers();
 
-    // Още няма съгласие - изчакваме избора от банера. `setConsent` вдига
-    // събитието нарочно, за да тръгне контейнерът без презареждане.
-    function onConsent() {
-      if (load()) window.removeEventListener(CONSENT_EVENT, onConsent);
+    /** Дал ли е посетителят маркетингово съгласие в Cookiebot. */
+    function marketingAllowed(): boolean {
+      const cb = (window as any).Cookiebot;
+      return cb?.consent?.marketing === true;
     }
-    window.addEventListener(CONSENT_EVENT, onConsent);
-    return () => window.removeEventListener(CONSENT_EVENT, onConsent);
-  }, [gtmId, consentGtmId, metaPixelId, tiktokPixelId, gaId]);
+
+    if (marketingAllowed()) {
+      loadPixels();
+      return;
+    }
+
+    /* Cookiebot известява избора със свои събития. Слушаме и двете, защото
+       „приемам всички" и „само необходимите" минават по различни пътища, а
+       посетителят може да си промени избора по-късно от иконката. */
+    function onCookiebot() {
+      if (marketingAllowed()) {
+        loadPixels();
+        window.removeEventListener('CookiebotOnAccept', onCookiebot);
+        window.removeEventListener('CookiebotOnConsentReady', onCookiebot);
+      }
+    }
+    window.addEventListener('CookiebotOnAccept', onCookiebot);
+    window.addEventListener('CookiebotOnConsentReady', onCookiebot);
+    return () => {
+      window.removeEventListener('CookiebotOnAccept', onCookiebot);
+      window.removeEventListener('CookiebotOnConsentReady', onCookiebot);
+    };
+  }, [gtmId, platformGtmId, metaPixelId, tiktokPixelId, gaId]);
 
   return null;
 }

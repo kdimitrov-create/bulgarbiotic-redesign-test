@@ -7,6 +7,7 @@ import type {ProductFilter, Filter} from '@cloudcart/nitro';
  * URL param conventions:
  *   available=true           → {available: true}
  *   minPrice=10&maxPrice=50  → {price: {min: 10, max: 50}}
+ *   price_range=from_10-to_50 → същото (наследеният запис на класическата тема)
  *   vendor=nike&vendor=adidas → {productVendor: "nike"}, {productVendor: "adidas"}
  *   tag=sale&tag=new         → {tag: "sale"}, {tag: "new"}
  *   option_Color=Red&option_Color=Blue → multiple variantOption filters
@@ -18,6 +19,25 @@ import type {ProductFilter, Filter} from '@cloudcart/nitro';
  *   category=123             → {category: {id: "123"}}
  *   filter={JSON}            → parsed from facet FilterValue.input
  */
+/**
+ * Ценовият филтър на класическата тема се пише в един параметър:
+ * `price_range=from_15-to_75`, а понякога със стотинки - `from_35.00-to_55.00`.
+ * В Search Console има 27 индексирани адреса точно в тази форма.
+ *
+ * Nitrogen работи с `minPrice`/`maxPrice`. Без този превод старият адрес пак
+ * връщаше 200, но филтърът тихо падаше и човекът виждаше цялата категория -
+ * тоест не 404, а нещо по-лошо: грешен резултат без предупреждение.
+ *
+ * Разделителят е обикновено тире, а числата може да са дробни, затова редът се
+ * чете с израз, а не с `split('-')`.
+ */
+function parseLegacyPriceRange(raw: string | null): {min?: string; max?: string} {
+  if (!raw) return {};
+  const from = /from_(\d+(?:\.\d+)?)/.exec(raw)?.[1];
+  const to = /to_(\d+(?:\.\d+)?)/.exec(raw)?.[1];
+  return {...(from ? {min: from} : {}), ...(to ? {max: to} : {})};
+}
+
 export function buildFiltersFromParams(searchParams: URLSearchParams): ProductFilter[] {
   const filters: ProductFilter[] = [];
 
@@ -25,8 +45,9 @@ export function buildFiltersFromParams(searchParams: URLSearchParams): ProductFi
     filters.push({available: true});
   }
 
-  const minPrice = searchParams.get('minPrice');
-  const maxPrice = searchParams.get('maxPrice');
+  const legacyPrice = parseLegacyPriceRange(searchParams.get('price_range'));
+  const minPrice = searchParams.get('minPrice') ?? legacyPrice.min;
+  const maxPrice = searchParams.get('maxPrice') ?? legacyPrice.max;
   if (minPrice || maxPrice) {
     filters.push({
       price: {

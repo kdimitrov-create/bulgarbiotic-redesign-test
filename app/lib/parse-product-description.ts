@@ -24,6 +24,8 @@ export interface ParsedDescription {
   studies: Study[];
   /** Extracted "key benefits" — emoji-led paragraph lines. */
   benefits: string[];
+  /** Plain lines for the „Ключови ползи" card, from `<div class="bb-key-text">`. */
+  keyText: string[];
 }
 
 /** Regex that matches a line starting with one or more bullet glyphs.
@@ -42,14 +44,15 @@ const BULLET_PREFIX = /^\s*(?:[\p{Extended_Pictographic}�✅✓✔●▪▶➞
 
 export function parseProductDescription(html: string): ParsedDescription {
   if (!html) {
-    return {before: '', after: '', studies: [], benefits: []};
+    return {before: '', after: '', studies: [], benefits: [], keyText: []};
   }
 
   // ─── Step 0: Drop the bullet list the classic theme still needs ──────
-  const trimmed = dropLegacyBenefits(html);
+  // and lift out the plain-text „Ключови ползи" block, if the copy has one.
+  const {html: withoutKeyText, keyText} = extractKeyText(dropLegacyBenefits(html));
 
   // ─── Step 1: Extract emoji-bullet "benefits" paragraphs ──────────────
-  const {cleanedHtml, benefits} = extractBenefits(trimmed);
+  const {cleanedHtml, benefits} = extractBenefits(withoutKeyText);
 
   // ─── Step 2: Slice out medical-research-section ──────────────────────
   const sectionStart = cleanedHtml.search(/<div[^>]*class="[^"]*medical-research-section[^"]*"/i);
@@ -59,6 +62,7 @@ export function parseProductDescription(html: string): ParsedDescription {
       after: '',
       studies: [],
       benefits,
+      keyText,
     };
   }
 
@@ -69,6 +73,7 @@ export function parseProductDescription(html: string): ParsedDescription {
       after: '',
       studies: [],
       benefits,
+      keyText,
     };
   }
 
@@ -123,7 +128,7 @@ export function parseProductDescription(html: string): ParsedDescription {
     studies.push({pdfUrl, imageUrl, title, subtitle});
   }
 
-  return {before, after, studiesTitle, studiesSubtitle, studies, benefits};
+  return {before, after, studiesTitle, studiesSubtitle, studies, benefits, keyText};
 }
 
 /**
@@ -263,6 +268,27 @@ function dropLegacyBenefits(html: string): string {
     /<div[^>]*class="[^"]*bb-legacy-benefits[^"]*"[^>]*>[\s\S]*?<\/div>/gi,
     '',
   );
+}
+
+/**
+ * „Ключови ползи" written as plain text instead of a checklist (the gift
+ * boxes, 2026-11): `<div class="bb-key-text"><p>…</p><p>…</p></div>`. Each
+ * paragraph becomes one line of the card, shown without check marks, and the
+ * block leaves the description body so the text is not shown twice.
+ */
+function extractKeyText(html: string): {html: string; keyText: string[]} {
+  const keyText: string[] = [];
+  const cleaned = html.replace(
+    /<div[^>]*class="[^"]*bb-key-text[^"]*"[^>]*>([\s\S]*?)<\/div>/gi,
+    (_match, inner: string) => {
+      for (const p of inner.matchAll(/<p[^>]*>([\s\S]*?)<\/p>/gi)) {
+        const line = stripTags(p[1]);
+        if (line) keyText.push(line);
+      }
+      return '';
+    },
+  );
+  return {html: cleaned, keyText};
 }
 
 /** Remove orphan inline <style> tags that target medical-research-* classes. */

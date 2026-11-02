@@ -1,3 +1,4 @@
+import {plainText} from '~/lib/html-entities';
 /**
  * Reading the page-builder's settings values.
  *
@@ -125,20 +126,7 @@ export function headingPairs(html: string): Array<{q: string; a: string}> {
 
 /** Tags out, the entities a panel editor actually writes decoded. */
 function plain(html: string): string {
-  return html
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–')
-    .replace(/&rarr;/g, '→')
-    .replace(/&euro;/g, '€')
-    .replace(/\s+/g, ' ')
-    .trim();
+  return plainText(html);
 }
 
 function isRecord(v: unknown): boolean {

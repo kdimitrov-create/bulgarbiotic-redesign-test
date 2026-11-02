@@ -8,8 +8,9 @@ import {
   productIdFromHandle,
 } from '~/lib/co-purchase';
 import {bestDiscountFor} from '~/lib/active-discounts';
-import {EUR_TO_BGN} from '~/lib/currency';
+import {isAvailable} from '~/lib/availability';
 
+const EUR_TO_BGN = 1.95583;
 
 /**
  * Cart upsell suggestions — "Не забравяй да добавиш".
@@ -147,7 +148,7 @@ export async function loader({context, request}: Route.LoaderArgs) {
         title: p.title,
         image: p.featuredImage?.url ?? null,
         merchandiseId: variant.id,
-        availableForSale: variant.availableForSale !== false,
+        availableForSale: isAvailable(variant),
         price: {amount: variant.price.amount, currencyCode: currency},
         reason: top[i]?.reason ?? 'popular',
       };

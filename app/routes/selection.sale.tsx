@@ -14,8 +14,10 @@ import {synthDiscount, discountPctFor} from '~/lib/active-promo';
 import {activeDiscounts, bestDiscountFor, discountedProductIds, setAutoDiscounts, setFreeShippingOver, displayDiscountPercent} from '~/lib/active-discounts';
 import {fetchAutoDiscounts} from '~/lib/live-discounts.server';
 import {fetchBestSellers, orderByRealSales} from '~/lib/best-sellers.server';
-import {EUR_TO_BGN} from '~/lib/currency';
+import {isProductAvailable} from '~/lib/availability';
+import {numericId, setProductIds} from '~/lib/analytics';
 
+const EUR_TO_BGN = 1.95583;
 const fmt = (n: number, c: 'EUR' | 'BGN') =>
   new Intl.NumberFormat('bg-BG', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(n) +
   (c === 'EUR' ? ' €' : ' лв');
@@ -102,8 +104,10 @@ export async function loader({context, request}: Route.LoaderArgs) {
       return true;
     }
     if (storeWide) return true;
-    const numericId = String(p.id).match(/Product\/(\d+)/)?.[1];
-    return numericId ? realDiscountIds.has(numericId) : false;
+    // Преименувано от `numericId`, за да не засенчва вече внесената функция
+    // със същото име.
+    const pid = String(p.id).match(/Product\/(\d+)/)?.[1];
+    return pid ? realDiscountIds.has(pid) : false;
   });
 
   // The page above is only the first 60 products by the chosen sort, so a
@@ -329,6 +333,12 @@ export default function PromotionsPage() {
 
 /** Promo-specific product card — bigger discount badge, EUR primary price. */
 function PromoCard({product}: {product: any}) {
+  /* Тази страница има собствена карта, не минава през `ProductCard`, затова си
+     вписва числото сама. Точно оттук идваше `content_ids: ["bactology-pets"]`,
+     за което предупреждава коментарът в `analytics.ts` - handle вместо id,
+     значи събитието не намира продукта в каталога на Meta. */
+  setProductIds({[product.handle]: String(numericId(product.id))});
+
   // Both prices exactly as CloudCart reports them.
   //
   // 🛑 This block used to do `price × (1 − percent/100)` whenever the query gave
@@ -370,7 +380,7 @@ function PromoCard({product}: {product: any}) {
         <ProductMarks
           product={product}
           discountPct={discountPct}
-          soldOut={product.availableForSale === false}
+          soldOut={!isProductAvailable(product)}
           size="md"
         />
       </div>
@@ -394,6 +404,7 @@ function PromoCard({product}: {product: any}) {
         <CardBuyButton
           merchandiseId={product.variants?.nodes?.[0]?.id}
           handle={product.handle}
+          available={isProductAvailable(product)}
         />
       </div>
     </Link>

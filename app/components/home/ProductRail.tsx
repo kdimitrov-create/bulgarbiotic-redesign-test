@@ -3,6 +3,7 @@ import {useEffect, useRef} from 'react';
 import type {Product} from '@cloudcart/nitro';
 import {Money} from '@cloudcart/nitro-react';
 import {displayDiscountPercent} from '~/lib/active-discounts';
+import {cdnResize} from '~/lib/product-images';
 import {markPricing, markDiscount} from '~/lib/product-marks';
 import {DiscountCountdown} from '~/components/DiscountCountdown';
 import {ProductMarks} from '~/components/ProductMarks';
@@ -10,6 +11,8 @@ import {ProductMarks} from '~/components/ProductMarks';
 import {SHOW_BGN, EUR_TO_BGN} from '~/lib/currency';
 import {CART_ACTION} from '~/lib/cart-action';
 import {useOpenCartOnAdd} from '~/lib/use-open-cart-on-add';
+import {useTrackAddToCart} from '~/lib/use-track-add-to-cart';
+import {numericId, setProductIds} from '~/lib/analytics';
 /**
  * The horizontal product slider used on the homepage — and by the page
  * builder's "Продуктова витрина" widget, so a showcase the merchant assembles
@@ -30,8 +33,12 @@ function CarouselBuyButton({merchandiseId}: {merchandiseId: string}) {
 
   // Чекмеджето се отваря при всяко успешно добавяне, откъдето и да идва.
   useOpenCartOnAdd(fetcher);
+  /* И се брои. Този бутон също не минава през `AddToCartButton`, значи
+     добавянията от въртележката на началната и от витрината, която търговецът
+     сглобява в конструктора, не стигаха до отчетите (клиент, 01.09.2026). */
+  useTrackAddToCart(fetcher, merchandiseId, 1);
   // Чекмеджето вече не изскача: клиентът остава на страницата и получава
-  // зелено потвърждение. Прехвърлянето към платформата е в CartSync.
+  // зелено потвърждение - то тръгва от `useTrackAddToCart` по-горе.
   return (
     <button
       type="button"
@@ -84,10 +91,10 @@ function eurToBgnLabel(money: {amount: string; currencyCode?: string} | null | u
 function pickImage(p: Product): string {
   const url = p.featuredImage?.url;
   if (!url) return '/noimage.svg';
-  if (url.includes('cdncloudcart.com')) {
-    return url.includes('?') ? `${url}&width=600` : `${url}?width=600`;
-  }
-  return url;
+  /* cdnResize хваща И двата CDN хоста + format=webp. Старата проверка виждаше
+     само cdncloudcart.com, а платформата връща адреси на собствения домейн
+     (/cdn/img/) с width=1920 - картата от ~300px сваляше по 1.8 MB PNG. */
+  return cdnResize(url, 600);
 }
 
 export function ProductRail({
@@ -97,6 +104,12 @@ export function ProductRail({
   limit?: number;
 }) {
   const items = (products || []).slice(0, limit);
+
+  /* Същата карта, но за витрината: началната и „Продуктова витрина" от
+     конструктора не минават през маршрут, който я пълни. */
+  setProductIds(Object.fromEntries(
+    items.map((p: any) => [p.handle, String(numericId(p.id))]),
+  ));
 
   // Arrows nudge the rail by ~one card width; native scroll / swipe do the rest.
   const scrollRef = useRef<HTMLDivElement>(null);

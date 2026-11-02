@@ -1,5 +1,6 @@
 import {useLoaderData, data, redirect, Link} from 'react-router';
 import type {Route} from './+types/page.$handle';
+import {notFoundOrRedirect} from '~/lib/redirects';
 import {getContext} from '~/lib/context';
 import {
   collectBuilderNeeds,
@@ -12,10 +13,12 @@ import {PageShell, PageBackLink} from '~/components/PageShell';
 import {
   BuilderDesignRenderer,
   builderHasContent,
+  designPlacesOurSections,
   parseBuilderDesign,
 } from '~/components/BuilderDesignRenderer';
 import {BUILDER_HOME_HANDLE, designComposesHome} from '~/components/home/SectionRegistry';
 import {homePageHandle} from '~/lib/page-flags.server';
+import {fetchBuilderPage} from '~/lib/builder-page.server';
 import {designIsAuthored, designPlacesPage} from '~/components/PageSectionRegistry';
 import {fetchHomeSectionData} from '~/lib/home-data.server';
 import {useHomeMotion} from '~/lib/use-home-motion';
@@ -24,28 +27,27 @@ import {
   PAGES_WITH_CUSTOM_LAYOUT,
   PAGES_WITH_AUTHORED_BODY,
 } from '~/lib/pages-content';
+import {fetchLandingPage} from '~/lib/landing-page.server';
+import {LandingPage} from '~/components/landing/LandingPage';
 
 export const meta: Route.MetaFunction = ({data: d}) => {
   const page = d?.page as any;
   if (!page) return getSeoMeta({title: 'Страница | Bactology'});
+  // Страница от метаобекти: SEO полетата са в записа ѝ.
+  const landing = d?.landing?.values;
+  if (landing) {
+    return getSeoMeta({
+      title: landing.seo_title || `${landing.title || page.title} | Bactology`,
+      description: landing.seo_description || undefined,
+    });
+  }
   // For pages we author ourselves the CMS title is a leftover stub ("Events"),
   // so the Bulgarian one we ship wins.
   const title = HANDLE_TITLES[page.handle] ?? page.title;
-  /* Описанието идва от полето в панела, а то е празно за повечето страници -
-     проверено на живо (14.08): /page/about-us, /page/naukata-zad-bulgar-biotic
-     и /page/kosa-koja-i-nokti излизаха БЕЗ meta description, тоест търсачката
-     си съчинява откъс. Затова има резервен вариант: първото изречение от самата
-     страница, а ако и то липсва - едно общо за марката. */
-  const fromBody = String((page as any).content ?? '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 155);
-  const description =
-    (page as any).seoDescription ||
-    (fromBody.length > 60 ? fromBody : '') ||
-    `${title} - Bactology, български пробиотици с Lactobacillus bulgaricus.`;
-  return getSeoMeta({title: `${title} | Bactology`, description});
+  return getSeoMeta({
+    title: `${title} | Bactology`,
+    description: (page as any).seoDescription || undefined,
+  });
 };
 
 /** Title fallback used when the Storefront API can't fetch a page that has
@@ -78,19 +80,63 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   // Storefront API has intermittent 500s on some builder-built pages; if we
   // have a hand-authored override for the handle, gracefully fall back.
   const override = getPageContentOverride(params.handle);
-  const page = await ctx.storefront.getPage(params.handle).catch((err: Error) => {
-    if (override) {
-      console.warn(`Storefront getPage(${params.handle}) failed — using override:`, err.message);
-      return {
+  // Pages whose content lives in this repo (a JSX override, or a hand-built
+  // layout such as mediite-za-nas) don't need the CMS body to render.
+  const authoredInCode = Boolean(override) || PAGES_WITH_CUSTOM_LAYOUT.has(params.handle);
+  const authoredStub = {
+    id: '',
+    title: HANDLE_TITLES[params.handle] || params.handle,
+    handle: params.handle,
+    body: '',
+  } as const;
+  // Страница, сглобена от метаобекти в админа, печели пред всичко по-долу.
+  // Няма ли запис или е Чернова, страницата си е както досега. Двете заявки
+  // тръгват заедно, за да не чакат останалите страници.
+  const landingPromise = fetchLandingPage(ctx, params.handle);
+  const pagePromise = ctx.storefront.getPage(params.handle);
+  pagePromise.catch(() => {}); // грешката се обработва по-долу, ако е нужна
+  const landing = await landingPromise;
+  if (landing) {
+    return {
+      page: {
         id: '',
-        title: HANDLE_TITLES[params.handle] || params.handle,
+        title: landing.values.title || HANDLE_TITLES[params.handle] || params.handle,
         handle: params.handle,
         body: '',
-      } as const;
+      },
+      landing,
+      builderData: EMPTY_BUILDER_DATA,
+      movedToBuilder: false,
+      authoredInBuilder: false,
+      composesHome: false,
+      sections: {},
+    };
+  }
+
+  const fetched = await pagePromise.catch((err: Error) => {
+    if (authoredInCode) {
+      console.warn(`Storefront getPage(${params.handle}) failed — using override:`, err.message);
+      return authoredStub;
     }
     throw err;
   });
-  if (!page) throw data('Страницата не е намерена', {status: 404});
+  // `page(handle:)` answers null — not an error — for a handle the Storefront
+  // API doesn't expose, and the `.catch` above never sees that. On 2026-10-07
+  // that 404'd every code-authored page linked from the header and footer
+  // (events, naukata-zad-bulgar-biotic, kosa-koja-i-nokti, …) while CloudCart
+  // still listed them as active. The copy is ours, so the page still renders.
+  if (!fetched && authoredInCode) {
+    console.warn(`Storefront getPage(${params.handle}) returned null — using override`);
+  }
+  // Pages that exist only in the panel (detox-boost, longevity-bactology, …) have
+  // no copy in this repo, so the same null is read from the Admin API instead —
+  // published version only, active/visible pages only. See builder-page.server.ts.
+  const fromAdmin =
+    !fetched && !authoredInCode
+      ? await fetchBuilderPage(ctx.env as Record<string, string | undefined>, params.handle)
+      : null;
+  const page = fetched ?? fromAdmin ?? (authoredInCode ? authoredStub : null);
+  if (!page) notFoundOrRedirect(request, 'Страницата не е намерена');
 
   // A builder page may hold showcases or article lists; fetch only what the
   // blocks on THIS page ask for.
@@ -113,6 +159,7 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
   // the URL — pin the URL's, which is what those maps are written against.
   return {
     page: {...page, handle: params.handle},
+    landing: null,
     builderData,
     movedToBuilder: designPlacesPage(design, params.handle),
     // Сглобена в конструктора: тогава панелът е източникът, а ръчно
@@ -124,13 +171,15 @@ export async function loader({params, context, request}: Route.LoaderArgs) {
 }
 
 export default function PageRoute() {
-  const {page, builderData, movedToBuilder, authoredInBuilder, composesHome, sections} =
+  const {page, landing, builderData, movedToBuilder, authoredInBuilder, composesHome, sections} =
     useLoaderData<typeof loader>();
   const handle = page.handle;
 
   // Homepage sections animate on scroll; the hook has to be called on every
   // render, so it sits above the branches.
   useHomeMotion(handle);
+
+  if (landing) return <LandingPage page={landing} title={page.title} />;
 
   // A draft of the homepage, built in the panel. It renders like the homepage —
   // no shell, no title, no breadcrumbs — so what is seen here is what goes live
@@ -149,7 +198,16 @@ export default function PageRoute() {
   // three that have a custom layout of their own. Without this check those
   // three ignored the builder entirely, so anything added around their marker
   // in the panel had no effect (2026-08-07).
-  if (movedToBuilder || authoredInBuilder) {
+  //
+  // 🛑 Но само когато дървото в панела е НАШЕ. Класическата тема ползва същия
+  // конструктор, значи всяка стара страница на магазина изглежда „сглобена" и
+  // без тази проверка изместваше кодираната целева страница. Същото правило
+  // като в `DefaultPage` по-долу - едно решение, взето на две места, защото
+  // тук се избират и трите специални оформления.
+  const hasOwnDesign = Boolean(getPageContentOverride(handle));
+  const panelPlacesOurs =
+    movedToBuilder || designPlacesOurSections(parseBuilderDesign(page.body));
+  if (hasOwnDesign ? panelPlacesOurs : movedToBuilder || authoredInBuilder) {
     return <DefaultPage page={page} builderData={builderData} />;
   }
 
@@ -210,12 +268,30 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
   // Same signal the route used to get here.
   const movedToBuilder = hasDesign && designPlacesPage(design, page.handle);
   const authoredInBuilder = designIsAuthored(design);
+  /**
+   * 🛑 Кой печели, когато страницата има И наш дизайн, И дърво в панела.
+   *
+   * Класическата тема ползва СЪЩИЯ конструктор, тоест „страницата е сглобена в
+   * панела" е вярно и за страниците на самия магазин. На bulgarbiotic.bg това
+   * замени целевите страници на редизайна със старите страници на клиента -
+   * коса/кожа/нокти и науката „нямаха нищо общо" с дизайна (клиент, 2026-08-14,
+   * минути преди превключването).
+   *
+   * Затова: ръчно написаната страница печели по подразбиране, а панелът я
+   * поема само когато го каже изрично - блок Код с `bb:page:<handle>` или друг
+   * наш маркер. Страница без наш дизайн си остава както беше: там панелът е
+   * единственото съдържание и се рисува.
+   */
+  const panelPlacesOurs = movedToBuilder || designPlacesOurSections(design);
+  const builderWins = override
+    ? panelPlacesOurs
+    : movedToBuilder || authoredInBuilder;
   // When the override component provides its own hero, render the shell
   // barebones (just breadcrumbs + content, full width). Страница, сглобена в
   // конструктора, също: редовете ѝ носят собствената си ширина и фон, а
   // тесният контейнер ги стягаше до 720px.
   const useBarebones =
-    (override && PAGES_WITH_OWN_HERO.has(page.handle)) || authoredInBuilder;
+    (override && PAGES_WITH_OWN_HERO.has(page.handle)) || (builderWins && authoredInBuilder);
 
   return (
     <PageShell
@@ -224,7 +300,7 @@ function DefaultPage({page, builderData}: {page: any; builderData: any}) {
       breadcrumbs={[]}
       variant={useBarebones ? 'barebones' : 'narrow'}
     >
-      {movedToBuilder || authoredInBuilder ? (
+      {builderWins ? (
         <BuilderDesignRenderer design={design} data={builderData} />
       ) : hasRealHtml ? (
         <RichText data={page.body} />

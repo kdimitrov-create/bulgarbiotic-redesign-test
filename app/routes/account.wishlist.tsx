@@ -27,7 +27,7 @@ export default function Wishlist() {
           <HeartIcon className="size-12 mx-auto mb-4 text-gray-200" />
           <p className="text-gray-500 mb-1 font-medium">Списъкът ти с любими е празен</p>
           <p className="text-sm text-gray-400 mb-4">Запазвай продукти, за да ги намираш бързо после.</p>
-          <Link to="/collections" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
+          <Link to="/category/all-products" className="inline-flex items-center gap-1 text-sm text-brand font-medium hover:underline">
             Browse products →
           </Link>
         </div>
