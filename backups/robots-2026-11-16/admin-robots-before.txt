@@ -1,0 +1,12 @@
+User-agent: *
+Disallow: /tags
+Disallow: /tags/*
+Disallow: /contacts/*
+Disallow: /checkout
+Disallow: /checkout/*
+Disallow: /cart
+Disallow: /cart/*
+Disallow: /wishlist/*
+Disallow: /bbt
+Disallow: /bbt/*
+Crawl-Delay: 3

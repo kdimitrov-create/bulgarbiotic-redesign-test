@@ -1,5 +1,6 @@
 import {createRequestHandler} from 'react-router';
 import {createNitroContext} from '@cloudcart/nitro';
+import {isHiddenHost} from './app/lib/hidden-hosts';
 import {
   readCampaignFromUrl,
   campaignSetCookie,
@@ -16,6 +17,8 @@ const handler = createRequestHandler(
 export default {
   async fetch(request: Request, env: Record<string, any>, ctx?: {waitUntil?: (p: Promise<any>) => void}) {
     const url = new URL(request.url);
+    // Test storefront: keep its own addresses out of search results.
+    const noindex = isHiddenHost(url.hostname);
 
     // Наклонена черта накрая → 301 към адреса без нея.
     //
@@ -36,7 +39,7 @@ export default {
       const key = `${env.WORKER_NAME}${url.pathname}`;
       const {value, metadata} = await env.ASSETS.getWithMetadata(key, {type: 'arrayBuffer'});
       if (value) {
-        return new Response(value, {
+        const response = new Response(value, {
           headers: {
             'Content-Type': (metadata as any)?.contentType || 'application/octet-stream',
             'Cache-Control': url.pathname.startsWith('/assets/')
@@ -44,6 +47,8 @@ export default {
               : 'public, max-age=3600',
           },
         });
+        if (noindex) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+        return response;
       }
     }
 
@@ -92,6 +97,8 @@ export default {
     if (context.session.isPending) {
       response.headers.set('Set-Cookie', await context.session.commit());
     }
+
+    if (noindex) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
 
     /* Кликнат линк от кампания: кампанията се прибира в cookie, за да я подаде
      * `/checkout-start` на платформата в мига преди поръчката. Пълното обяснение
